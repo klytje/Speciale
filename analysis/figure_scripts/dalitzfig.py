@@ -24,8 +24,7 @@ ylim = (-1.3,1.3)
 width =  1.0/72.27*393
 plt.figure(figsize=(width/2,width/1.61803398875*0.7))
 ##plt.title()
-r = r.filter("mul==3")\
-    .filter("pT<50e3")\
+r = r.filter("pT<50e3")\
     .filter("abs(deltaE)<200")\
     .define("E2","min(eCM[0],min(eCM[1],eCM[2]))")\
     .define("E1","max(min(eCM[0],eCM[1]), min(max(eCM[0],eCM[1]),eCM[2]))")\
@@ -35,6 +34,7 @@ r = r.filter("mul==3")\
     .filter("pow(X,2)+pow(Y,2)<1.3")\
     .filter("E2>50")
     #.filter("Y<0.93")\
+    #.filter("mul==3")
 
 ghist2d(r,X,Y,200,(xlim,ylim),fname)
 #if "wU" in r.getColumnNames():
@@ -63,7 +63,6 @@ ghist2d(r,X,Y,200,(xlim,ylim),fname)
 #r.hist2d(X,Y,bins=250,range=(xlim,ylim),export=fname)
 plt.xlabel("$X$")
 plt.ylabel("$Y$")
-plt.gca().zaxis.set_scale('log')
 plt.gca().set_xlim(*xlim)
 plt.gca().set_ylim(*ylim)
 plt.gca().set_aspect("equal")

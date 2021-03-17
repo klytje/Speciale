@@ -16,8 +16,7 @@ xlim = (0,math.cos(math.pi/6))
 ylim = (0,1.0)
 
 plt.title(sys.argv[1])
-r = r.filter("mul==3")\
-    .filter("pT<35e3")\
+r = r.filter("pT<35e3")\
     .filter("abs(deltaE)<200")\
     .define("E2","min(eCM[0],min(eCM[1],eCM[2]))")\
     .define("E1","max(min(eCM[0],eCM[1]), min(max(eCM[0],eCM[1]),eCM[2]))")\
@@ -27,6 +26,7 @@ r = r.filter("mul==3")\
     .filter("pow(X,2)+pow(Y,2)<1.0")\
     .filter("Y<0.93")\
     .filter("E2>250")
+    #.filter("mul==3")\
 
     #.filter("pT<50e3")\
     #.filter("abs(deltaE)<200")\

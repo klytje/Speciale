@@ -22,14 +22,14 @@ struct plot {
     // DATA CORRECTION FIGURES
     static const bool repair_peaks = !true;
     static const bool align_peaks = !true;
-    static const bool gauss_cut = true; // FT and BT cut
+    static const bool gauss_cut = !true; // FT and BT cut
 
     // TDC CALIBRATION FIGURES
     static const bool raw = !true;
     static const bool centered = !true;
     static const bool fit = !true;
-    static const bool gauss = !true; // DT cut
-    static const bool gauss_sigma = !true;
+    static const bool gauss = true; // DT cut
+    static const bool gauss_sigma = true;
 
     // a simple wrapper around the two plot controllers; needed by the code itself
     static const inline vector<bool> plot_det = {S, S, W, W};

@@ -14,8 +14,7 @@ r = r.define("esum","eCM[0]+eCM[1]+eCM[2]")
         #.define("phi","fmod(atan2(Y,X)+TMath::Pi(),2*TMath::Pi()/3)")\
         #.filter("pow(X,2)+pow(Y,2)<1.0/9.0")\
 lim = (0,3.1416/3)
-r = r.filter("mul==3")\
-    .filter("pT<35e3")\
+r = r.filter("pT<35e3")\
     .filter("abs(deltaE)<200")\
     .define("E2","min(eCM[0],min(eCM[1],eCM[2]))")\
     .define("E1","max(min(eCM[0],eCM[1]), min(max(eCM[0],eCM[1]),eCM[2]))")\

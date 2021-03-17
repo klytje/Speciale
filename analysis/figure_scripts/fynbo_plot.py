@@ -16,8 +16,7 @@ xlim = (0,12000)
 ylim = (0,6500)
 
 plt.title(sys.argv[1])
-r = r.filter("mul==3")\
-    .filter("pT<50e3")
+r = r.filter("pT<50e3")
 
 plt.clf()
 r.hist2d(["esum","esum","esum"],["eCM[0]","eCM[1]","eCM[2]"],bins=400,range=(xlim,ylim),export=(fname,"count"),log=True)

@@ -85,99 +85,6 @@ tuple<vector<double>, vector<double>, vector<int>, vector<int>, vector<int>> dt_
     return tuple(ft, bt, fi, bi, id);
 }
 
-// calculate the mean, used as the offset in this code
-vector<double> calc_offset(const vector<int> *BI, const vector<double> *DT, int strips) {
-    const vector<int> &BIref = *BI;
-    const vector<double> &DTref = *DT;
-    vector<double> sum(strips);
-    vector<int> count(strips);
-    int bi;
-
-    // sum over each of the strips
-    for (int i = 0; i < BIref.size(); i++) {
-        bi = BIref[i]-1;
-        sum[bi] += DTref[i];
-        count[bi]++;
-    }
-    
-    // divide each sum by its number of elements (i.e. calculate the mean)
-    for (int i = 0; i < strips; i++) {
-        if (count[i] != 0) {
-            sum[i] /= count[i];
-        } else {
-            sum[i] = 0;
-        }
-    }
-    return sum;
-}
-
-// subtracts the offsets specified in offset from each element of the vector DT
-void apply_offset(vector<double> *DT, const vector<int> *BI, const vector<double> offset) {
-    const vector<int> &BIref = *BI;
-    vector<double> &DTref = *DT;
-    for (int i = 0; i < DTref.size(); i++) {
-        DTref[i] -= offset[BIref[i]-1];
-    }
-    return;
-}
-
-// applies the offsets from all detectors to bt
-void apply_offset(data_container* data, const vector<vector<double>> offset) {
-    data->add_dt();
-    const vector<int> &bi = *data->get_int("BI");
-    const vector<int> &id = *data->get_int("ID");
-    vector<double> &bt = *data->get_double("BT");
-    
-    for (int i = 0; i < bt.size(); i++) {
-        bt[i] -= offset[id[i]][bi[i]-1];
-    }
-    return;
-}
-
-// applies deltaF and deltaB to FT and BT according to the fitted equation
-// we cannot simply extract the results from the fitting class, since FT and BT would then be scrambled compared to the others
-void apply_fit(vector<double> *FT, vector<double> *BT, const vector<int> *FI, const vector<int> *BI, const vector<double> doubleF, const vector<double> doubleB) {
-    vector<double> &FTref = *FT;
-    vector<double> &BTref = *BT;
-    const vector<int> &FIref = *FI;
-    const vector<int> &BIref = *BI; 
-
-    for (int i = 0; i < FTref.size(); i++) {
-        FTref[i] += doubleF[FIref[i]-1];
-        BTref[i] += doubleB[BIref[i]-1];
-    }
-    return;
-}
-
-// applies deltaF to FT according to the fitted equation
-// this is used to apply a W1 fit to the S3 data
-void apply_fit(vector<double> *FT, const vector<int> *FI, const vector<int> *ID, const vector<vector<double>> deltaF) {
-    vector<double> &FTref = *FT;
-    const vector<int> &FIref = *FI;
-    const vector<int> &IDref = *ID; 
-
-    for (int i = 0; i < FTref.size(); i++) {
-        FTref[i] += deltaF[IDref[i]][FIref[i]-1];
-    }
-    return;
-}
-
-// applies deltaF and deltaB to FT and BT according to the fitted equation
-// this method applies the fit on data from all detectors simultaneously
-void apply_fit(data_container* data, const vector<vector<double>> deltaF, const vector<vector<double>> deltaB) {
-    vector<double> &FTref = *data->get_double("FT");
-    vector<double> &BTref = *data->get_double("BT");
-    const vector<int> &FIref = *data->get_int("FI");
-    const vector<int> &BIref = *data->get_int("BI");
-    const vector<int> &IDref = *data->get_int("ID");
-
-    for (int i = 0; i < FTref.size(); i++) {
-        FTref[i] += deltaF[IDref[i]][FIref[i]-1];
-        BTref[i] += deltaB[IDref[i]][BIref[i]-1];
-    }
-    return;
-}
-
 // a class storing and handling everything related to the fit
 class fit_func {
     public: 
@@ -367,17 +274,6 @@ class fit_func {
             h->Delete();
         }
 };
-
-// takes the mean value of each strip and subtracts it from dt and bt
-vector<double> center_dt(vector<double>* DT, vector<double>* BT, vector<int>* BI, int strips) {
-    vector<double>& dt = *DT;
-    vector<double>& bt = *BT;
-
-    vector<double> offset = calc_offset(BI, DT, strips);
-    apply_offset(DT, BI, offset);
-    apply_offset(BT, BI, offset);
-    return offset;
-}
 
 // the fitting function. it handles everything related to the fit process. 
 pair<vector<double>, vector<double>> fit(vector<double> *FT, vector<double> *BT, vector<int> *FI, vector<int> *BI, vector<double> *DT, int det) {
@@ -571,7 +467,6 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> td
     }
     // apply the fit on the actual data. note that these two operations are lossless, and cannot delete any entries. 
     // this means that we still have the (alpha_1 | alpha_2 | alpha_3) structure
-    // apply_offset(data, offset_l, offset_r, 0);
     apply_offset(data, offset);
     apply_fit(data, deltaF, deltaB);
 
@@ -594,10 +489,9 @@ void gauss_cut(data_container* data, int n_sigma) {
     vector<int>* BI = data->get_int("BI");
     vector<int>* ID = data->get_int("ID");
 
-    // define local vectors that can freely be modified
-    vector<double> ft, bt, dE;
-    vector<int> fi, bi, id;
     for (int det = 0; det <= 3; det++) {
+        vector<double> ft, bt;
+        vector<int> fi, bi, id;
         cout << "\033[1;34m" << "\nPerforming Gauss fitting on detector " << detector_map.at(det) << "." << "\033[0m" << endl; 
         if (det == 0 || det == 1) { // S3
             tie(ft, bt, fi, bi, id) = find_coincidences(FT, BT, FI, BI, ID, det); 
@@ -643,74 +537,6 @@ void gauss_cut(data_container* data, int n_sigma) {
             hist2D(&dt, &bi, sigma[det], n_sigma, info);
         }
     }
-}
-
-// write a data_container to disk
-void save(data_container* data, string destination) {
-    print_title("*** SAVING DATA ***");
-
-    // everything below here is named the way it is for compatibility with Mortens plotting scripts
-    TFile f(destination.c_str(), "recreate"); // open the file
-    TTree t("a", "corrected tree for all data fed into calibrate");
-
-    // define the storage variables for the fill loop
-    double dt, pT, deltaE, exC12; 
-    double eCM[3], eLab[3], thetaLab[3], phiLab[3];
-    int mul;
-    int id[3];
-
-    // define the branches in the new tree
-    t.Branch("dt", &dt, "dt/D");
-    t.Branch("pT", &pT, "pT/D");
-    t.Branch("deltaE", &deltaE, "deltaE/D");
-    t.Branch("eCM", &eCM, "eCM[3]/D");
-    t.Branch("eLab", &eLab, "eLab[3]/D");
-    t.Branch("mul", &mul, "mul/I");
-    t.Branch("thetaLab", &thetaLab, "thetaLab[3]/D");
-    t.Branch("phiLab", &phiLab, "phiLab[3]/D");
-    t.Branch("id", &id, "id[3]/I");
-    t.Branch("exC12", &exC12, "exC12/D");
-
-    // acquire pointers to the actual data in the data_container
-    data->add_dt(); // ensure dt exists
-    vector<double> &DT = *data->get_double("dt");
-    vector<double> &ECM = *data->get_double("E_cm");
-    vector<double> &ELAB = *data->get_double("E_lab");
-    vector<double> &PT = *data->get_double("p_tot");
-    vector<double> &DELTAE = *data->get_double("deltaE");
-    vector<double> &THETALAB = *data->get_double("theta_lab");
-    vector<double> &PHILAB = *data->get_double("phi_lab");
-    vector<double> &EXC12 = *data->get_double("exC12");
-    vector<int> &MUL = *data->get_int("mul");
-    vector<int> &ID = *data->get_int("ID");
-
-    int n = data->get_n();
-    int m = n/3;
-    int i2, i3;
-    for (int i1 = 0; i1 < m; i1++) {
-        i2 = i1 + m;
-        i3 = i1 + 2*m;
-
-        // single-valued columns
-        mul = MUL[i1];
-        pT = PT[i1];
-        deltaE = DELTAE[i1];
-        dt = DT[i1];
-        exC12 = EXC12[i1];
-
-        // vector columns
-        eCM[0] = ECM[i1]; eCM[1] = ECM[i2]; eCM[2] = ECM[i3];
-        eLab[0] = ELAB[i1]; eLab[1] = ELAB[i2]; eLab[2] = ELAB[i3];
-        thetaLab[0] = THETALAB[i1]; thetaLab[1] = THETALAB[i2]; thetaLab[2] = THETALAB[i3];
-        phiLab[0] = PHILAB[i1]; phiLab[1] = PHILAB[i2]; phiLab[2] = PHILAB[i3];
-        id[0] = ID[i1]; id[1] = ID[i2]; id[2] = ID[i3];
-
-        t.Fill();
-
-        // "dt","eCM","eLab","mul","pT","deltaE","theta*","phi*","exC12","BI","FI","id",BT+"0",BT+"1",BT+"2","BT_0","BT_1","BT_2","rho_","dist*","dist0","dist1","dist2","correction0","correction1","correction2"
-    }
-    t.Write();
-    cout << "Data successfully written to disk." << endl;
 }
 
 void save_calibration(vector<vector<double>> doubleF, vector<vector<double>> doubleB, vector<vector<double>> offset) {
@@ -762,7 +588,7 @@ int main(int argc, char *argv[]) {
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
     // save the raw data before any cuts or modifications are performed
-    // save(&data, "output/raw_data.root");
+    save(&data, "output/raw_data.root");
 
     // attempt to repair the broken peaks
     repair_peaks(&data);
@@ -787,6 +613,6 @@ int main(int argc, char *argv[]) {
     gauss_cut(&data, 3);
     
     // save the data_container    
-    // save(&data, "output/corrected_data.root"); // save the data after the above methods have been imposed upon it
+    save(&data, "output/corrected_data.root"); // save the data after the above methods have been imposed upon it
     return 0;
 }

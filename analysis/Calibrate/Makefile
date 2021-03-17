@@ -130,19 +130,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named mul_compare
-
-# Build rule for target.
-mul_compare: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mul_compare
-.PHONY : mul_compare
-
-# fast build rule for target.
-mul_compare/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/build
-.PHONY : mul_compare/fast
-
-#=============================================================================
 # Target rules for targets named calibrate
 
 # Build rule for target.
@@ -222,33 +209,6 @@ calibrate_constructed.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_constructed.dir/build.make CMakeFiles/calibrate_constructed.dir/calibrate_constructed.cpp.s
 .PHONY : calibrate_constructed.cpp.s
 
-mul_compare.o: mul_compare.cpp.o
-
-.PHONY : mul_compare.o
-
-# target to build an object file
-mul_compare.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.o
-.PHONY : mul_compare.cpp.o
-
-mul_compare.i: mul_compare.cpp.i
-
-.PHONY : mul_compare.i
-
-# target to preprocess a source file
-mul_compare.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.i
-.PHONY : mul_compare.cpp.i
-
-mul_compare.s: mul_compare.cpp.s
-
-.PHONY : mul_compare.s
-
-# target to generate assembly for a file
-mul_compare.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.s
-.PHONY : mul_compare.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -259,16 +219,12 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... calibrate"
 	@echo "... calibrate_constructed"
-	@echo "... mul_compare"
 	@echo "... calibrate.o"
 	@echo "... calibrate.i"
 	@echo "... calibrate.s"
 	@echo "... calibrate_constructed.o"
 	@echo "... calibrate_constructed.i"
 	@echo "... calibrate_constructed.s"
-	@echo "... mul_compare.o"
-	@echo "... mul_compare.i"
-	@echo "... mul_compare.s"
 .PHONY : help
 
 

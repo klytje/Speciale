@@ -395,21 +395,48 @@ class data_container {
             return n;
         }
 
-        // impose a dt filter on all data, treating it as whole 12C decay events. preserving determines whether the (a1 | a2 | a3) structure should be preserved or not
-        void dt_filter(const vector<double> a, const vector<double> b, bool preserving) {
-            // get pointers to all the relevant data
-            const vector<double>* FT = get_double("FT");
-            const vector<double>* BT = get_double("BT");
-            const vector<int>* FI = get_int("FI");
-            const vector<int>* BI = get_int("BI");
-            const vector<int>* ID = get_int("ID");
-
+        void dt_filter(const vector<double> a, const vector<double> b) {
+            // dereference the relevant data
             add_dt();
             const vector<double> &dt = *get_double("dt");
-            const vector<int> &id = *ID; // we will need this one often, so dereference it
+            const vector<int> &id = *get_int("ID"); // we will need this one often, so dereference it
 
             int m = n/3; // iterate through whole 12C decay events instead of alpha particles
-            vector<bool> filt(n, false); // only true events will be kept
+            vector<bool> filt(n, false); // only "true" events will be kept
+            auto check = [&] (int i1, int i2, int i3) {
+                // check if any of the three alphas are outside the bounds
+                if (!(id[i1]==-1) && !(a[id[i1]] < dt[i1] && dt[i1] < b[id[i1]])) return;
+                if (!(id[i2]==-1) && !(a[id[i2]] < dt[i2] && dt[i2] < b[id[i2]])) return;
+                if (!(id[i3]==-1) && !(a[id[i3]] < dt[i3] && dt[i3] < b[id[i3]])) return;
+
+                // if so, add them all to the filter
+                filt[i1] = true;
+                filt[i2] = true;
+                filt[i3] = true;
+                return;
+            };
+
+            // iterate through each 12C decay event
+            int i2, i3;
+            for (int i1 = 0; i1 < m; i1++) {
+                i2 = i1 + m; 
+                i3 = i1 + 2*m;
+                check(i1, i2, i3);
+            }
+
+            filter(&filt);
+            return;
+        }
+
+        // impose a dt filter on all data, treating it as whole 12C decay events. preserving determines whether the (a1 | a2 | a3) structure should be preserved or not
+        void dt_filter(const vector<double> a, const vector<double> b, bool preserving) {
+            // dereference the relevant data
+            add_dt();
+            const vector<double> &dt = *get_double("dt");
+            const vector<int> &id = *get_int("ID"); // we will need this one often, so dereference it
+
+            int m = n/3; // iterate through whole 12C decay events instead of alpha particles
+            vector<bool> filt(n, false); // only "true" events will be kept
 
             // helper function. checks if all three indices are within the bounds of their detectors
             std::function<void(int, int, int)> check;
@@ -446,35 +473,7 @@ class data_container {
             }
 
             filter(&filt);
-
-        //     // we perform the actual filtering in-place, so we avoid having to double the memory usage
-        //     int k; // current index in result
-        //     for (int i = 0; i < n_int; i++) { // loop over all names in int_names
-        //         vector<int> &col = int_data[int_names[i]];
-        //         k = 0;
-        //         for (int j = 0; j < col.size(); j++) { // loop over all entries in the given vector
-        //             if (filt[j]) {
-        //                 col[k] = col[j];
-        //                 k++;
-        //             }
-        //         }
-        //         col.resize(k); // remove all unset entries
-        //     }
-
-        //     for (int i = 0; i < n_double; i++) { // loop over all names in double_names
-        //         vector<double> &col = double_data[double_names[i]];
-        //         k = 0;
-        //         for (int j = 0; j < col.size(); j++) { // loop over all entries in one vector
-        //             if (filt[j]) {
-        //                 col[k] = col[j];
-        //                 k++;
-        //             }
-        //         }
-        //         col.resize(k); // remove all unset entries
-        //     }
-
-        //     n = k; // update the size of the vectors
-        //     return;
+            return;
         }
 
         // impose a dt filter on all data individually. this means that we lose the (a1 | a2 | a3) structure
@@ -613,6 +612,110 @@ class data_container {
 
 };
 
+// applies the offsets from all detectors to bt
+void apply_offset(data_container* data, const vector<vector<double>> offset) {
+    data->add_dt();
+    const vector<int> &bi = *data->get_int("BI");
+    const vector<int> &id = *data->get_int("ID");
+    vector<double> &bt = *data->get_double("BT");
+    
+    for (int i = 0; i < bt.size(); i++) {
+        bt[i] -= offset[id[i]][bi[i]-1];
+    }
+    return;
+}
+
+// subtracts the offsets specified in offset from each element of the vector DT
+void apply_offset(vector<double> *DT, const vector<int> *BI, const vector<double> offset) {
+    const vector<int> &BIref = *BI;
+    vector<double> &DTref = *DT;
+    for (int i = 0; i < DTref.size(); i++) {
+        DTref[i] -= offset[BIref[i]-1];
+    }
+    return;
+}
+
+// applies deltaF and deltaB to FT and BT according to the fitted equation
+// we cannot simply extract the results from the fitting class, since FT and BT would then be scrambled compared to the others
+void apply_fit(vector<double> *FT, vector<double> *BT, const vector<int> *FI, const vector<int> *BI, const vector<double> doubleF, const vector<double> doubleB) {
+    vector<double> &FTref = *FT;
+    vector<double> &BTref = *BT;
+    const vector<int> &FIref = *FI;
+    const vector<int> &BIref = *BI; 
+
+    for (int i = 0; i < FTref.size(); i++) {
+        FTref[i] += doubleF[FIref[i]-1];
+        BTref[i] += doubleB[BIref[i]-1];
+    }
+    return;
+}
+
+// applies deltaF to FT according to the fitted equation
+// this is used to apply a W1 fit to the S3 data
+void apply_fit(vector<double> *FT, const vector<int> *FI, const vector<int> *ID, const vector<vector<double>> deltaF) {
+    vector<double> &FTref = *FT;
+    const vector<int> &FIref = *FI;
+    const vector<int> &IDref = *ID; 
+
+    for (int i = 0; i < FTref.size(); i++) {
+        FTref[i] += deltaF[IDref[i]][FIref[i]-1];
+    }
+    return;
+}
+
+// applies deltaF and deltaB to FT and BT according to the fitted equation
+// this method applies the fit on data from all detectors simultaneously
+void apply_fit(data_container* data, const vector<vector<double>> deltaF, const vector<vector<double>> deltaB) {
+    vector<double> &FTref = *data->get_double("FT");
+    vector<double> &BTref = *data->get_double("BT");
+    const vector<int> &FIref = *data->get_int("FI");
+    const vector<int> &BIref = *data->get_int("BI");
+    const vector<int> &IDref = *data->get_int("ID");
+
+    for (int i = 0; i < FTref.size(); i++) {
+        FTref[i] += deltaF[IDref[i]][FIref[i]-1];
+        BTref[i] += deltaB[IDref[i]][BIref[i]-1];
+    }
+    return;
+}
+
+// calculate the mean, used as the offset in this code
+vector<double> calc_offset(const vector<int> *BI, const vector<double> *DT, int strips) {
+    const vector<int> &BIref = *BI;
+    const vector<double> &DTref = *DT;
+    vector<double> sum(strips);
+    vector<int> count(strips);
+    int bi;
+
+    // sum over each of the strips
+    for (int i = 0; i < BIref.size(); i++) {
+        bi = BIref[i]-1;
+        sum[bi] += DTref[i];
+        count[bi]++;
+    }
+    
+    // divide each sum by its number of elements (i.e. calculate the mean)
+    for (int i = 0; i < strips; i++) {
+        if (count[i] != 0) {
+            sum[i] /= count[i];
+        } else {
+            sum[i] = 0;
+        }
+    }
+    return sum;
+}
+
+// takes the mean value of each strip and subtracts it from dt and bt
+vector<double> center_dt(vector<double>* DT, vector<double>* BT, vector<int>* BI, int strips) {
+    vector<double>& dt = *DT;
+    vector<double>& bt = *BT;
+
+    vector<double> offset = calc_offset(BI, DT, strips);
+    apply_offset(DT, BI, offset);
+    apply_offset(BT, BI, offset);
+    return offset;
+}
+
 // attempt to fit a gaussian to the input, and, optionally, plot it
 template <typename T>
 map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axis = {1000, -500, 500}, bool plot = true) {
@@ -669,8 +772,8 @@ void merge(int num, char *path[]) {
         TTree *tm = (TTree *)fm->Get("a101");
 
         // define variables from analyzed tree
-        int mi[3], mul, N;
-        double pt, deltaE, E_cm[3], E_lab[3], exC12, theta_lab[3], theta_cm[3], phi_lab[3], phi_cm[3];
+        Int_t mi[3], mul, N;
+        Double_t pt, deltaE, E_cm[3], E_lab[3], exC12, theta_lab[3], theta_cm[3], phi_lab[3], phi_cm[3];
         ta->SetBranchAddress("N", &N);
         ta->SetBranchAddress("mi", &mi);
         ta->SetBranchAddress("mul", &mul);
@@ -686,7 +789,9 @@ void merge(int num, char *path[]) {
 
         // define variables from matched tree
         // we must be very generous with the allocated space here, since otherwise we risk writing outside the bounds. 100 is probably overkill, though
-        double FT[100], BT[100], FI[100], BI[100], FE[100], BE[100], ID[100]; // read variables
+        UInt_t FT[100], BT[100], FI[100], BI[100], ID[100]; 
+        Double_t FE[100], BE[100];
+        // double* FTr = &FT[0], BTr = &BT[0], BIr = &BI[0], FEr = &FE[0], BEr = &BE[0], IDr = &ID[0];
         tm->SetBranchAddress("FI", &FI);
         tm->SetBranchAddress("FT", &FT);
         tm->SetBranchAddress("BI", &BI);
@@ -696,7 +801,8 @@ void merge(int num, char *path[]) {
         tm->SetBranchAddress("id", &ID);
 
         // define destination tree and set its branches
-        double ft[3], bt[3], fi[3], bi[3], fe[3], be[3], id[3]; // write variables
+        UInt_t ft[3], bt[3], fi[3], bi[3], id[3]; 
+        Double_t fe[3], be[3]; // write variables
         string dest = "merged/" + p.filename().string(); // file destination
         TFile f(dest.c_str(), "recreate");
         TTree t("tree", "merged tree for TDC calibration");
@@ -720,22 +826,13 @@ void merge(int num, char *path[]) {
 
         // loop over every event in the analyzed tree ta
         for (double i = 0; i < ta->GetEntries(); i++) {
-            try {
-                int status = ta->GetEntry(i); // try to get entry i
-                if (status == 0) // if unsuccesful, print error
-                    throw 1;
-            }
-            catch (int e) {
-                std::cout << "Error in accessing entry; program will exit prematurely." << endl;
-                exit(1);
-            }
+            ta->GetEntry(i); // try to get entry i
             tm->GetEntry(N); // N is the corresponding index in tm for each event in ta
-
+            
             // loop over the three alpha particles
             // we use the multiplicity index mi to get the correct values from the read variables
-            int index;
             for (int i = 0; i < 3; i++) {
-                index = mi[i];
+                int index = mi[i];
                 if (index == -1) { // if it is a reconstructed event
                     ft[i] = 0;
                     bt[i] = 0;
@@ -744,7 +841,7 @@ void merge(int num, char *path[]) {
                     fe[i] = 0;
                     be[i] = 0;
                     id[i] = -1;
-                } else { // if it is a true mul==3 event
+                } else { // if it is a true event
                     ft[i] = FT[index];
                     bt[i] = BT[index];
                     fi[i] = FI[index];
@@ -754,12 +851,77 @@ void merge(int num, char *path[]) {
                     id[i] = ID[index];
                 }
             }
-
             t.Fill(); // fill the entries into the merged tree t
         }
         t.Write(); // write to disk
         std::cout << "\033[1;32m" << boost::format("Successfully built %1%") % dest << "\033[0m" << endl; // green colour
     }
+}
+
+// write a data_container to disk
+void save(data_container* data, string destination) {
+    print_title("*** SAVING DATA ***");
+
+    // everything below here is named the way it is for compatibility with Mortens plotting scripts
+    TFile f(destination.c_str(), "recreate"); // open the file
+    TTree t("a", "corrected tree for all data fed into calibrate");
+
+    // define the storage variables for the fill loop
+    double dt, pT, deltaE, exC12; 
+    double eCM[3], eLab[3], thetaLab[3], phiLab[3];
+    int mul;
+    int id[3];
+
+    // define the branches in the new tree
+    t.Branch("dt", &dt, "dt/D");
+    t.Branch("pT", &pT, "pT/D");
+    t.Branch("deltaE", &deltaE, "deltaE/D");
+    t.Branch("eCM", &eCM, "eCM[3]/D");
+    t.Branch("eLab", &eLab, "eLab[3]/D");
+    t.Branch("mul", &mul, "mul/I");
+    t.Branch("thetaLab", &thetaLab, "thetaLab[3]/D");
+    t.Branch("phiLab", &phiLab, "phiLab[3]/D");
+    t.Branch("id", &id, "id[3]/I");
+    t.Branch("exC12", &exC12, "exC12/D");
+
+    // acquire pointers to the actual data in the data_container
+    data->add_dt(); // ensure dt exists
+    vector<double> &DT = *data->get_double("dt");
+    vector<double> &ECM = *data->get_double("E_cm");
+    vector<double> &ELAB = *data->get_double("E_lab");
+    vector<double> &PT = *data->get_double("p_tot");
+    vector<double> &DELTAE = *data->get_double("deltaE");
+    vector<double> &THETALAB = *data->get_double("theta_lab");
+    vector<double> &PHILAB = *data->get_double("phi_lab");
+    vector<double> &EXC12 = *data->get_double("exC12");
+    vector<int> &MUL = *data->get_int("mul");
+    vector<int> &ID = *data->get_int("ID");
+
+    int n = data->get_n();
+    int m = n/3;
+    int i2, i3;
+    for (int i1 = 0; i1 < m; i1++) {
+        i2 = i1 + m;
+        i3 = i1 + 2*m;
+
+        // single-valued columns
+        mul = MUL[i1];
+        pT = PT[i1];
+        deltaE = DELTAE[i1];
+        dt = DT[i1];
+        exC12 = EXC12[i1];
+
+        // vector columns
+        eCM[0] = ECM[i1]; eCM[1] = ECM[i2]; eCM[2] = ECM[i3];
+        eLab[0] = ELAB[i1]; eLab[1] = ELAB[i2]; eLab[2] = ELAB[i3];
+        thetaLab[0] = THETALAB[i1]; thetaLab[1] = THETALAB[i2]; thetaLab[2] = THETALAB[i3];
+        phiLab[0] = PHILAB[i1]; phiLab[1] = PHILAB[i2]; phiLab[2] = PHILAB[i3];
+        id[0] = ID[i1]; id[1] = ID[i2]; id[2] = ID[i3];
+
+        t.Fill();
+    }
+    t.Write();
+    cout << "Data successfully written to disk as " << destination << "." << endl;
 }
 
 // checks if all merged files exists. if even one of them is missing, they are all recreated
