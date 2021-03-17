@@ -36,6 +36,8 @@ endif(CURL_FOUND)
 link_libraries(${LIBRARIES})
 
 add_executable(EventAnalysis main.cpp StandardAnalyzer.cpp MulSpectrum.cpp AntiProtonCutter.cpp)
+add_executable(calibrate_true tdc_calibration_true.cpp)
+add_executable(calibrate_reconstructed tdc_calibration_reconstructed.cpp)
 #add_executable(SinglesAnalysis SinglesAnalysis.cpp)
 #add_executable(SolidCalc SolidCalc.cpp)
 #add_executable(SDSolidCalc SDSolidCalc.cpp)

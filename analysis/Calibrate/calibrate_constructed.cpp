@@ -63,15 +63,11 @@ void gauss_filter_custom(data_container* data, int n_sigma, vector<double> ft_pe
 
     if (plot::gauss_cut) {
         std::cout << format("Imposing a cut at %1% sigma, keeping %2% of %3% elements.") % n_sigma % (3*c) % n << endl; 
-        hist_info info_ft({1000.0, 65000, 66000}, "gauss_cut_ft", "title", "ft", "count");
+        hist_info info_ft(plot::x_axes::FT, "gauss_cut_ft", "title", "ft", "count");
         hist1D(&ft, ft_result.at("mean"), n_sigma*ft_result.at("sigma"), info_ft);
 
-        hist_info info_bt({1000.0, 65000, 66000}, "gauss_cut_bt", "title", "bt", "count");
+        hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
         hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
-
-        auto dt = calc_dt(&ft, &bt);
-        hist_info info_dt({1000.0, 65000, 66000}, "gauss_cut_dt", "title", "dt", "count");
-        hist1D(&dt, info_dt);
     }
     data->filter(&filter);
 }
@@ -129,6 +125,12 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> lo
                 c++;
             }
         }
+    }
+
+    // verify that we have read something
+    if (currently_reading != "offset") {
+        std::cout << "\033[1;31m" << "Something went wrong while loading the calibration file. Is it really located at " << plot::path + "../fit_info.txt ?"  << "\033[0m" << endl;
+        exit(1);
     }
 
     std::cout << "Calibration loaded." << endl;
@@ -245,7 +247,6 @@ void apply_tdc_calibration(data_container* data, vector<vector<double>> deltaF, 
             hist_info info(plot::x_axes::centered, plot::y_axis.at(det), (format("tdc_calibration_constructed_centered_%1%") % detector_map.at(det)).str(), "Raw data", "dt [ns]", "Back strip id");
             hist2D(&dt, &bi, info);
         }
-
         if (plot::fit) {
             // apply the fit on the local data
             apply_fit(&ft, &bt, &fi, &bi, deltaF[det], deltaB[det]);
@@ -328,42 +329,42 @@ void gauss_cut_custom(data_container* data, int n_sigma) {
     The main changes in this analysis compared to just calibrate.cpp is that all functions must respect that a whole lot of entries in FT and BT may be 0.
     To allow for this, I've had to make a few minor changes in most functions, all of which I've only made available locally in this file
 */
-int main(int argc, char *argv[]) {
-    data_container data;
-    prepare_data(argc, argv, &data, "mul==-1");
+// int main(int argc, char *argv[]) {
+//     data_container data;
+//     prepare_data(argc, argv, &data, "mul==-1");
 
-    // define the plot colour scheme
-    gStyle->SetPalette(kBird);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    gROOT->ForceStyle();
+//     // define the plot colour scheme
+//     gStyle->SetPalette(kBird);
+//     gStyle->SetOptStat(0);
+//     gStyle->SetOptTitle(0);
+//     gROOT->ForceStyle();
 
-    // start a ROOT application window such that the plots can actually be shown
-    TApplication *app = new TApplication("ROOT window", 0, 0);
-    // save(&data, "output/raw_data.root");
+//     // start a ROOT application window such that the plots can actually be shown
+//     TApplication *app = new TApplication("ROOT window", 0, 0);
+//     // save(&data, "output/raw_data.root");
 
-    // attempt to repair the broken peaks
-    repair_peaks(&data);
+//     // attempt to repair the broken peaks
+//     repair_peaks(&data);
 
-    // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}};
-    vector<vector<int>> bt_peaks = {{65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
-    align_peaks(&data, ft_peaks, bt_peaks);
+//     // attempt to align the peaks since each detector is offset slightly from the others
+//     vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}};
+//     vector<vector<int>> bt_peaks = {{65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
+//     align_peaks(&data, ft_peaks, bt_peaks);
 
-    // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 65400, 65500};
-    vector<double> bt_peak = {200, 65250, 65450};
-    gauss_filter_custom(&data, 3, ft_peak, bt_peak);
+//     // imposes a Gaussian filter on FT and BT, to remove outliers. 
+//     vector<double> ft_peak = {100, 65400, 65500};
+//     vector<double> bt_peak = {200, 65250, 65450};
+//     gauss_filter_custom(&data, 3, ft_peak, bt_peak);
 
-    auto[deltaF, deltaB, offset] = load_calibration();
+//     auto[deltaF, deltaB, offset] = load_calibration();
 
-    // perform a tdc calibration on the data
-    apply_tdc_calibration(&data, deltaF, deltaB);
+//     // perform a tdc calibration on the data
+//     apply_tdc_calibration(&data, deltaF, deltaB);
 
-    // impose a Gaussian filter on DT, to remove outliers
-    gauss_cut_custom(&data, 3);
+//     // impose a Gaussian filter on DT, to remove outliers
+//     gauss_cut_custom(&data, 3);
     
-    // save the data_container
-    save(&data, "output/reconstructed_data.root"); // save the data after the above methods have been imposed upon it
-    return 0;
-}
+//     // save the data_container
+//     save(&data, "output/reconstructed_data.root");
+//     return 0;
+// }

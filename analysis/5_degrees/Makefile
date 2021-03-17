@@ -6,7 +6,7 @@ identifier := ~/tools/identifier/build/Identifier
 .DEFAULT_GOAL := all
 .SECONDARY:
 
-.PHONY: clean cleandat calibrate
+.PHONY: clean cleandat tdc_calibration calibrate mul_compare
 clean :
 	rm -f sim/data_i/*
 	rm -f sim/data/*
@@ -18,18 +18,26 @@ cleandat :
 
 N = 10
 
+#######################
+### tdc_calibration ###
+#######################
+debug_match: ../Calibrate/mul_compare
+	cd ../Calibrate; make mul_compare
+	../Calibrate/mul_compare $(addprefix match/,$(shell ls match))
+		
+tdc_calibration: calibrate $(addprefix output/,$(shell ls data))
+	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
+	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
+	hadd -f output/all_events.root $^
+
 calibrate:
-	cd ../Calibrate; make
-
+	cd analysis/; make calibrate_true; make calibrate_reconstructed
+	
 test: calibrate
-#	echo $(addprefix match/,$(shell ls match)) | python3 ../Calibrate/calibrate.py
-	../Calibrate/calibrate $(addprefix output/,$(shell ls output))
+	analysis/calibrate_reconstructed output/2414_000.root output/2414_001.root output/2414_002.root
 
-output/data_tdc_cut.root : $(addprefix merged/,$(shell ls data)) ../tdcfit.py
-	echo $(addprefix merged/,$(shell ls data)) |python3 ../tdcfit.py $(shell pwd)/output
-
-tdc2 : $(addprefix merged/,$(shell ls data)) ../tdcfit2.py
-	echo $(addprefix merged/,$(shell ls data)) |python3 ../tdcfit2.py $(shell pwd)/output
+test_all: calibrate $(addprefix output/,$(shell ls data))
+	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
 
 merged/%.root : ../tdcmerger.C match/%m.root output/%.root
 	echo $* |root -b ../tdcmerger.C
@@ -69,9 +77,6 @@ output/%.root : id/%mi.root analysis/EventAnalysis
 
 # Figures
 output_data = $(addprefix output/,$(shell ls data/ ))
-
-tdccut : $(output_data) tdccut.py
-	@ echo $(output_data) |python3 tdccut.py
 
 # example: figures/abc/xyz.pdf
 # @D --> figures/abc

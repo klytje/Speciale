@@ -1,6 +1,6 @@
 
-#ifndef STANDARD_ANALYZER
-#define STANDARD_ANALYZER
+#ifndef AUSAEVENTBUILDER_EXAMPLEANALYZER_H
+#define AUSAEVENTBUILDER_EXAMPLEANALYZER_H
 
 #include "ausa/event/analyzer/Analyzer.h"
 
@@ -31,10 +31,10 @@ namespace AUSA {
         private:
             std::unique_ptr<TTree> tree;
             ScalerOutput scaler;
-            int d[3], N, mul;
+            int d[3], mi[3], N, mul;
             double prob[3],
                 E_cm[3], E_lab[3], E_dep[3], dE,
-                vz_lab[3], vz_cm[3], 
+                vzl[3], vz[3], 
                 theta_cm[3], theta_lab[3], 
                 phi_cm[3], phi_lab[3],
                 exBe8[3], exC12,
@@ -44,4 +44,4 @@ namespace AUSA {
     }
 }
 
-#endif
+#endif //AUSAEVENTBUILDER_EXAMPLEANALYZER_H

@@ -574,45 +574,45 @@ void save_calibration(vector<vector<double>> doubleF, vector<vector<double>> dou
     return;
 }
 
-int main(int argc, char *argv[]) {
-    data_container data;
-    prepare_data(argc, argv, &data, "mul==3");
+// int main(int argc, char *argv[]) {
+//     data_container data;
+//     prepare_data(argc, argv, &data, "mul==3");
 
-    // define the plot colour scheme
-    gStyle->SetPalette(kBird);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    gROOT->ForceStyle();
+//     // define the plot colour scheme
+//     gStyle->SetPalette(kBird);
+//     gStyle->SetOptStat(0);
+//     gStyle->SetOptTitle(0);
+//     gROOT->ForceStyle();
 
-    // start a ROOT application window such that the plots can actually be shown
-    TApplication *app = new TApplication("ROOT window", 0, 0);
+//     // start a ROOT application window such that the plots can actually be shown
+//     TApplication *app = new TApplication("ROOT window", 0, 0);
 
-    // save the raw data before any cuts or modifications are performed
-    save(&data, "output/raw_data.root");
+//     // save the raw data before any cuts or modifications are performed
+//     save(&data, "output/raw_data.root");
 
-    // attempt to repair the broken peaks
-    repair_peaks(&data);
+//     // attempt to repair the broken peaks
+//     repair_peaks(&data);
 
-    // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}}; // I manually read these off my data (just run it without anything to see them)
-    vector<vector<int>> bt_peaks = {{65100, 65180}, {65180, 65250}, {65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
-    align_peaks(&data, ft_peaks, bt_peaks);
+//     // attempt to align the peaks since each detector is offset slightly from the others
+//     vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}}; // I manually read these off my data (just run it without anything to see them)
+//     vector<vector<int>> bt_peaks = {{65100, 65180}, {65180, 65250}, {65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
+//     align_peaks(&data, ft_peaks, bt_peaks);
 
-    // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {1000, 65300, 66000}; // the area where we expect the peak to be. this is to help the fitting algorithm
-    vector<double> bt_peak = {1000, 65000, 65500};
-    gauss_filter(&data, 3, ft_peak, bt_peak);
+//     // imposes a Gaussian filter on FT and BT, to remove outliers. 
+//     vector<double> ft_peak = {1000, 65300, 66000}; // the area where we expect the peak to be. this is to help the fitting algorithm
+//     vector<double> bt_peak = {1000, 65000, 65500};
+//     gauss_filter(&data, 3, ft_peak, bt_peak);
 
-    // perform a tdc calibration on the data
-    auto[deltaF, deltaB, offset] = tdc_calibration(&data);
+//     // perform a tdc calibration on the data
+//     auto[deltaF, deltaB, offset] = tdc_calibration(&data);
 
-    // save the results of the calibration
-    save_calibration(deltaF, deltaB, offset);
+//     // save the results of the calibration
+//     save_calibration(deltaF, deltaB, offset);
 
-    // impose a Gaussian filter on DT, to remove outliers
-    gauss_cut(&data, 3);
+//     // impose a Gaussian filter on DT, to remove outliers
+//     gauss_cut(&data, 3);
     
-    // save the data_container    
-    save(&data, "output/corrected_data.root"); // save the data after the above methods have been imposed upon it
-    return 0;
-}
+//     // save the data_container
+//     save(&data, "output/true_events.root");
+//     return 0;
+// }

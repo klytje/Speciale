@@ -20,14 +20,14 @@ struct plot {
     static const bool S = true;
 
     // DATA CORRECTION FIGURES
-    static const bool repair_peaks = !true;
-    static const bool align_peaks = !true;
-    static const bool gauss_cut = !true; // FT and BT cut
+    static const bool repair_peaks = true;
+    static const bool align_peaks = true;
+    static const bool gauss_cut = true; // FT and BT cut
 
     // TDC CALIBRATION FIGURES
-    static const bool raw = !true;
-    static const bool centered = !true;
-    static const bool fit = !true;
+    static const bool raw = true;
+    static const bool centered = true;
+    static const bool fit = true;
     static const bool gauss = true; // DT cut
     static const bool gauss_sigma = true;
 
@@ -40,6 +40,8 @@ struct plot {
         static const inline vector<double> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
         static const inline vector<double> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
         static const inline vector<double> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<double> FT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<double> BT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
     };
 
     // a struct to avoid polluting this namespace with y-axis stuff. use the y_axis map to access them

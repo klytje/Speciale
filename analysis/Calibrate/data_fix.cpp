@@ -173,8 +173,8 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
     vector<int>& id = *data->get_int("ID");
 
     TCanvas *canvas = new TCanvas("diff", "diff", 600, 600);
-    TH1D ft_plot("", "", 500, 65000, 65600);
-    TH1D bt_plot("", "", 500, 65000, 65600);
+    TH1D ft_plot("", "", int(plot::x_axes::FT[0]), plot::x_axes::FT[1], plot::x_axes::FT[2]);
+    TH1D bt_plot("", "", int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]);
 
     for (int i = 0; i < ft.size(); i++) {
         ft_plot.Fill(ft[i]);
@@ -323,15 +323,11 @@ void gauss_filter(data_container* data, int n_sigma, vector<double> ft_peak, vec
 
     if (plot::gauss_cut) {
         std::cout << format("Imposing a cut at %1% sigma, keeping %2% of %3% elements.") % n_sigma % (3*c) % n << endl; 
-        hist_info info_ft({1000.0, 65000, 66000}, "gauss_cut_ft", "title", "ft", "count");
+        hist_info info_ft(plot::x_axes::FT, "gauss_cut_ft", "title", "ft", "count");
         hist1D(&ft, ft_result.at("mean"), n_sigma*ft_result.at("sigma"), info_ft);
 
-        hist_info info_bt({1000.0, 65000, 66000}, "gauss_cut_bt", "title", "bt", "count");
+        hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
         hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
-
-        auto dt = calc_dt(&ft, &bt);
-        hist_info info_dt({1000.0, 65000, 66000}, "gauss_cut_dt", "title", "dt", "count");
-        hist1D(&dt, info_dt);
     }
     data->filter(&filter);
 }

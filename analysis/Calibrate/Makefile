@@ -58,10 +58,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /snap/cmake/793/bin/cmake
+CMAKE_COMMAND = /snap/cmake/805/bin/cmake
 
 # The command to remove a file.
-RM = /snap/cmake/793/bin/cmake -E rm -f
+RM = /snap/cmake/805/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -78,7 +78,7 @@ CMAKE_BINARY_DIR = /home/krelle/projects/B11/analysis/Calibrate
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/snap/cmake/793/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/snap/cmake/805/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -89,7 +89,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/snap/cmake/793/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/snap/cmake/805/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -130,84 +130,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named calibrate
+# Target rules for targets named mul_compare
 
 # Build rule for target.
-calibrate: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 calibrate
-.PHONY : calibrate
+mul_compare: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mul_compare
+.PHONY : mul_compare
 
 # fast build rule for target.
-calibrate/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate.dir/build.make CMakeFiles/calibrate.dir/build
-.PHONY : calibrate/fast
+mul_compare/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/build
+.PHONY : mul_compare/fast
 
-#=============================================================================
-# Target rules for targets named calibrate_constructed
+mul_compare.o: mul_compare.cpp.o
 
-# Build rule for target.
-calibrate_constructed: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 calibrate_constructed
-.PHONY : calibrate_constructed
-
-# fast build rule for target.
-calibrate_constructed/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_constructed.dir/build.make CMakeFiles/calibrate_constructed.dir/build
-.PHONY : calibrate_constructed/fast
-
-calibrate.o: calibrate.cpp.o
-
-.PHONY : calibrate.o
+.PHONY : mul_compare.o
 
 # target to build an object file
-calibrate.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate.dir/build.make CMakeFiles/calibrate.dir/calibrate.cpp.o
-.PHONY : calibrate.cpp.o
+mul_compare.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.o
+.PHONY : mul_compare.cpp.o
 
-calibrate.i: calibrate.cpp.i
+mul_compare.i: mul_compare.cpp.i
 
-.PHONY : calibrate.i
-
-# target to preprocess a source file
-calibrate.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate.dir/build.make CMakeFiles/calibrate.dir/calibrate.cpp.i
-.PHONY : calibrate.cpp.i
-
-calibrate.s: calibrate.cpp.s
-
-.PHONY : calibrate.s
-
-# target to generate assembly for a file
-calibrate.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate.dir/build.make CMakeFiles/calibrate.dir/calibrate.cpp.s
-.PHONY : calibrate.cpp.s
-
-calibrate_constructed.o: calibrate_constructed.cpp.o
-
-.PHONY : calibrate_constructed.o
-
-# target to build an object file
-calibrate_constructed.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_constructed.dir/build.make CMakeFiles/calibrate_constructed.dir/calibrate_constructed.cpp.o
-.PHONY : calibrate_constructed.cpp.o
-
-calibrate_constructed.i: calibrate_constructed.cpp.i
-
-.PHONY : calibrate_constructed.i
+.PHONY : mul_compare.i
 
 # target to preprocess a source file
-calibrate_constructed.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_constructed.dir/build.make CMakeFiles/calibrate_constructed.dir/calibrate_constructed.cpp.i
-.PHONY : calibrate_constructed.cpp.i
+mul_compare.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.i
+.PHONY : mul_compare.cpp.i
 
-calibrate_constructed.s: calibrate_constructed.cpp.s
+mul_compare.s: mul_compare.cpp.s
 
-.PHONY : calibrate_constructed.s
+.PHONY : mul_compare.s
 
 # target to generate assembly for a file
-calibrate_constructed.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_constructed.dir/build.make CMakeFiles/calibrate_constructed.dir/calibrate_constructed.cpp.s
-.PHONY : calibrate_constructed.cpp.s
+mul_compare.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mul_compare.dir/build.make CMakeFiles/mul_compare.dir/mul_compare.cpp.s
+.PHONY : mul_compare.cpp.s
 
 # Help Target
 help:
@@ -217,14 +177,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... calibrate"
-	@echo "... calibrate_constructed"
-	@echo "... calibrate.o"
-	@echo "... calibrate.i"
-	@echo "... calibrate.s"
-	@echo "... calibrate_constructed.o"
-	@echo "... calibrate_constructed.i"
-	@echo "... calibrate_constructed.s"
+	@echo "... mul_compare"
+	@echo "... mul_compare.o"
+	@echo "... mul_compare.i"
+	@echo "... mul_compare.s"
 .PHONY : help
 
 

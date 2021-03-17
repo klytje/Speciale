@@ -18,64 +18,33 @@ cleandat :
 
 N = 10
 
-match_calibration: 
-# SU
-	$(sorter) calibration/SU/2478_000.root -m matcher.json -o calibration/SU/2478_000m.root
-	$(sorter) calibration/SU/2478_001.root -m matcher.json -o calibration/SU/2478_001m.root
-	$(sorter) calibration/SU/2478_002.root -m matcher.json -o calibration/SU/2478_002m.root
-# SD
-	$(sorter) calibration/SD/2479_000.root -m matcher.json -o calibration/SD/2479_000m.root
-	$(sorter) calibration/SD/2479_001.root -m matcher.json -o calibration/SD/2479_001m.root
-	$(sorter) calibration/SD/2479_002.root -m matcher.json -o calibration/SD/2479_002m.root
-# Det2
-	$(sorter) calibration/Det2/2480_000.root -m matcher.json -o calibration/Det2/2480_000m.root
-	$(sorter) calibration/Det2/2480_001.root -m matcher.json -o calibration/Det2/2480_001m.root
-	$(sorter) calibration/Det2/2480_002.root -m matcher.json -o calibration/Det2/2480_002m.root
-# Det1
-	$(sorter) calibration/Det1/2481_000.root -m matcher.json -o calibration/Det1/2481_000m.root
-	$(sorter) calibration/Det1/2481_001.root -m matcher.json -o calibration/Det1/2481_001m.root
-	$(sorter) calibration/Det1/2481_002.root -m matcher.json -o calibration/Det1/2481_002m.root
-
-debug_SU: calibrate
-	../Calibrate/mul_compare calibration/SU/2478_000m.root calibration/SU/2478_001m.root calibration/SU/2478_002m.root
-
-debug_SD: calibrate
-	../Calibrate/mul_compare calibration/SD/2479_000m.root calibration/SD/2479_001m.root calibration/SD/2479_002m.root
-
-debug_Det1: calibrate
-	../Calibrate/mul_compare calibration/Det1/2481_000m.root calibration/Det1/2481_001m.root calibration/Det1/2481_002m.root
-	
-debug_Det2: calibrate
-	../Calibrate/mul_compare calibration/Det1/2481_000m.root calibration/Det1/2481_001m.root calibration/Det1/2481_002m.root
-	
+#######################
+### tdc_calibration ###
+#######################
 debug_match: calibrate
-	../Calibrate/mul_compare $(addprefix match/,$(shell ls match))
-	
+	Calibrate/mul_compare $(addprefix match/,$(shell ls match))
+		
+tdc_calibration: calibrate $(addprefix output/,$(shell ls data))
+	hadd -f output/all_events.root $^
+
 calibrate:
-	cd ../Calibrate; make
+	cd analysis/; make calibrate_true; make calibrate_reconstructed
 
-debug_all: calibrate
-	../Calibrate/data_fix $(addprefix output/,$(shell ls data))
-
-
-debug: calibrate
-	../Calibrate/data_fix output/2455_000.root output/2455_001.root output/2455_002.root
+output/reconstructed_events.root: calibrate
+	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
 	
-tdc_calibration: calibrate
-	../Calibrate/calibrate $(addprefix output/,$(shell ls data))	
+output/true_events.root: calibrate
+	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
 	
 test: calibrate
-	../Calibrate/calibrate_constructed output/2455_000.root output/2455_001.root output/2455_002.root
+	analysis/calibrate_reconstructed output/2455_000.root output/2455_001.root output/2455_002.root
 
 test_all: calibrate $(addprefix output/,$(shell ls data))
-	../Calibrate/calibrate_constructed $(addprefix output/,$(shell ls data))
+	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
 
-output/data_tdc_cut.root : $(addprefix merged/,$(shell ls data)) ../tdcfit.py
-	echo $(addprefix merged/,$(shell ls data)) |python3 ../tdcfit.py $(shell pwd)/output
-
-tdc2 : $(addprefix merged/,$(shell ls data)) ../tdcfit2.py
-	echo $(addprefix merged/,$(shell ls data)) |python3 ../tdcfit2.py $(shell pwd)/output
-
+##################
+### root files ###
+##################
 merged/%.root : ../tdcmerger.C match/%m.root output/%.root
 	echo $* |root -b ../tdcmerger.C
 
@@ -89,7 +58,7 @@ setup/%.cal :
 calibration : setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal
 
 # Analysis code
-analysis/EventAnalysis : analysis/main.cpp analysis/StandardAnalyzer.cpp
+analysis/EventAnalysis: analysis/main.cpp analysis/StandardAnalyzer.cpp
 	cd analysis; make EventAnalysis
 
 # Sorting / Matching
@@ -114,21 +83,15 @@ output/%.root : id/%mi.root analysis/EventAnalysis sim/data_i/%.root
 output/%.root : id/%mi.root analysis/EventAnalysis
 	./analysis/EventAnalysis output/$*.root id/$*mi.root match/$*m.root
 
-# Figures
-output_data = $(addprefix output/,$(shell ls data/ ))
-
-tdccut : $(output_data) tdccut.py
-	@ echo $(output_data) |python3 tdccut.py
-
+###############
+### figures ###
+###############
 # example: figures/abc/xyz.pdf
 # @D --> figures/abc
 # *D --> abc
 # @F --> xyz.pdf
 # *F --> xyz
 figures/%.pdf:
-#	ifeq ("$(wildcard output/$(*D))","")
-#		$(error Could not find root file: output/$(*D).root)
-#	endif
 	@ echo "Building $(*F).pdf..."
 	@ mkdir -p figures/$(*D)
 	@ echo output/$(*D).root | python3 ../figure_scripts/$(*F).py $(shell pwd)/$(@D)
