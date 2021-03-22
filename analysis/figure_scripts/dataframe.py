@@ -130,7 +130,7 @@ class dataframe:
             self.export(export[1],count,export[0])
             self.export("bins",bins,export[0])
 
-    def hist2d(self,x,y,bins=10,range=None,export=None,weights=[],log=False,vmax=None,cbar=True):
+    def hist2d(self,x,y,bins=10,range=None,export=None,weights=[],log=True,vmax=None,cbar=True):
         if type(x) is str: x = [x]
         if type(y) is str: y = [y]
         if type(weights) is str: weights = [weights]

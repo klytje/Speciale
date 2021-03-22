@@ -680,16 +680,15 @@ void apply_fit(data_container* data, const vector<vector<double>> deltaF, const 
 }
 
 // calculate the mean, used as the offset in this code
-vector<double> calc_offset(const vector<int> *BI, const vector<double> *DT, int strips) {
+vector<double> calc_mean(const vector<int> *BI, const vector<double> *DT, int strips) {
     const vector<int> &BIref = *BI;
     const vector<double> &DTref = *DT;
     vector<double> sum(strips);
     vector<int> count(strips);
-    int bi;
-
+    
     // sum over each of the strips
     for (int i = 0; i < BIref.size(); i++) {
-        bi = BIref[i]-1;
+        int bi = BIref[i]-1;
         sum[bi] += DTref[i];
         count[bi]++;
     }
@@ -705,15 +704,46 @@ vector<double> calc_offset(const vector<int> *BI, const vector<double> *DT, int 
     return sum;
 }
 
+// calculate the mode for each back strip
+vector<double> calc_mode(const vector<int> *BI, const vector<double> *DT, int strips) {
+    const vector<int>& bi = *BI;
+    const vector<double>& dt = *DT;
+    vector<double> mode(strips);
+    vector<map<double, int>> count(strips);
+
+    for (int i = 0; i < bi.size(); i++) {
+        count[bi[i]-1][dt[i]]++;        
+    }
+
+    for (int i = 0; i < strips; i++) {
+        int c = 0;
+        double t = 0;
+        for (const auto[key, value] : count[i]) {
+            if (value > c) {
+                c = value;
+                t = key;
+            }
+        }
+        mode[i] = t;
+    }
+    return mode;
+}
+
 // takes the mean value of each strip and subtracts it from dt and bt
 vector<double> center_dt(vector<double>* DT, vector<double>* BT, vector<int>* BI, int strips) {
     vector<double>& dt = *DT;
     vector<double>& bt = *BT;
 
-    vector<double> offset = calc_offset(BI, DT, strips);
+    // vector<double> offset = calc_mode(BI, DT, strips);
+    vector<double> offset = calc_mean(BI, DT, strips);
     apply_offset(DT, BI, offset);
     apply_offset(BT, BI, offset);
     return offset;
+}
+
+// ensures that the file path specified in plot::path exists
+void setup() {
+    filesystem::create_directories(plot::path);
 }
 
 // attempt to fit a gaussian to the input, and, optionally, plot it
@@ -867,13 +897,20 @@ void save(data_container* data, string destination) {
     TTree t("a", "corrected tree for all data fed into calibrate");
 
     // define the storage variables for the fill loop
-    double dt, pT, deltaE, exC12; 
-    double eCM[3], eLab[3], thetaLab[3], phiLab[3];
-    int mul;
-    int id[3];
+    Double_t pT, deltaE, exC12; 
+    Double_t eCM[3], eLab[3], thetaLab[3], phiLab[3], dt[3];
+    Int_t mul;
+    Int_t id[3];
+
+    // can be removed; not necessary for any figures. also remember to remove it down in the for loop
+    Double_t ft[3], bt[3];
+    t.Branch("FT", &ft, "FT[3]/D");
+    t.Branch("BT", &bt, "FT[3]/D");
+    vector<double>& FT = *data->get_double("FT");
+    vector<double>& BT = *data->get_double("BT");
 
     // define the branches in the new tree
-    t.Branch("dt", &dt, "dt/D");
+    t.Branch("dt", &dt, "dt[3]/D");
     t.Branch("pT", &pT, "pT/D");
     t.Branch("deltaE", &deltaE, "deltaE/D");
     t.Branch("eCM", &eCM, "eCM[3]/D");
@@ -899,24 +936,27 @@ void save(data_container* data, string destination) {
 
     int n = data->get_n();
     int m = n/3;
-    int i2, i3;
+
     for (int i1 = 0; i1 < m; i1++) {
-        i2 = i1 + m;
-        i3 = i1 + 2*m;
+        int i2 = i1 + m;
+        int i3 = i1 + 2*m;
 
         // single-valued columns
         mul = MUL[i1];
         pT = PT[i1];
         deltaE = DELTAE[i1];
-        dt = DT[i1];
         exC12 = EXC12[i1];
 
-        // vector columns
+        // vector columns. consider making a simple lambda function which enters all three values to avoid mistakes
+        dt[0] = DT[i1]; dt[1] = DT[i2]; dt[2] = DT[i3];
         eCM[0] = ECM[i1]; eCM[1] = ECM[i2]; eCM[2] = ECM[i3];
         eLab[0] = ELAB[i1]; eLab[1] = ELAB[i2]; eLab[2] = ELAB[i3];
         thetaLab[0] = THETALAB[i1]; thetaLab[1] = THETALAB[i2]; thetaLab[2] = THETALAB[i3];
         phiLab[0] = PHILAB[i1]; phiLab[1] = PHILAB[i2]; phiLab[2] = PHILAB[i3];
         id[0] = ID[i1]; id[1] = ID[i2]; id[2] = ID[i3];
+
+        ft[0] = FT[i1]; ft[1] = FT[i2]; ft[2] = FT[i3];
+        bt[0] = BT[i1]; bt[1] = BT[i2]; bt[2] = BT[i3];
 
         t.Fill();
     }

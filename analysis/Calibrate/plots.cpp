@@ -11,8 +11,8 @@ using namespace std;
 
 // plot settings
 struct plot {
-    static const bool save = !true; // note that only "enabled" figures are actually created and can be saved
-    static const inline string path = "../Calibrate/figures/";
+    static const bool save = true; // note that only "enabled" figures are actually created and can be saved
+    static inline string path = "analysis/figures/";
     static const inline string format = ".png";
 
     // detector plot controllers. prioritized over any individual figure (mainly used for debugging)
@@ -36,10 +36,10 @@ struct plot {
 
     // axes for the histograms
     struct x_axes {
-        static const inline vector<double> energy = {100, -500, 500}; // standard limits but with fewer bins; needed for the energy histograms
-        static const inline vector<double> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
-        static const inline vector<double> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
-        static const inline vector<double> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<double> energy = {100, -500, 500}; // standard limits but with fewer bins; needed for the energy histograms
+        static inline vector<double> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
+        static inline vector<double> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
+        static inline vector<double> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
         static inline vector<double> FT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
         static inline vector<double> BT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
     };

@@ -68,6 +68,11 @@ void gauss_filter_custom(data_container* data, int n_sigma, vector<double> ft_pe
 
         hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
         hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
+
+        auto dt = calc_dt(&ft, &bt);
+        hist_info info_dt(plot::x_axes::standard, "gauss_cut_dt", "title", "dt", "count");
+        hist1D(&dt, info_dt);
+
     }
     data->filter(&filter);
 }
@@ -82,7 +87,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> lo
 
     string line;
     string currently_reading;
-    ifstream file(plot::path + "../fit_info.txt");
+    ifstream file("analysis/fit_info.txt");
     if (file.is_open()) {
         while(getline(file, line)) {
             if (line == "doubleF") {
@@ -138,7 +143,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> lo
 }
 
 // calculate the mean, ignoring all events outside the x_axis, as well as those that are 0
-vector<double> calc_offset_custom(const vector<int> *BI, const vector<double> *DT, const vector<double> x_axis, int strips) {
+vector<double> calc_mean_custom(const vector<int> *BI, const vector<double> *DT, const vector<double> x_axis, int strips) {
     const vector<int> &bi = *BI;
     const vector<double> &dt = *DT;
     vector<double> sum(strips);
@@ -164,12 +169,40 @@ vector<double> calc_offset_custom(const vector<int> *BI, const vector<double> *D
     return sum;
 }
 
+// calculate the mode for each back strip, ignoring all events outside the x_axis, as well as any zero-events
+vector<double> calc_mode_custom(const vector<int> *BI, const vector<double> *DT, vector<double> x_axis, int strips) {
+    const vector<int>& bi = *BI;
+    const vector<double>& dt = *DT;
+    vector<double> mode(strips);
+    vector<map<double, int>> count(strips);
+
+    for (int i = 0; i < bi.size(); i++) {
+        if (dt[i] != 0 && x_axis[1] < dt[i] && dt[i] < x_axis[2]) {
+            count[bi[i]-1][dt[i]]++;
+        }
+    }
+
+    for (int i = 0; i < strips; i++) {
+        int c = 0;
+        double t = 0;
+        for (const auto[key, value] : count[i]) {
+            if (value > c) {
+                c = value;
+                t = key;
+            }
+        }
+        mode[i] = t;
+    }
+    return mode;
+}
+
 // takes the mean value of each strip and subtracts it from dt and bt. ignores any event outside the x_axis, as well as any for which dt == 0
 vector<double> center_dt_custom(vector<double>* DT, vector<double>* BT, const vector<int>* BI, const vector<double> x_axis, int strips) {
     vector<double>& dt = *DT;
     vector<double>& bt = *BT;
 
-    vector<double> offset = calc_offset_custom(BI, DT, x_axis, strips);
+    // vector<double> offset = calc_mode_custom(BI, DT, x_axis, strips);
+    vector<double> offset = calc_mean_custom(BI, DT, x_axis, strips);
     apply_offset(DT, BI, offset);
     apply_offset(BT, BI, offset);
     return offset;
@@ -237,14 +270,14 @@ void apply_tdc_calibration(data_container* data, vector<vector<double>> deltaF, 
         // plot the raw data
         vector<double> dt = calc_dt(&ft, &bt);
         if (plot::raw) {
-            hist_info info(plot::x_axes::standard, plot::y_axis.at(det), (format("tdc_calibration_constructed_raw_%1%") % detector_map.at(det)).str(), "Raw data", "dt [ns]", "Back strip id");
+            hist_info info(plot::x_axes::standard, plot::y_axis.at(det), (format("tdc_calibration_raw_%1%") % detector_map.at(det)).str(), "Raw data", "dt [ns]", "Back strip id");
             hist2D(&dt, &bi, info);
         }
 
         // center the columns on 0
         offset[det] = center_dt_custom(&dt, &bt, &bi, plot::x_axes::standard, strips[det]);
         if (plot::centered) {
-            hist_info info(plot::x_axes::centered, plot::y_axis.at(det), (format("tdc_calibration_constructed_centered_%1%") % detector_map.at(det)).str(), "Raw data", "dt [ns]", "Back strip id");
+            hist_info info(plot::x_axes::centered, plot::y_axis.at(det), (format("tdc_calibration_centered_%1%") % detector_map.at(det)).str(), "Raw data", "dt [ns]", "Back strip id");
             hist2D(&dt, &bi, info);
         }
         if (plot::fit) {
@@ -267,7 +300,7 @@ void gauss_cut_custom(data_container* data, int n_sigma) {
     // the limits for the dt cut. these will be n_sigma*sigma from the Gauss fits
     vector<double> a(4);
     vector<double> b(4);
-    vector<double> sigma(4); // can be deleted later
+    vector<double> sigma(4);
 
     // dereference all the necessary data from the container
     vector<double>* FT = data->get_double("FT");

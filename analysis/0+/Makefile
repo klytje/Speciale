@@ -25,16 +25,12 @@ debug_match: calibrate
 	Calibrate/mul_compare $(addprefix match/,$(shell ls match))
 		
 tdc_calibration: calibrate $(addprefix output/,$(shell ls data))
-	hadd -f output/all_events.root $^
+	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
+	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
+	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 calibrate:
 	cd analysis/; make calibrate_true; make calibrate_reconstructed
-
-output/reconstructed_events.root: calibrate
-	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
-	
-output/true_events.root: calibrate
-	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
 	
 test: calibrate
 	analysis/calibrate_reconstructed output/2455_000.root output/2455_001.root output/2455_002.root

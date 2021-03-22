@@ -28,7 +28,7 @@ debug_match: ../Calibrate/mul_compare
 tdc_calibration: calibrate $(addprefix output/,$(shell ls data))
 	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
 	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
-	hadd -f output/all_events.root $^
+	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 calibrate:
 	cd analysis/; make calibrate_true; make calibrate_reconstructed

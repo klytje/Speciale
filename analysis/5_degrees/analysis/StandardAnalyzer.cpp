@@ -80,7 +80,7 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
             auto ion = event.getIon(i); 
             if (*ion != ALPHA) continue; // we are looking for alphas
             
-            auto& pi = event.getLorentzVector(i);
+            TLorentzVector pi = event.getLorentzVector(i);
             mi[mul] = i; // store the index of the particle
             p[mul] = pi;
             p_tot += pi; // update the total momentum

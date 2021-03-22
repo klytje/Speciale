@@ -73,6 +73,7 @@
         "valarray": "cpp",
         "variant": "cpp",
         "tdcmerger.C": "cpp",
-        "merger.C": "cpp"
+        "merger.C": "cpp",
+        "test.C": "cpp"
     }
 }

@@ -19,10 +19,15 @@ int main(int argc, char *argv[]) {
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
     gROOT->ForceStyle();
+    gROOT->SetBatch(kTRUE); // no graphics display
 
     // start a ROOT application window such that the plots can actually be shown
     TApplication *app = new TApplication("ROOT window", 0, 0);
-    // save(&data, "output/raw_data.root");
+    save(&data, "output/reconstructed_raw.root");
+
+    plot::path += "reconstructed/";
+    // ensures that the file path exists
+    setup();
 
     // attempt to repair the broken peaks
     repair_peaks(&data);
@@ -31,6 +36,8 @@ int main(int argc, char *argv[]) {
     vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}};
     vector<vector<int>> bt_peaks = {{65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
     align_peaks(&data, ft_peaks, bt_peaks);
+
+    save(&data, "reconstructed_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
     vector<double> ft_peak = {100, 65400, 65500};
@@ -46,6 +53,6 @@ int main(int argc, char *argv[]) {
     gauss_cut_custom(&data, 3);
     
     // save the data_container
-    // save(&data, "output/reconstructed_events.root");
+    save(&data, "output/reconstructed_events.root");
     return 0;
 }

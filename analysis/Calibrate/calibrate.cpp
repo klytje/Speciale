@@ -542,7 +542,7 @@ void gauss_cut(data_container* data, int n_sigma) {
 void save_calibration(vector<vector<double>> doubleF, vector<vector<double>> doubleB, vector<vector<double>> offset) {
     print_title("*** SAVING CALIBRATION RESULTS ***");
     ofstream file;
-    file.open(plot::path + "../fit_info.txt");
+    file.open("analysis/fit_info.txt");
     file << "doubleF" << endl;
     for (int i = 0; i < doubleF.size(); i++) {
         string line = "";
