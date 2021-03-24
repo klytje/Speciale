@@ -1,5 +1,6 @@
 autogen/
 sim3a/
+sim3a_i/
 simX_fork/
 
 *.root
@@ -17,15 +18,18 @@ analysis/**/calibration/
 analysis/**/autogen/
 analysis/**/tdc_compare.pdf
 analysis/**/tdcfit.pdf
+
+analysis/sim/balamuth
 analysis/sim/balamuth_i
 analysis/sim/simX_fork
+
 **/CMakeFiles/
 **/.idea/
 **/__pycache__/
 
 analysis/**/analysis/calibrate_reconstructed
 analysis/**/analysis/calibrate_true
-analysis/Calibrate/figures/
-analysis/Calibrate/calibrate
-analysis/Calibrate/calibrate_constructed
-analysis/Calibrate/mul_compare
+analysis/calibrate/figures/
+analysis/calibrate/calibrate
+analysis/calibrate/calibrate_constructed
+analysis/calibrate/mul_compare

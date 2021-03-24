@@ -16,6 +16,31 @@
             "browse": {
                 "path": []
             }
+        },
+        {
+            "name": "Standard",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/krelle/tools/eventbuilder/include/**",
+                "/home/krelle/tools/ausalib/include/**",
+                "/home/krelle/tools/root/root_build/include/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "compilerArgs": [],
+            "intelliSenseModeIsExplicit": true,
+            "cStandardIsExplicit": true,
+            "cppStandardIsExplicit": true,
+            "compilerPathIsExplicit": true,
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4

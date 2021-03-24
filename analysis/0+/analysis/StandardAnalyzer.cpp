@@ -27,14 +27,14 @@ StandardAnalyzer::StandardAnalyzer() {}
 StandardAnalyzer::~StandardAnalyzer() {}
 
 void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
-    tree = make_unique<TTree>("a", "a");
+    tree = make_unique<TTree>("tree", "analyzed tree");
 
     // define the private variables as the leaf nodes
     tree->Branch("mul", &mul);
     tree->Branch("mi", &mi, "mi[3]/I"); // ids of the alphas in mul
     tree->Branch("exC12", &exC12);
     tree->Branch("exBe8", &exBe8, "exBe8[3]/D");
-    tree->Branch("pt", &ptot);
+    tree->Branch("p_tot", &ptot);
     tree->Branch("px", &px);
     tree->Branch("py", &py);
     tree->Branch("pz", &pz);
@@ -44,13 +44,13 @@ void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
     tree->Branch("z_angle", &zangle);
     tree->Branch("N", &N);
 //    tree->Branch("d", d , "d[3]/I");
-    tree->Branch("E_cm", E_cm, "ecm[3]/D");
-    tree->Branch("E_dep", E_dep, "edep[3]/D");
-    tree->Branch("E_lab", E_lab, "elab[3]/D");
-    tree->Branch("theta_cm", theta_cm, "thetacm[3]/D");
-    tree->Branch("theta_lab", theta_lab, "thetalab[3]/D");
-    tree->Branch("phi_cm", phi_cm, "phicm[3]/D");
-    tree->Branch("phi_lab", phi_lab, "philab[3]/D");
+    tree->Branch("E_cm", E_cm, "E_cm[3]/D");
+    tree->Branch("E_dep", E_dep, "E_dep[3]/D");
+    tree->Branch("E_lab", E_lab, "E_lab[3]/D");
+    tree->Branch("theta_cm", theta_cm, "theta_cm[3]/D");
+    tree->Branch("theta_lab", theta_lab, "theta_lab[3]/D");
+    tree->Branch("phi_cm", phi_cm, "phi_cm[3]/D");
+    tree->Branch("phi_lab", phi_lab, "phi_lab[3]/D");
 //    tree->Branch("vZ", vZ, "vZ[3]/D");
 //    tree->Branch("vZL", vZL, "vZL[3]/D");
     tree->Branch("prob", prob, "prob/D");

@@ -5,17 +5,17 @@ from ROOT import TChain
 from itertools import permutations
 from dataframe import *
 
-chain = TChain('a')
+chain = TChain('tree')
 for f in input().split(): chain.AddFile(f)
 fname = sys.argv[1]+"/"+sys.argv[0].split('/')[2].split('.')[0]
 
 X = []
 Y = []
 for i,j,k in list(permutations([0,1,2])):
-    X.append("((eCM["+str(j)+"]-eCM["+str(k)+"])/esum)*sqrt(3)")
-    Y.append("3*eCM["+str(i)+"]/esum-1.0")
+    X.append("((E_cm["+str(j)+"]-E_cm["+str(k)+"])/esum)*sqrt(3)")
+    Y.append("3*E_cm["+str(i)+"]/esum-1.0")
 r = dataframe(chain)
-r = r.define("esum","eCM[0]+eCM[1]+eCM[2]")
+r = r.define("esum","E_cm[0]+E_cm[1]+E_cm[2]")
 
 xlim = (-1.3,1.3)
 ylim = (-1.3,1.3)
@@ -24,11 +24,11 @@ ylim = (-1.3,1.3)
 width =  1.0/72.27*393
 plt.figure(figsize=(width/2,width/1.61803398875*0.7))
 ##plt.title()
-r = r.filter("pT<50e3")\
+r = r.filter("p_tot<50e3")\
     .filter("abs(deltaE)<200")\
-    .define("E2","min(eCM[0],min(eCM[1],eCM[2]))")\
-    .define("E1","max(min(eCM[0],eCM[1]), min(max(eCM[0],eCM[1]),eCM[2]))")\
-    .define("E0","max(eCM[0],max(eCM[1],eCM[2]))")\
+    .define("E2","min(E_cm[0],min(E_cm[1],E_cm[2]))")\
+    .define("E1","max(min(E_cm[0],E_cm[1]), min(max(E_cm[0],E_cm[1]),E_cm[2]))")\
+    .define("E0","max(E_cm[0],max(E_cm[1],E_cm[2]))")\
     .define("X","((E1-E2)/esum)*sqrt(3)")\
     .define("Y","3*E0/esum-1.0")\
     .filter("pow(X,2)+pow(Y,2)<1.3")\

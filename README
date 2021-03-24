@@ -1,0 +1,68 @@
+The data analysis mostly makes use of the standard AUSAlib stack, but with a few changes.
+
+For SimX:
+	SimX now includes a cml flag for seeding the random number generator. This is useful for trivially parallelizing the simulation by simply running multiple instances of the program at once.
+
+For sim3a:
+	Modified to allow for interference between different values of orbital angular momentum.
+	The current implementation doesn't interface cleanly with AUSAlib, the weight for the events generated at this stage are not carried through the entire data analysis, instead they are merget into the resulting root files at the end of the analysis.
+	This is done using the ROOT-script "merger.C".
+	The format of the weights are as described in eq. 43 of Morten Kuhlwein's Masters thesis.
+	The data is organized in c++ vectors. Because the software was prepared to output several different interference-weight in a single simulation the weight are actually saved in vectors of vectors (like a double array). But because this never became necessary during the project, the first array will always have only the first entry filled. As such the four weight are saved in f[0][0], f[0][1], f[0][2], and f[0][3]. Additionally, wU is the weight attributed to the phasespace distribution. As such the total weight can be obtained by "wU*(k*f[0][0]+(1-k)*f[0][1]+2*sqrt(k*(1-k))*(f[0][2]*cos(2*pi*delta)+f[0][3]*sin(2*pi*delta)))".
+	The great thing here is that you don't need to choose delta and k until after the simulation + analysis, which means you don't need to simulate data with different values k and delta.
+	
+
+In addition to this I have modified the CMakeList.txt-files to use a more recent version of the c++ compiler, in order for it to work with my linux-distro. They should all contain a line with a comment saying "#We use C++11" and then a "set" command with "std=c++17". It might be necessary to change this back to "std=c++11", depending on your compiler.
+
+The analysis is mostly setup with a Makefile, I'll outline the process here.
+All make commands are executed from a folder corresponding to the "5_degrees" folder. There should be 1 folder for each experimental setup, with the corresponding AUSAlib config files contained in each folder.
+For data (non-simulated):
+	- Sorting/Matching with AUSAlib
+	- Identification with AUSAlib
+	- Analysis with AUSAlib, calculates variables of interest. Written independently for each experiment, but probably doesn't need many/any changes as long as we are working with C12->3alpha.
+	- TDC-cut, this code is made specifically for this data since it was corrupted. The analysis is hardcoded for this specific data, I do NOT recommend that this code is used for any other data. Please use the TDC-cut that is built into AUSAlib during the analysis step.
+	The final output is a bunch of analyzed files in the "output"-folder, one for each corresponding file in the original "data" folder with raw data.
+	The TDC-cut data is placed in a file named "data_tdc_cut.root"
+
+The files at each step can be generated using make commands, if you have a raw datafile named "X.root" in the "data" folder you can run commands like:
+	make match/Xm.root
+	make id/Xmi.root
+	make output/X.root
+	make output/data_tdc_cut.root (created from all files in "data" folder)
+These files are then used in further analysis on equal footing with simulated data.
+
+For simulated data:
+	The amount of data generated is controlled by the "N" variable defined at the top of the Makefile. I've usually used N=100 to get a dataset of comparable size to the measured data, you might be able to get away with less depending on the dataset.
+	Simulated data is defined in the folder "sim" in the root directory. There are several different formats for defining a simulation.
+	- .simX - Stardard simX reaction scheme.
+	- .balamuth - command line arguments for sim3a program without interference
+	- .balamuth_i command line arguments for sim3a program with interference
+	
+	balamuth_i and simX_fork are the compiled outputs of sim3a and simX with the previously mentioned modifications.
+	
+	The simulated data is placed in sim/data. In the case of balamuth simulations with interference there are also files generated to sim/data_i which is the "raw" simulated data before it is passed through simX. These contain information about the weight of each event and will be merged into the final output files at the end of the analysis.
+
+	From here, sorted, identified and analysed data files can be generated as for the non-simulated data.
+
+	The final part of the analysis is carried out using python with numpy, IMinuit and matplotlib.
+	You might need to use an older version of IMinuit or update the code to get it to run, it seems that the interface of IMinuit has changed as of version 2.0, but it should run with any version up to 1.5.4.
+	There are two categories of scripts used for this part, scripts used for generating figures/histograms for single data sets, and scripts used for comparing figures/histograms of different data sets.
+	Scripts in the first category is placed in "figure_scripts" and scripts of the second in "scripts".
+	Figures generated by scripts can made using "make figures/X/figure_name.pdf" where X is the name of the dataset.
+	Because of the way the Makefile currently is, you must use figure_name.pdf even though the output of the corresponding figure_scripts/figure_name.py is not a pdf-file.
+	Examples could be:
+		make figures/data/dalitz_forfit.pdf
+		make figures/interference_C/fynbo_plot.pdf
+	All figures in the folder figure_scripts can be generated using "make fig/X". I recommend using the -j flag to disable multithreading in the make command in order to not run out of ram if generating a lot of figures at once.
+	Beware that ghist2d and ghist in dataframe.py carries out correction of trigger efficiencies for simulated data, you should know the correct values (gain?) from the experiment.
+	These function also exports the weight to a numpy archive, these are then used later for fitting simulated data to the measured data.
+
+	The files in "scripts" used to perform fits and generate figures.
+	There are some tools for importing histograms from the numpy archives in the datatools.py file, and the mcfit.py contains code for performing fits.
+	The files can be run using "make filename.pdf", where filename.py is the filename of the script in the scripts folder.
+	
+	Finally there is the automaker.py file which is used to automatically generate many different simulations with different parameters for ExBe, gBe and the coulomb correction radius in order to create an "R-matrix fit". This is not really a fit though, but rather a scan where the inspected points are evaluated.
+	The surf.py script in the scripts folder can be used to interpolate between these points and create a surface plot than can be used to find the minimum of the R-matrix fit.
+
+
+

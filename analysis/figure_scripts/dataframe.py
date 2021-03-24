@@ -13,12 +13,13 @@ def ghist2d(r,p1,p2,N,lim,fname):
     if type(p1) is list:
         mult = len(p1)
     
+    r = r.define("triggerw", "theta_lab[0] < 50 ? 1 : 1")    
     #Trigger efficiency
-    r = r\
-        .define("w0","thetaLab[0]<50 ? 0.25 : (thetaLab[0]<130 ? 0.5 : 1)")\
-        .define("w1","thetaLab[1]<50 ? 0.25 : (thetaLab[1]<130 ? 0.5 : 1)")\
-        .define("w2","thetaLab[2]<50 ? 0.25 : (thetaLab[2]<130 ? 0.5 : 1)")\
-        .define("triggerw","w0*w1*w2")
+#    r = r\
+#        .define("w0","theta_lab[0]<50 ? 0.25 : (theta_lab[0]<130 ? 0.5 : 1)")\
+#        .define("w1","theta_lab[1]<50 ? 0.25 : (theta_lab[1]<130 ? 0.5 : 1)")\
+#        .define("w2","theta_lab[2]<50 ? 0.25 : (theta_lab[2]<130 ? 0.5 : 1)")\
+#        .define("triggerw","w0*w1*w2")
 
     if "wU" in r.getColumnNames():
         r.hist2d(p1,p2,bins=N,range=lim,export=(fname,"f1"),weights=["wU*f[0][0]"]*mult)
@@ -45,9 +46,9 @@ def ghist(r,parameter,N,lim,fname):
         mult = len(parameter)
 
     r = r\
-    .define("w0","thetaLab[0]<50 ? 0.25 : (thetaLab[0]<130 ? 0.5 : 1)")\
-    .define("w1","thetaLab[1]<50 ? 0.25 : (thetaLab[1]<130 ? 0.5 : 1)")\
-    .define("w2","thetaLab[2]<50 ? 0.25 : (thetaLab[2]<130 ? 0.5 : 1)")\
+    .define("w0","theta_lab[0]<50 ? 0.25 : (theta_lab[0]<130 ? 0.5 : 1)")\
+    .define("w1","theta_lab[1]<50 ? 0.25 : (theta_lab[1]<130 ? 0.5 : 1)")\
+    .define("w2","theta_lab[2]<50 ? 0.25 : (theta_lab[2]<130 ? 0.5 : 1)")\
     .define("triggerw","w0*w1*w2")
 
     if "wU" in r.getColumnNames():

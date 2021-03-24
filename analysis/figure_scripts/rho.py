@@ -3,30 +3,30 @@ import sys
 from ROOT import TChain
 from dataframe import *
 
-chain = TChain('a')
+chain = TChain('tree')
 for f in input().split(): chain.AddFile(f)
 fname = sys.argv[1]+"/"+sys.argv[0].split('/')[2].split('.')[0]
 
 
 r = dataframe(chain)
-r = r.define("esum","eCM[0]+eCM[1]+eCM[2]")
-        #.define("X","((eCM[0]+2*eCM[1])/esum-1)/sqrt(3)")\
-        #.define("Y","eCM[0]/esum-1.0/3.0")\
+r = r.define("esum","E_cm[0]+E_cm[1]+E_cm[2]")
+        #.define("X","((E_cm[0]+2*E_cm[1])/esum-1)/sqrt(3)")\
+        #.define("Y","E_cm[0]/esum-1.0/3.0")\
         #.define("rho","sqrt(pow(X,2)+pow(Y,2))")\
         #.filter("pow(X,2)+pow(Y,2)<1.0/9.0")\
 lim = (0,1.0)
-r = r.filter("pT<35e3")\
+r = r.filter("p_tot<35e3")\
     .filter("abs(deltaE)<200")\
-    .define("E2","min(eCM[0],min(eCM[1],eCM[2]))")\
-    .define("E1","max(min(eCM[0],eCM[1]), min(max(eCM[0],eCM[1]),eCM[2]))")\
-    .define("E0","max(eCM[0],max(eCM[1],eCM[2]))")\
+    .define("E2","min(E_cm[0],min(E_cm[1],E_cm[2]))")\
+    .define("E1","max(min(E_cm[0],E_cm[1]), min(max(E_cm[0],E_cm[1]),E_cm[2]))")\
+    .define("E0","max(E_cm[0],max(E_cm[1],E_cm[2]))")\
     .define("X","((E1-E2)/esum)*sqrt(3)")\
     .define("Y","3*E0/esum-1.0")\
     .filter("pow(X,2)+pow(Y,2)<1.0")\
     .filter("Y<0.93")\
     .filter("E2>250")
-    #.filter("eCM[0]<6000 && eCM[1]<6000 && eCM[2]<6000")
-    #.filter("eCM[0]>1000 && eCM[1]>1000 && eCM[2]>1000")\
+    #.filter("E_cm[0]<6000 && E_cm[1]<6000 && E_cm[2]<6000")
+    #.filter("E_cm[0]>1000 && E_cm[1]>1000 && E_cm[2]>1000")\
     #.define("X","((E0+2*E1)/esum-1)/sqrt(3)")\
     #.define("Y","E0/esum-1.0/3.0")\
 
