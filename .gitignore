@@ -23,6 +23,17 @@ analysis/sim/balamuth
 analysis/sim/balamuth_i
 analysis/sim/simX_fork
 
+analysis/figure_scripts/dalitzfig
+analysis/figure_scripts/dalitz_forfit
+analysis/figure_scripts/eCM
+analysis/figure_scripts/ExpT
+analysis/figure_scripts/QpT
+analysis/figure_scripts/fynbo_plot
+analysis/figure_scripts/kinematic
+analysis/figure_scripts/kinematic_lab
+analysis/figure_scripts/phi
+analysis/figure_scripts/rho
+
 **/CMakeFiles/
 **/.idea/
 **/__pycache__/

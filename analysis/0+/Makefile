@@ -7,22 +7,28 @@ identifier := ~/tools/identifier/build/Identifier
 .SECONDARY:
 
 .PHONY: clean cleandat
-clean :
+
+# removes everything, leaving only the raw data files in data/
+clean:
+	rm -f sim/raw/*
 	rm -f sim/data_i/*
 	rm -f sim/data/*
 	rm -f match/*
 	rm -f id/*
+	rm -f output/*
+	rm -f -r figures/*
 
-cleandat :
-	rm -f sim/data_i/*.dat
-
+# removes all files associated with %, except for the raw data in data/
+# note: also removes any simulated data named %.root
 clean/%: 
+	@rm -f sim/raw/$(*F).dat
+	@rm -f sim/data_i/$(*F).root
 	@rm -f sim/data/$(*F).root
-	@rm -f data/$(*F).root
 	@rm -f match/$(*F)m.root
 	@rm -f id/$(*F)mi.root
 	@rm -f output/$(*F).root
 	@rm -f -r figures/$(*F)
+#	@rm -f data/$(*F).root
 
 N = 10
 
@@ -30,7 +36,7 @@ N = 10
 ### tdc_calibration ###
 #######################
 
-### temp targets ###
+### temp targets for debugging ###
 debug_match: calibrate
 	calibrate/mul_compare $(addprefix match/,$(shell ls match))
 
@@ -74,8 +80,8 @@ id/%i.root : match/%.root
 	$(identifier) $(target) $(ions) $(margin) $(collectors) $^ -o id/$*i.root
 
 ### analysis ###
-analysis/EventAnalysis: analysis/StandardAnalyzer.cpp
-	cd analysis/; make EventAnalysis
+analysis/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
+	make -C analysis/ EventAnalysis
 
 output/%.root : id/%mi.root analysis/EventAnalysis
 	./analysis/EventAnalysis output/$*.root id/$*mi.root match/$*m.root
@@ -90,52 +96,76 @@ analysis: $(addprefix output/,$(shell ls data))
 ###############
 ### figures ###
 ###############
-# the following line allows us to use automatic variables as dependencies from this point on
+# the following line allows us to use automatic variables for prerequisites from this point on
 .SECONDEXPANSION:
 
-# example: figures/abc/xyz.pdf
+# from here on I'll make heavy use of a few somewhat exotic automatic variables.
+# example: pattern: figures/%.pdf, matched by figures/abc/xyz.pdf
 # @D --> figures/abc
 # *D --> abc
 # @F --> xyz.pdf
 # *F --> xyz
-figures/%.pdf: output/$$(*D).root
+
+# compiles a given figure program
+../figure_scripts/%: ../figure_scripts/%.cpp
+	make -C ../figure_scripts/ $*
+
+# generates a single pdf file for the data source %
+figures/%.pdf: output/$$(*D).root ../figure_scripts/$$(*F)
 	@ echo "Building $(*F).pdf..."
 	@ mkdir -p figures/$(*D)
-	@ echo $< | python3 ../figure_scripts/$(*F).py $(shell pwd)/$(@D)
+	@ ../figure_scripts/$(*F) $< $(shell pwd)/figures/$(*D)/
 
-# All
-figure_pdf = $(addsuffix .pdf,$(basename $(shell ls ../figure_scripts/ | grep py | grep -v dataframe | grep -v pycache)))
+# contains a list of all possible pdf files
+figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../figure_scripts/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
 
+temp: 
+	@ echo $(figure_pdf)
+
+# concatenates all raw data in data/ and makes all combined figures for them
 figs: $(addprefix figures/data/,$(figure_pdf))
 
+# fig/X generates all figures for X. Either data/X.root, ../sim/X.simX, ../sim/X.bahamut must exist
+# this command will simulate and/or perform all necessary analysis of the data, and is thus a nice
+# point of entry to this whole project 
 fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
-	# Built figures/$*
+	@ echo "Built figures/"$*
 
 ###################
 ### simulations ###
 ###################
-sim/data/%.root : $$(basename ../sim/%).simX
-	cd ../sim; ./simX_fork -c $(shell pwd)/sim/config.json -r $(notdir $<) -o $(shell pwd)/sim/data/$*.root -N 1000000 -s $*
-
 # generate the simX configuration file required for simX
-sim/%.simX: 
+sim/%.simX: sim/raw/$$(*F).dat
 	@echo "beam: p" > $@
 	@echo "target: B11" >> $@
 	@echo "-> {" >> $@
-	@echo "    generator: PREGEN(file=\""$(shell pwd)/sim/raw/$(*F).root"\" unit=\"keV\")" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
+	@echo "    g" >> $@
+	@echo "    C12 Ex: 17.76MeV" >> $@
+	@echo "    -> {" >> $@
+	@echo "        generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
+	@echo "        a" >> $@
+	@echo "        a" >> $@
+	@echo "        a" >> $@
+	@echo "    }" >> $@
 	@echo "}" >> $@
 
+# if the simX file already exists in ../sim/, copy it to sim/
+#sim/%.simX: ../sim/%.simX
+#	cp $< $@
+
 # generate the raw event data from sim3a
-sim/raw/%.root: ../sim/%.balamuth
-	../../sim3a/build/balamuth $(shell cat $<) -N 1000000 -o $(shell pwd)/sim/raw/$(*F).root	
+sim/raw/%.dat: ../sim/%.balamuth
+	../../sim3a/build/balamuth $(shell cat $<) -N 1000000 -o $(shell pwd)/sim/raw/$(*F).dat	
 
 # simulate the detector setup with simX, using the generated events from sim3a
-sim/data/%.root: sim/$$*.simX sim/raw/%.root
-	../sim/simX_fork -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N 1000000 -s $*
+sim/data/%.root: sim/$$*.simX sim/raw/%.dat
+	../sim/simX_fork -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N 1000000
 	@rm $<
+
+# simulate everything solely with simX
+sim/data/%.root : ../sim/%.simX
+	../sim/simX_fork -c sim/config.json -r $< -o sim/data/$(*F).root -N 1000000
+#	@rm $<
 
 ###########
 # AUTOGEN #

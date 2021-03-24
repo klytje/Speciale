@@ -2,7 +2,6 @@
 #include "ausa/event/builder/DefaultEventBuilder.h"
 #include "ausa/event/EventRunner.h"
 #include "ausa/event/ParticleConfiguration.h"
-#include "ausa/event/id_cut/TdcCutter.h"
 #include "ausa/event/cut/TotalEnergyCutter.h"
 
 // user includes
@@ -32,7 +31,7 @@ using namespace AUSA::Event;
 
 int main(int argc, char* argv[]) {
 
-//    // Beam energy, setup and target
+    // Beam energy, setup and target
     double beamEnergy = 2001; // keV
     string setupFile  = "setup/setup.json";
     string targetFile = "setup/target.json";
@@ -53,29 +52,12 @@ int main(int argc, char* argv[]) {
     fs.push_back(make_pair(Ion("He4"), 3));
     builder -> setFinalState(fs);
 
-    // TDC cutter
-    string name     = "Tdc";
-    double cutMin   = -15E3; // ps
-    double cutMax   =  15E3; // ps
-    double cutThres = 0;   // keV
-    auto tdcCutter = make_shared<TdcCutter> (name, cutMin, cutMax, cutThres);
-
-    auto mulPlot = std::make_shared<MulSpectrum>();
-
-    auto antiProtonCutter = make_shared<AntiProtonCutter>(400);
-
-    // Attach cutters
-    //builder -> attachCutter(tdcCutter);
-    builder -> attachCutter(mulPlot);
-	// builder -> attachCutter(antiProtonCutter);
-
     // Create runner
     EventRunner runner(setup, move(builder));
 
     // Attach analyzer
     auto output = argv[1];
     TFile f{output, "RECREATE"};
-    // auto a = std::make_shared<IFA006Analyzer>();
     auto a = std::make_shared<StandardAnalyzer>();
     runner.setVerbose(true);
     runner.attach(a);
@@ -89,17 +71,8 @@ int main(int argc, char* argv[]) {
     runner.run();
 
     // Save to ROOT file
-//    auto output = argv[1];
-    f.WriteTObject(&tdcCutter->getHistAll());
-    f.WriteTObject(&tdcCutter->getHistSurvivor());
-    f.WriteTObject(&mulPlot->mul);
-
     f.Close();
-
     runner.saveToRootFile(output, "UPDATE");
-
-    cout << antiProtonCutter->rejected / ((double) antiProtonCutter->accepted) << endl;
-
     return 0;
 }   
 

@@ -12,7 +12,7 @@ width =  1.0/72.27*403
 
 f1 = "rgenl1"
 f3 = "rgen"
-datafolder = "data_tdc_cut"
+datafolder = "true_events"
 
 f_list = [[f1],[f3]]
 parameters = ["eCM","phi","rho"]
