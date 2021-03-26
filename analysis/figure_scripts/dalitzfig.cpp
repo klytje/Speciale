@@ -53,17 +53,17 @@ int main(int argc, char *argv[]) {
     //*** PLOT ***//
     setup_style();
 
-    TCanvas* canvas = new TCanvas("Dalitz_fig", "Dalitz_fig", 600, 600);
-    TH2D* hist = new TH2D("h1", "kinematic_lab", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
+    TCanvas* canvas = new TCanvas("Dalitz fig", "Dalitz fig", 600, 600);
+    TH2D* hist = new TH2D("h1", "Dalitz fig", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
 
     int perms[] = {0, 1, 2};
     do {
         int i = perms[0];
         int j = perms[1];
         int k = perms[2];
-        TH2D htemp = df.Define("x", (format("((E_cm[%1%] - E_cm[%2%])/E_sum)*sqrt(3)") % j % k).str())
-                       .Define("y", (format("3*E_cm[%1%]/E_sum-1") % i).str())
-                       .Histo2D({"h1", "kinematic_lab", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
+        TH2D htemp = df.Define("x", (format("((E%1% - E%2%)/E_sum)*sqrt(3)") % j % k).str())
+                       .Define("y", (format("3*E%1%/E_sum-1") % i).str())
+                       .Histo2D({"h1", "Dalitz fig", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
         hist->Add(&htemp);
     } while (std::next_permutation(perms, perms+3));
     

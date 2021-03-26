@@ -110,17 +110,29 @@ analysis: $(addprefix output/,$(shell ls data))
 ../figure_scripts/%: ../figure_scripts/%.cpp
 	make -C ../figure_scripts/ $*
 
+../special_figure_scripts/%: ../special_figure_scripts/%.cpp
+	make -C ../special_figure_scripts/ $*
+
 # generates a single pdf file for the data source %
 figures/%.pdf: output/$$(*D).root ../figure_scripts/$$(*F)
 	@ echo "Building $(*F).pdf..."
 	@ mkdir -p figures/$(*D)
 	@ ../figure_scripts/$(*F) $< $(shell pwd)/figures/$(*D)/
 
+# creates an interactive 3D Dalitz plot of %. mainly used for debug
+Dalitz_3D/%: output/%.root ../special_figure_scripts/Dalitz_3D
+	@ echo "Creating interactive 3D Dalitz plot..."
+	@ ../special_figure_scripts/Dalitz_3D $<
+
+# creates two histograms, one for % and another for output/all_events.
+# it then binwise divides each histogram to give the output histogram, showing the deviations
+figures/%/sim_compare.pdf: output/%.root output/all_events.root ../special_figure_scripts/sim_compare
+	@ echo "Building figures/$*/sim_compare.pdf..."
+	@ ../special_figure_scripts/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
+	
+
 # contains a list of all possible pdf files
 figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../figure_scripts/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
-
-temp: 
-	@ echo $(figure_pdf)
 
 # concatenates all raw data in data/ and makes all combined figures for them
 figs: $(addprefix figures/data/,$(figure_pdf))
@@ -135,41 +147,33 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 ### simulations ###
 ###################
 # generate the simX configuration file required for simX
+# this is generated on the fly whenever it is needed, and is deleted afterwards
 sim/%.simX: sim/raw/$$(*F).dat
 	@echo "beam: p" > $@
 	@echo "target: B11" >> $@
 	@echo "-> {" >> $@
-	@echo "    g" >> $@
-	@echo "    C12 Ex: 17.76MeV" >> $@
-	@echo "    -> {" >> $@
-	@echo "        generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
-	@echo "        a" >> $@
-	@echo "        a" >> $@
-	@echo "        a" >> $@
-	@echo "    }" >> $@
+	@echo "    generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
+	@echo "    a" >> $@
+	@echo "    a" >> $@
+	@echo "    a" >> $@
 	@echo "}" >> $@
 
-# if the simX file already exists in ../sim/, copy it to sim/
-#sim/%.simX: ../sim/%.simX
-#	cp $< $@
-
 # generate the raw event data from sim3a
-sim/raw/%.dat: ../sim/%.balamuth
+sim/raw/%.dat: sim/configs/%.balamuth
 	../../sim3a/build/balamuth $(shell cat $<) -N 1000000 -o $(shell pwd)/sim/raw/$(*F).dat	
 
 # simulate the detector setup with simX, using the generated events from sim3a
 sim/data/%.root: sim/$$*.simX sim/raw/%.dat
 	../sim/simX_fork -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N 1000000
-	@rm $<
+	@ rm $<
 
 # simulate everything solely with simX
-sim/data/%.root : ../sim/%.simX
+sim/data/%.root : sim/configs/%.simX
 	../sim/simX_fork -c sim/config.json -r $< -o sim/data/$(*F).root -N 1000000
-#	@rm $<
 
-###########
-# AUTOGEN #
-###########
+###############
+### AUTOGEN ###
+###############
 directory = ~/projects/B11/autogen/$(notdir $(shell pwd))
 autogen :
 	+make autofig/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC)

@@ -1,0 +1,10 @@
+{
+  "type" : "RoundDSSD",
+  "nBackStrips" : 24,
+  "nFrontStrips" : 32,
+  "thickness" : 100.0,
+  "ringWidth" : 0.886,
+  "ringPitch" : 0.986,
+  "deadLayer" : 0.00,
+  "innerRadius" : 11.0
+}

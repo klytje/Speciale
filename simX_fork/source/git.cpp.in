@@ -1,0 +1,11 @@
+//
+// Created by munk on 31-08-15.
+//
+
+#include "simX/git.h"
+
+#define __GIT_SHA1__ "@GIT_SHA1@"
+#define __GIT_BRANCH__ "@GIT_BRANCH@"
+
+const char simX::GIT_BRANCH[] = __GIT_BRANCH__;
+const char simX::GIT_HASH[] = __GIT_SHA1__;

@@ -1,0 +1,11 @@
+{
+  "type" : "RoundDSSD",
+  "nBackStrips" : 24,
+  "nFrontStrips" : 32,
+  "thickness" : "1.0mm",
+  "ringWidth" : "0.886mm",
+  "spokeGap" : "100um",
+  "ringPitch" : "0.986mm",
+  "deadLayer" : "400nm",
+  "innerRadius" : "11.0mm"
+}

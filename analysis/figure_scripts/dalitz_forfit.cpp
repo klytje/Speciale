@@ -13,6 +13,9 @@
 #include <boost/format.hpp>
 #include <iostream>
 
+// debug stuff
+#include <TApplication.h>
+
 // my stuff
 #include "../plot_style.cpp"
 
@@ -32,23 +35,45 @@ int main(int argc, char *argv[]) {
 
     // prepare the dataframe
     ROOT::RDF::RNode df = RDataFrame(chain);
-    df = df.Define("E_sum","E_cm[0]+E_cm[1]+E_cm[2]");
+    df = df.Define("E_tot","E_cm[0]+E_cm[1]+E_cm[2]");
 
     // set the axes    
-    double x_axis[] = {100, 0, cos(M_PI/6)};
-    double y_axis[] = {100, 0, 1.0};
+    double x_axis[] = {100, -2, 2};
+    double y_axis[] = {100, -2, 2};
 
-    // define the necessary variables
-    df = df.Filter("p_tot<35e3")
-        .Filter("abs(deltaE)<200")
-        .Define("E2","min(E_cm[0],min(E_cm[1],E_cm[2]))")
-        .Define("E1","max(min(E_cm[0],E_cm[1]), min(max(E_cm[0],E_cm[1]),E_cm[2]))")
-        .Define("E0","max(E_cm[0],max(E_cm[1],E_cm[2]))")
-        .Define("X","((E1-E2)/E_sum)*sqrt(3)")
-        .Define("Y","3*E0/E_sum-1.0")
-        .Filter("pow(X,2)+pow(Y,2)<1.0")
-        .Filter("Y<0.93")
-        .Filter("E2>250");
+    // define sorting methods
+    auto max = [] (double e1, double e2, double e3) {return std::max({e1, e2, e3});};
+    auto min = [] (double e1, double e2, double e3) {return std::min({e1, e2, e3});};
+    auto mid = [] (double e1, double e2, double e3) {
+        if (e1 > e2) {
+            if (e2 > e3) {
+                return e2;
+            } else if (e1 > e3) {
+                return e3;
+            } else {
+                return e1;
+            }
+        } else {
+            if (e1 > e3) {
+                return e1;
+            } else if (e2 > e3) {
+                return e3;
+            } else {
+                return e2;
+            }
+        }
+    };
+    df = df.Filter("abs(deltaE)<200")
+           .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
+           .Define("e_cm_2", "E_cm[1]/E_tot")
+           .Define("e_cm_3", "E_cm[2]/E_tot")
+           .Define("e_1", max, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
+           .Define("e_2", mid, {"e_cm_1", "e_cm_2", "e_cm_3"})
+           .Define("e_3", min, {"e_cm_1", "e_cm_2", "e_cm_3"})
+        //    .Define("X","(e_cm_2 - e_cm_3 + 0.5)*sqrt(3)*2")
+        //    .Define("Y","(2*e_cm_1 - e_cm_2 - e_cm_3 + 0.5)*2");
+           .Define("X","sqrt(3)*(e_2 - e_3)")
+           .Define("Y","3*e_1 - 1");
 
     //*** PLOT ***//
     setup_style();

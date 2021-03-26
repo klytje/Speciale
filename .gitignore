@@ -1,9 +1,17 @@
 autogen/
-sim3a/
-sim3a_i/
-simX_fork/
+
+sim3a/build/
+sim3a_i/build/
+simX_fork/build/
+simX_fork/boost*
 
 *.root
+*.pdf
+
+**/CMakeFiles/
+**/.idea/
+**/__pycache__/
+**/.vscode/
 
 analysis/**/data/
 analysis/**/figures/
@@ -16,8 +24,6 @@ analysis/**/tdc/
 analysis/**/sim/
 analysis/**/calibration/
 analysis/**/autogen/
-analysis/**/tdc_compare.pdf
-analysis/**/tdcfit.pdf
 
 analysis/sim/balamuth
 analysis/sim/balamuth_i
@@ -34,9 +40,8 @@ analysis/figure_scripts/kinematic_lab
 analysis/figure_scripts/phi
 analysis/figure_scripts/rho
 
-**/CMakeFiles/
-**/.idea/
-**/__pycache__/
+analysis/special_figure_scripts/Dalitz_3D
+analysis/special_figure_scripts/sim_compare
 
 analysis/**/analysis/calibrate_reconstructed
 analysis/**/analysis/calibrate_true

@@ -1,0 +1,32 @@
+#pragma GCC system_header
+#ifdef __cplusplus
+#include <TVector3.h>
+#include <TLorentzVector.h>
+#include <boost/dynamic_bitset.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/fusion/adapted/struct/adapt_struct.hpp>
+#include <typeindex>
+#include <unordered_map>
+#include <cstdlib>
+#include <cstring>
+#include <inttypes.h>
+#include <cassert>
+#include <Rtypes.h>
+#include <queue>
+#include <cstddef>
+#include <TF1.h>
+#include <TGenPhaseSpace.h>
+#include <Math/DistSampler.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/spirit/include/phoenix_object.hpp>
+#include <boost/fusion/adapted/std_pair.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/fusion/include/boost_tuple.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <TMath.h>
+#include <boost/functional/hash.hpp>
+#include <cmath>
+#endif

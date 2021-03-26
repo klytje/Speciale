@@ -1,0 +1,6 @@
+beam: Li7
+target: H1
+  -> {
+      Li7
+      H1
+  }

@@ -1,0 +1,144 @@
+{
+    "name": "Na23",
+    "detectors": [
+        {
+            "name": "SL",
+            "file": "AUSL.json",
+            "position": {
+                "x": "40mm",
+                "y": "0mm",
+                "z": "0mm"
+            },
+            "normal": {
+                "x": "-1mm",
+                "y": "0.0mm",
+                "z": "0mm"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "-1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "SL_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "SL_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "SR",
+            "file": "AUSR.json",
+            "position": {
+                "x": "-40mm",
+                "y": "0mm",
+                "z": "0mm"
+            },
+            "normal": {
+                "x": "1mm",
+                "y": "0.0mm",
+                "z": "0mm"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "SR_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "SR_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "SB",
+            "file": "AUSB.json",
+            "position": {
+                "x": "0mm",
+                "y": "-40mm",
+                "z": "20mm"
+            },
+            "normal": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "orientation": {
+                "x": "-1mm",
+                "y": "0mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "SB_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "SB_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "ST",
+            "file": "AUST.json",
+            "position": {
+                "x": "0mm",
+                "y": "40mm",
+                "z": "0mm"
+            },
+            "normal": {
+                "x": "0mm",
+                "y": "-1mm",
+                "z": "0mm"
+            },
+            "orientation": {
+                "x": "1mm",
+                "y": "0mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "ST_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "ST_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        }
+    ],
+    "telescopes": [],
+    "signals": [
+        "CLOCK",
+        "CHARGE",
+        "ACCEPTED",
+        "TOTAL"
+    ]
+}
