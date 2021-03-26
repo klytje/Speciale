@@ -10,20 +10,12 @@ int main(int argc, char *argv[]) {
     data_container data;
     prepare_data(argc, argv, &data, "mul==3");
 
-    // define the plot colour scheme
-    gStyle->SetPalette(kBird);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    gROOT->ForceStyle();
     gROOT->SetBatch(kTRUE); // no graphics display
+    plot::path += "true/";
 
     // start a ROOT application window such that the plots can actually be shown
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
-    // save the raw data before any cuts or modifications are performed
-    save(&data, "output/true_raw.root");
-
-    plot::path += "true/";
     // ensures that the file path exists
     setup();
 
@@ -35,7 +27,7 @@ int main(int argc, char *argv[]) {
     vector<vector<int>> bt_peaks = {{65100, 65180}, {65180, 65250}, {65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
-    save(&data, "true_aligned_peaks.root");
+    // save(&data, "true_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
     vector<double> ft_peak = {1000, 65300, 66000}; // the area where we expect the peak to be. this is to help the fitting algorithm

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "plots.cpp"
-
 // root stuff
 #include <TFile.h>
 #include <TTree.h>
@@ -13,6 +11,10 @@
 #include <filesystem>
 #include <boost/format.hpp>
 #include <iostream>
+
+// my stuff
+#include "plots.cpp"
+#include "../plot_style.cpp"
 
 using namespace std;
 using boost::format;
@@ -745,6 +747,7 @@ vector<double> center_dt(vector<double>* DT, vector<double>* BT, vector<int>* BI
 void setup() {
     filesystem::create_directories(plot::path);
     gErrorIgnoreLevel = kWarning; // we don't want print outputs
+    setup_style(); // use the style defined in ../plot_style.cpp
 }
 
 // attempt to fit a gaussian to the input, and, optionally, plot it

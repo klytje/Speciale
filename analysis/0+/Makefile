@@ -1,23 +1,21 @@
-# AUSAlib executables
+# AUSAlib executables. If globally installed, replace with "./"
 sorter := ~/tools/sorter/build/Sorter
 calibrator := ~/tools/calibrator/build/Calibrator
 identifier := ~/tools/identifier/build/Identifier
 
-# dependent executables
-simX := ../../simX_fork/build/simX
-balamuth := ../../sim3a/build/balamuth
-balamuth_i := ../../sim3a_i/build/balamuth
-
 .DEFAULT_GOAL := help
 .SECONDARY:
-.PHONY: clean build clean_build
+.PHONY: clean clean_build
 
 help: 
 	@ echo "Main targets: "
-	@ echo "\"build\": Prepares all executables for compilation. \n"
+	@ echo "\"build\": Prepares all executables for compilation. Must be run once to initialize the project. \n"
 	@ echo "\"fig/X\": Generates the figures for data source X. data/X.root, output/X.root, sim/configs/X.bahamut, or sim/configs/X.simX must exist. \n"
-	@ echo "\"tdc_calibration\": Takes all files in data/ and performs a TDC calibration on them. Outputs output/true_events and output/reconstructed_events which can be used as targets for another call to fig/X. \n"
-	@ echo "There are also further figures available; take a look at the makefile section \"figures\" for an overview. \n"
+	@ echo "\"tdc_calibration\": Takes all files in data/ and performs a TDC calibration on them. Outputs output/true_events.root, output/reconstructed_events.root, and output/all_events.root which can be used as targets for another call to fig/X. \n"
+	@ echo "\"clean/X\": Removes all generated data and figures associated with data source X, leaving only the raw source in data/ or sim/config/ . \n"
+	@ echo "\"clean\": Removes all generated files, leaving only the raw data sources. \n"
+	@ echo "There are also further figures available; take a look at the Makefile section \"figures\" for an overview. \n"
+	@ echo "Note that for any AUSAlib tool to work, you must update their executable paths in the first few lines of the Makefile. \n"
 
 # removes everything, leaving only the raw data files in data/
 clean: clean_build
@@ -25,9 +23,11 @@ clean: clean_build
 	rm -f sim/data_i/*
 	rm -f sim/data/*
 	rm -f match/*
+	rm -f merged/*
 	rm -f id/*
 	rm -f output/*
 	rm -f -r figures/*
+	rm -f -r analysis/figures/*
 
 # removes all files associated with %, except for the raw data in data/
 # note: also removes any simulated data named %.root
@@ -38,6 +38,7 @@ clean/%:
 	@ rm -f match/$(*F)m.root
 	@ rm -f id/$(*F)mi.root
 	@ rm -f output/$(*F).root
+	@ rm -f merged/$(*F).root
 	@ rm -f -r figures/$(*F)
 #	@ rm -f data/$(*F).root
 
@@ -72,8 +73,26 @@ analysis/build/Makefile: analysis/CMakeLists.txt
 	mkdir -p analysis/build
 	cd analysis/build; cmake ../
 
-# this target keeps track of changes in all CMakeLists.txt and rebuilds if necessary
+# this variable keeps track of changes in all CMakeLists.txt and rebuilds if necessary
+# every time a CMakeLists is modified, run this target
 build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../calibrate/build/Makefile ../figure_scripts/build/Makefile ../special_figure_scripts/build/Makefile analysis/build/Makefile
+
+####################
+### DEPENDENCIES ###
+####################
+simX := ../../simX_fork/build/simX
+balamuth := ../../sim3a/build/balamuth
+balamuth_i := ../../sim3a_i/build/balamuth
+
+# if any of the dependent executables doesn't exist, we compile them
+../../simX_fork/build/simX_fork/build/simX:
+	make -C ../../simX_fork/build/
+	
+../../sim3a/build/balamuth: ../../sim3a/balamuth/*
+	make -C ../../sim3a/build/
+
+../../sim3a_i/build/balamuth: ../../sim3a_i/balamuth/*
+	make -C ../../sim3a_i/build/
 
 # removes all executables
 clean_build: 
@@ -83,7 +102,7 @@ clean_build:
 	@ rm -f -r analysis/build/*
 
 #####################
-### debug targets ###
+### DEBUG TARGETS ###
 #####################
 debug_match: $(calibrate_rec)
 	../calibrate/build/mul_compare $(addprefix match/,$(shell ls match))
@@ -108,14 +127,14 @@ tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell 
 	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 ### compile the calibration programs if necessary ###
-analysis/build/tdc_calibration_reconstructed: analysis/tdc_calibration_reconstructed.cpp ../calibrate/*
+analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../calibrate/*
 	make -C analysis/build/ tdc_calibration_reconstructed
 
-analysis/build/tdc_calibration_true: analysis/tdc_calibration_true.cpp ../calibrate/*
+analysis/build/tdc_calibration_true: $(build) analysis/tdc_calibration_true.cpp ../calibrate/*
 	make -C analysis/build/ tdc_calibration_true
 	
 #######################
-### real root files ###
+### REAL ROOT FILES ###
 #######################
 ### calibration ###
 setup/%.cal :
@@ -144,7 +163,7 @@ event_analysis := analysis/build/EventAnalysis
 analysis/build/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
 	make -C analysis/build/ EventAnalysis
 
-output/%.root : id/%mi.root $(event_analysis)
+output/%.root : match/%m.root id/%mi.root $(event_analysis)
 	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 
 # Analysis with interference
@@ -153,7 +172,7 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 	echo sim/data_i/$*.root output/$*.root |root -l ../merger.C
 
 ###############
-### figures ###
+### FIGURES ###
 ###############
 # the following line allows us to use automatic variables for prerequisites from this point on
 .SECONDEXPANSION:
@@ -167,10 +186,11 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 # $* --> abc/xyz
 
 # compiles a given figure program
-../figure_scripts/%: ../figure_scripts/%.cpp
+../figure_scripts/build/%: ../figure_scripts/%.cpp 
 	make -C ../figure_scripts/build/ $*
 
-../special_figure_scripts/%: ../special_figure_scripts/%.cpp
+# same
+../special_figure_scripts/build/%: ../special_figure_scripts/%.cpp
 	make -C ../special_figure_scripts/build/ $*
 
 # generates a single pdf file for the data source %
@@ -204,7 +224,7 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 	@ echo "Built figures/"$*
 
 ###################
-### simulations ###
+### SIMULATIONS ###
 ###################
 # generate the simX configuration file required for simX
 # this is generated on the fly whenever it is needed, and is deleted afterwards
@@ -228,7 +248,7 @@ sim/data/%.root: sim/$$*.simX sim/raw/%.dat $(simX)
 	@ rm $<
 
 # simulate everything solely with simX
-sim/data/%.root : sim/configs/%.simX
+sim/data/%.root : sim/configs/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N 1000000
 
 ###############
@@ -272,9 +292,9 @@ autofig/% : $(addprefix $(directory)/,$(addprefix figures/%/,$(figure_pdf)))
 automaker :
 	cat ../list2 |python3 ../automaker.py $(shell pwd)
 
-###########
-# scripts #
-###########
+###############
+### SCRIPTS ###
+###############
 
 test.pdf : ../scripts/test.py figures/data_tdc_cut/dalitz_forfit.pdf
 	python3 ../scripts/test.py $(shell pwd) > test.log

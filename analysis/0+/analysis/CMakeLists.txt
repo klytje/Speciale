@@ -36,5 +36,5 @@ endif(CURL_FOUND)
 link_libraries(${LIBRARIES})
 
 add_executable(EventAnalysis main.cpp StandardAnalyzer.cpp)
-add_executable(calibrate_true tdc_calibration_true.cpp)
-add_executable(calibrate_reconstructed tdc_calibration_reconstructed.cpp)
+add_executable(tdc_calibration_true tdc_calibration_true.cpp)
+add_executable(tdc_calibration_reconstructed tdc_calibration_reconstructed.cpp)

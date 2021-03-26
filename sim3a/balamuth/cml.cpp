@@ -116,7 +116,19 @@ CommandLineOptions parseCml(int argc, char **argv) {
                     cml.r0s = rParser.parse(optarg);
                 }
                 else if (opt == gBe) {
-                    cml.gs = gParser.parse(optarg);
+                    string arg = optarg;
+                    string unit = "keV";
+
+                    size_t del = arg.find(unit); 
+                    if (del == std::string::npos) {
+                        cerr << "Sorry, I can only handle gBe in the unit " << unit << " (implicit ^(1/2))." << endl;
+                        exit(1);
+                    }
+
+                    std::string token = arg.substr(0, del);
+                    cml.gs = stof(token);
+
+                //    cml.gs = gParser.parse(optarg);
                 }
                 else if (opt == ExC) {
                     cml.ExC = eParser.parse(optarg);

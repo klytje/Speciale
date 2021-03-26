@@ -28,18 +28,18 @@ int main(int argc, char *argv[]) {
     }    
     // final argument is the destination
     string dest = argv[argc-1]; 
-    dest += "phi.pdf";
+    dest += "radial_projection.pdf";
 
     // prepare the dataframe
     ROOT::RDF::RNode df = RDataFrame(chain);
-    df = df.Define("E_sum","E_cm[0]+E_cm[1]+E_cm[2]");
 
     // set the axes
-    double x_axis[] = {200, 0, M_PI/3};
+    double x_axis[] = {300, 0, 1};
 
     // define the necessary variables
     df = df.Filter("p_tot<35e3")
            .Filter("abs(deltaE)<200")
+           .Define("E_sum","E_cm[0]+E_cm[1]+E_cm[2]")
            .Define("E2","min(E_cm[0],min(E_cm[1],E_cm[2]))")
            .Define("E1","max(min(E_cm[0],E_cm[1]), min(max(E_cm[0],E_cm[1]),E_cm[2]))")\
            .Define("E0","max(E_cm[0],max(E_cm[1],E_cm[2]))")
@@ -52,11 +52,11 @@ int main(int argc, char *argv[]) {
     //*** PLOT ***//
     setup_style();
 
-    TCanvas* canvas = new TCanvas("phi", "phi", 400, 400);
-    TH1D hist = df.Define("x", "atan2(X,Y)")
-                  .Histo1D({"h1", "phi", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
+    TCanvas* canvas = new TCanvas("c", "c", 400, 400);
+    TH1D hist = df.Define("x", "sqrt(pow(X,2)+pow(Y,2))")
+                  .Histo1D({"h1", "rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
 
-    hist.GetXaxis()->SetTitle("\\phi");
+    hist.GetXaxis()->SetTitle("$\\rho$");
     hist.GetYaxis()->SetTitle("Count");
     hist.Draw("colz");
 

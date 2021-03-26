@@ -14,18 +14,12 @@ int main(int argc, char *argv[]) {
     data_container data;
     prepare_data(argc, argv, &data, "mul==-1");
 
-    // define the plot colour scheme
-    gStyle->SetPalette(kBird);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    gROOT->ForceStyle();
     gROOT->SetBatch(kTRUE); // no graphics display
+    plot::path += "reconstructed/";
 
     // start a ROOT application window such that the plots can actually be shown
     TApplication *app = new TApplication("ROOT window", 0, 0);
-    save(&data, "output/reconstructed_raw.root");
 
-    plot::path += "reconstructed/";
     // ensures that the file path exists
     setup();
 
@@ -37,7 +31,7 @@ int main(int argc, char *argv[]) {
     vector<vector<int>> bt_peaks = {{65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
-    save(&data, "reconstructed_aligned_peaks.root");
+    // save(&data, "reconstructed_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
     vector<double> ft_peak = {100, 65400, 65500};

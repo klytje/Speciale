@@ -6,10 +6,8 @@
 
 // user includes
 #include "StandardAnalyzer.h"
-#include "MulSpectrum.h"
 
 #include "ausa/identify/IdReader.h"
-#include "AntiProtonCutter.h"
 #include <ausa/sort/SortedReader.h>
 #include <ausa/identify/IdReader.h>
 #include <ausa/json/IO.h>

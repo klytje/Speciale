@@ -31,11 +31,10 @@ int main(int argc, char *argv[]) {
     }    
     // final argument is the destination
     string dest = argv[argc-1]; 
-    dest += "dalitz_forfit.pdf";
+    dest += "dalitz_raw.pdf";
 
     // prepare the dataframe
     ROOT::RDF::RNode df = RDataFrame(chain);
-    df = df.Define("E_tot","E_cm[0]+E_cm[1]+E_cm[2]");
 
     // set the axes    
     double x_axis[] = {100, -2, 2};
@@ -63,25 +62,20 @@ int main(int argc, char *argv[]) {
             }
         }
     };
-    df = df.Filter("abs(deltaE)<200")
+    df = df.Define("E_tot","E_cm[0] + E_cm[1] + E_cm[2]")
            .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
            .Define("e_cm_2", "E_cm[1]/E_tot")
            .Define("e_cm_3", "E_cm[2]/E_tot")
-           .Define("e_1", max, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
-           .Define("e_2", mid, {"e_cm_1", "e_cm_2", "e_cm_3"})
-           .Define("e_3", min, {"e_cm_1", "e_cm_2", "e_cm_3"})
-        //    .Define("X","(e_cm_2 - e_cm_3 + 0.5)*sqrt(3)*2")
-        //    .Define("Y","(2*e_cm_1 - e_cm_2 - e_cm_3 + 0.5)*2");
-           .Define("X","sqrt(3)*(e_2 - e_3)")
-           .Define("Y","3*e_1 - 1");
+           .Define("x","sqrt(3)*(e_cm_2 - e_cm_3)")
+           .Define("y","3*e_cm_1 - 1");
 
     //*** PLOT ***//
     setup_style();
 
-    TCanvas* canvas = new TCanvas("Dalitz_slice", "Dalitz_slice", 600, 600);
-    TH2D hist = df.Histo2D({"h2", "Dalitz_slice", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "X", "Y").GetValue();
-    hist.GetXaxis()->SetTitle("X");
-    hist.GetYaxis()->SetTitle("Y");
+    TCanvas* canvas = new TCanvas("c", "c", 600, 600);
+    TH2D hist = df.Histo2D({"h2", "Dalitz raw", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
+    hist.GetXaxis()->SetTitle("x");
+    hist.GetYaxis()->SetTitle("y");
     hist.Draw("colz");
 
     canvas->SetLogz();
