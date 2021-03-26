@@ -1,47 +1,30 @@
 autogen/
 
-sim3a/build/
-sim3a_i/build/
-simX_fork/build/
 simX_fork/boost*
 
 *.root
 *.pdf
 
 **/CMakeFiles/
+**/CMakeCache.txt
 **/.idea/
 **/__pycache__/
 **/.vscode/
+**/build/
 
-analysis/**/data/
-analysis/**/figures/
-analysis/**/id/
-analysis/**/match/
-analysis/**/merged/
-analysis/**/output/
+analysis/**/data/*
+analysis/**/figures/*
+analysis/**/id/*
+analysis/**/match/*
+analysis/**/merged/*
+analysis/**/output/*
 analysis/**/reportfig/
 analysis/**/tdc/
-analysis/**/sim/
+analysis/**/sim/raw/*
+analysis/**/sim/data/*
+analysis/**/sim/data_i/*
 analysis/**/calibration/
 analysis/**/autogen/
-
-analysis/sim/balamuth
-analysis/sim/balamuth_i
-analysis/sim/simX_fork
-
-analysis/figure_scripts/dalitzfig
-analysis/figure_scripts/dalitz_forfit
-analysis/figure_scripts/eCM
-analysis/figure_scripts/ExpT
-analysis/figure_scripts/QpT
-analysis/figure_scripts/fynbo_plot
-analysis/figure_scripts/kinematic
-analysis/figure_scripts/kinematic_lab
-analysis/figure_scripts/phi
-analysis/figure_scripts/rho
-
-analysis/special_figure_scripts/Dalitz_3D
-analysis/special_figure_scripts/sim_compare
 
 analysis/**/analysis/calibrate_reconstructed
 analysis/**/analysis/calibrate_true

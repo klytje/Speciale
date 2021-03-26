@@ -32,7 +32,7 @@ using namespace AUSA::Event;
 int main(int argc, char* argv[]) {
 
     // Beam energy, setup and target
-    double beamEnergy = 2001; // keV
+    double beamEnergy = 669; // keV
     string setupFile  = "setup/setup.json";
     string targetFile = "setup/target.json";
 

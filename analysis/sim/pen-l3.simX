@@ -1,0 +1,14 @@
+beam: p
+target: B11
+-> {
+     weight: BW
+	 L: 3
+     a
+     Be8 Ex: 3MeV G0: 1.5MeV
+     -> {
+	   weight: PEN
+       AD: TF1(phi="1" theta="sin(x)*(1+2.0/7.0*0.5*(3*pow(cos(x),2)-1)-9.0/7.0*0.125*(35*pow(cos(x),4)-30*pow(cos(x),2)+3))")
+       a
+       a
+     }
+}

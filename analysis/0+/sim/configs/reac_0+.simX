@@ -1,0 +1,10 @@
+beam: p
+target: B11
+-> {
+    a
+    Be8 Ex: 3MeV G0: 1.5MeV
+    -> {
+        a
+        a
+    }
+}
