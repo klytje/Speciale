@@ -1,0 +1,62 @@
+\documentclass[onecolumn, a4paper, oneside, article, 12pt]{article}
+
+% includes
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% setup
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black}
+\setlength{\parindent}{0pt}
+
+\title{Angular correlation for the 0+ state in $^{12}$C}
+
+\begin{document}
+\maketitle
+
+Following \href{https://wiki.kern.phys.au.dk/note_angular-correlations.pdf}{this note on angular correlation}, we get the following for the 17.76MeV 0+ state. \\
+
+Consider the initial $0+$ resonance in $^{12}C$ of spin $j_1 = 0$, which decays by emission of an alpha-particle with $l_1 = 2$ to the intermediate $2+$ resonance of $^8Be$ with $j = 2$. The intermediate resonance yet again decays through alpha-emission, again with $l_2 = 2$, to a single alpha-particle with spin $j_2 = 0$. \\
+
+With the notation in place, we can finally calculate the actual correlation function as described in the note. It is given as a sum over all even $\nu$ in the interval $\{0, ..., \min(2l_1, 2l_2, 2j)\} = \{0, 2, 4\}$ for this specific resonance. 
+\begin{align*}
+	W(\beta) = \sum_\nu b_\nu(l_1) b_\nu(l_2) A_\nu(l_1 l_2 j_1 j_2 j) P_\nu(cos\beta)
+\end{align*}
+
+The case for $\nu = 0$ is trivial: since all the functions are normalized based on this case, they are all trivially equal to $1$. Thus we only have to calculate the two other possibilities. \\
+
+$b_\nu$:
+\begin{gather*}
+	b_2(l_1) = \frac{2 \cdot 2(2+1)}{2 \cdot 2(2+1) - 2(2+1)} = \frac{12}{6} = 2 \\
+	b_4(l_1) = \frac{2 \cdot 2(2+1)}{2 \cdot 2(2+1) - 4(4+1)} = \frac{12}{-8} = -\frac{3}{2} \\
+	b_2(l_2) = b_2(l_1) = 2 \\
+	b_4(l_2) = b_4(l_1) = -\frac{3}{2}
+\end{gather*}
+
+For $F_\nu$, we simply look up in the table provided at the bottom of the note. 
+\begin{gather*}
+	F_2(l_1, j_1, j) = F_2(2, 0, 2) = -0.5976 \\
+	F_4(l_1, j_1, j) = F_4(2, 0, 2) = -1.069 \\
+	F_2(l_2, j_2, j) = F_2(2, 0, 2) = -0.5976 \\
+	F_4(l_2, j_2, j) = F_4(2, 0, 2) = -1.069
+\end{gather*} 
+
+Finally, we have the Legendre polynomials $P_\nu(cos\beta)$:
+\begin{gather*}
+	P_2(x) = \frac{1}{2}(3x^2 - 1) \\
+	P_4(x) = \frac{1}{8}(35x^4 - 30x^2 + 3)
+\end{gather*}
+
+Combining all these functions, we get the final correlation function: 
+\begin{align*}
+	W(\beta) &= \sum_\nu b_\nu(l_1) b_\nu(l_2) A_\nu(l_1 l_2 j_1 j_2 j) P_\nu(cos\beta) \\
+	&=  1 + (2)(2)(-0.5976)(-0.5976)\frac{1}{2}(3cos^2\beta - 1) \\
+	&\ \ \ \ + (-\frac{3}{2})(-\frac{3}{2})(-1.069)(-1.069)\frac{1}{8}(35cos^4\beta - 30cos^2\beta + 3) \\
+	&= 1 + 2.3904(3cos^2\beta - 1) + 0.3214(35cos^4\beta - 30cos^2\beta + 3) \\
+	&= 11.249cos^4\beta - 2.4708cos^2\beta - 0.4262
+\end{align*}
+
+\end{document}

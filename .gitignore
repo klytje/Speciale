@@ -1,4 +1,7 @@
 autogen/
+latex/*
+
+!latex/*.tex
 
 simX_fork/boost*
 

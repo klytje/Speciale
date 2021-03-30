@@ -1,5 +1,5 @@
 {
-  "target" : "../setup/target.json",
+  "target" : "setup/target.json",
   "detection_system" : "detection_system.json",
   "beam": "beam.simX",
   "tabulation" : "SRIM13",

@@ -195,7 +195,7 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 
 # generates a single pdf file for the data source %
 figures/%.pdf: output/$$(*D).root ../figure_scripts/build/$$(*F)
-	@ echo "Building $(*F).pdf..."
+	@ echo "Building figures/"$*".pdf..."
 	@ mkdir -p figures/$(*D)
 	@ ../figure_scripts/build/$(*F) $< $(shell pwd)/figures/$(*D)/
 

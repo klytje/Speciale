@@ -13,6 +13,9 @@
 #include <boost/format.hpp>
 #include <iostream>
 
+// my stuff
+#include "../plot_style.cpp"
+
 using namespace std;
 using namespace ROOT;
 using boost::format;
@@ -36,10 +39,7 @@ int main(int argc, char *argv[]) {
     double y_axis[] = {400, 0, 250e3};
 
     //*** PLOT ***//
-    gStyle->SetPalette(kBird);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    gROOT->ForceStyle();
+    setup_style();
 
     TCanvas* canvas = new TCanvas("QpT", "QpT", 600, 600);
     TH2D hist = df.Histo2D({"h2", "QpT", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "E_sum", "p_tot").GetValue();

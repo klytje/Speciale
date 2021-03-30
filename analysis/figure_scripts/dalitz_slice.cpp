@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
     ROOT::RDF::RNode df = RDataFrame(chain);
 
     // set the axes    
-    double x_axis[] = {100, -2, 2};
-    double y_axis[] = {100, -2, 2};
+    double x_axis[] = {100, 0, 1};
+    double y_axis[] = {100, 0, 1};
 
     // define sorting methods
     auto max = [] (double e1, double e2, double e3) {return std::max({e1, e2, e3});};
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     hist.GetYaxis()->SetTitle("y");
     hist.Draw("colz");
 
-    canvas->SetLogz();
+    // canvas->SetLogz();
     canvas->SetRightMargin(0.15);
     canvas->SaveAs(dest.c_str());
 }

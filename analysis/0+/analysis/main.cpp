@@ -17,6 +17,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <utility>   // std::pair
 
 using namespace std;
@@ -26,13 +27,36 @@ using namespace AUSA::EnergyLoss;
 using namespace AUSA::JSON;
 using namespace AUSA::Event;
 
+// simple script which reads the energy from the beam.simX file
+double readBeamEnergyFromJSON(string beamfile) {
+    ifstream file(beamfile);
+    string line;
+    getline(file, line);
+
+    // remove everything but the last word
+    line.erase(0, line.find_last_of(' ')+1);
+
+    // determine number of digits
+    size_t i = 0;
+    for (; i < line.length(); i++ ){ 
+        if (!isdigit(line[i])) {
+            break;
+        }
+    }
+
+    // keep only the digits, removing everything else (the unit)
+    line.erase(i, line.size());
+    return atof(line.c_str());
+}
 
 int main(int argc, char* argv[]) {
-
     // Beam energy, setup and target
-    double beamEnergy = 2001; // keV
+    string beamFile = "beam.simX";
     string setupFile  = "setup/setup.json";
     string targetFile = "setup/target.json";
+
+    // Get the beam energy from the beam.simX file
+    double beamEnergy = readBeamEnergyFromJSON("beam.simX");
 
     // Load AUSAlib setup file
     auto setup = readSetupFromJSON(setupFile);
