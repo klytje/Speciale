@@ -1,0 +1,7 @@
+script <argument 1> <argument 2> ... <argument n>: description
+
+Dalitz_3D <output/X.root>: creates an interactive 3D Dalitz plot for the given input. This can be used to check if everything looks alright. 
+
+sim_compare <output/X.root> <output/Y.root>: X should be a root file with measured events, while Y should be the simulated events. It creates a Dalitz plot for both inputs and binwise divides each value. Thus the generated figure tells us how the simulation differs from the measurement. 
+
+angular_correlation <j1> <l1>: calculates the angular correlation for 12C --> a + 8Be (ex: 3MeV) --> a + a + a

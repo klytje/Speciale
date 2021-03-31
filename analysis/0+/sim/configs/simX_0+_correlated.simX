@@ -4,7 +4,7 @@ target: B11
     a
     Be8 Ex: 3MeV G0: 1.5MeV
     -> {
-        AD: TF1(phi="1" theta="sin(x)*(11.249*cos(x)^4 - 2.4708*cos(x)^2 - 0.4262)")
+        AD: TF1(phi="1" theta="sin(x)*(11.25*cos(x)^4 - 7.5*cos(x)^2 + 1.25)")
         a
         a
     }

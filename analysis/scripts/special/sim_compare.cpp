@@ -21,8 +21,8 @@ using namespace ROOT;
 using boost::format;
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
-        std::cout << "\033[1;31m" << "Received too many inputs: " << argc << ". Usage: ./sim_compare <data> <simulated data> <destination>" << "\033[0m" << endl;
+    if (!(argc == 4 || argc == 5)) {
+        std::cout << "\033[1;31m" << "Received too many inputs: " << argc << ". Usage: ./sim_compare <data> <simulated data> <destination> <optional: cut>" << "\033[0m" << endl;
         exit(1);
     }
 
@@ -30,7 +30,14 @@ int main(int argc, char *argv[]) {
     ROOT::RDF::RNode data = RDataFrame("tree", argv[1]);
     ROOT::RDF::RNode sim = RDataFrame("tree", argv[2]);
     string dest = argv[3];
-    dest += "sim_compare.pdf";
+
+    int cut = 0; // this means we do not make a cut
+    if (argc == 5) {
+        cut = atoi(argv[4]);
+        dest += "sim_compare_cut.pdf";
+    } else {
+        dest += "sim_compare_raw.pdf";    
+    }
 
     // set the axes    
     double x_axis[] = {200, -1.3, 1.3};
@@ -119,11 +126,23 @@ int main(int argc, char *argv[]) {
 
     // hdata->Chi2Test(hsim, "UU NORM P");
 
+    // any bin higher than cut will be set to cut. this is used to enhance the overall figure when only a few known sources of high count are present
+    // this also allows easy comparison with sim_compare figures from other models, since they will have the same z scale
+    if (cut != 0) {
+        TH2D &h = *hist;
+        for (int i = 0; i < h.GetNbinsX(); i++) {
+            for (int j = 0; j < h.GetNbinsY(); j++) {
+                auto val = h.GetBinContent(i, j);
+                h.SetBinContent(i, j, cut < val ? cut : val);
+            }
+        }
+    }
+
     hist->GetXaxis()->SetTitle("X");
     hist->GetYaxis()->SetTitle("Y");
     hist->Draw("colz");
 
-    canvas->SetLogz();
+    //canvas->SetLogz();
     canvas->SetRightMargin(0.15);
     canvas->SaveAs(dest.c_str());
     canvas->SaveAs(dest.c_str());

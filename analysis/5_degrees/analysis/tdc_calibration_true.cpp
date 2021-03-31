@@ -2,7 +2,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 
-#include "../../calibrate/calibrate.cpp"
+#include "../../scripts/calibrate/calibrate.cpp"
 
 using namespace std;
 

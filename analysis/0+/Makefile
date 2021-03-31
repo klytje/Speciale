@@ -57,17 +57,17 @@ clean/%:
 	mkdir -p ../../sim3a_i/build
 	cd ../../sim3a_i/build; cmake ../
 
-../calibrate/build/Makefile: ../calibrate/CMakeLists.txt
+../scripts/calibrate/build/Makefile: ../scripts/calibrate/CMakeLists.txt
 	mkdir -p ../calibrate/build
 	cd ../calibrate/build; cmake ../
 
-../figure_scripts/build/Makefile: ../figure_scripts/CMakeLists.txt
-	mkdir -p ../figure_scripts/build
-	cd ../figure_scripts/build; cmake ../
+../scripts/basic/build/Makefile: ../scripts/basic/CMakeLists.txt
+	mkdir -p ../scripts/basic/build
+	cd ../scripts/basic/build; cmake ../
 
-../special_figure_scripts/build/Makefile: ../special_figure_scripts/CMakeLists.txt
-	mkdir -p ../special_figure_scripts/build
-	cd ../special_figure_scripts/build; cmake ../
+../scripts/special/build/Makefile: ../scripts/special/CMakeLists.txt
+	mkdir -p ../scripts/special/build
+	cd ../scripts/special/build; cmake ../
 
 analysis/build/Makefile: analysis/CMakeLists.txt
 	mkdir -p analysis/build
@@ -75,7 +75,7 @@ analysis/build/Makefile: analysis/CMakeLists.txt
 
 # this variable keeps track of changes in all CMakeLists.txt and rebuilds if necessary
 # every time a CMakeLists is modified, run this target
-build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../calibrate/build/Makefile ../figure_scripts/build/Makefile ../special_figure_scripts/build/Makefile analysis/build/Makefile
+build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/calibrate/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
 
 ####################
 ### DEPENDENCIES ###
@@ -186,33 +186,39 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 # $* --> abc/xyz
 
 # compiles a given figure program
-../figure_scripts/build/%: ../figure_scripts/%.cpp 
-	make -C ../figure_scripts/build/ $*
+../scripts/basic/build/%: ../scripts/basic/%.cpp 
+	make -C ../scripts/basic/build/ $*
 
 # same
-../special_figure_scripts/build/%: ../special_figure_scripts/%.cpp
-	make -C ../special_figure_scripts/build/ $*
+../scripts/special/build/%: ../scripts/special/%.cpp
+	make -C ../scripts/special/build/ $*
 
 # generates a single pdf file for the data source %
-figures/%.pdf: output/$$(*D).root ../figure_scripts/build/$$(*F)
-	@ echo "Building figures/"$*".pdf..."
+figures/%.pdf: output/$$(*D).root ../scripts/basic/build/$$(*F)
+	@ echo "Building "$@"..."
 	@ mkdir -p figures/$(*D)
-	@ ../figure_scripts/build/$(*F) $< $(shell pwd)/figures/$(*D)/
+	@ ../scripts/basic/build/$(*F) $< $(shell pwd)/figures/$(*D)/
 
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
-Dalitz_3D/%: output/%.root ../special_figure_scripts/build/Dalitz_3D
+Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	@ echo "Creating interactive 3D Dalitz plot..."
-	@ ../special_figure_scripts/build/Dalitz_3D $<
+	@ ../scripts/special/build/Dalitz_3D $<
 
 # creates two histograms, one for % and another for output/all_events.
 # it then binwise divides each histogram to give the output histogram, showing the deviations
-figures/%/sim_compare.pdf: output/%.root output/all_events.root ../special_figure_scripts/build/sim_compare
-	@ echo "Building figures/$*/sim_compare.pdf..."
-	@ ../special_figure_scripts/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
-	
+figures/%/sim_compare_raw.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
+	@ echo "Building "$@"..."
+	@ ../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
+
+# same as above, but now with a cut on bin values to enhance smaller details and fix the z axis
+figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
+	@ echo "Building "$@"..."
+	@ ../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/ 3
+
+sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
 
 # contains a list of all possible pdf files
-figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../figure_scripts/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
+figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../scripts/basic/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
 
 # concatenates all raw data in data/ and makes all combined figures for them
 figs: $(addprefix figures/data/,$(figure_pdf))
