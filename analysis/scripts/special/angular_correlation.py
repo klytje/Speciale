@@ -24,30 +24,41 @@ def calc_F(n, L, j, J):
 # I've written this script with sympy, which symbolically solves equations. There are two reasons for this:
 # 1: we get access to methods which calculate the clebsch-gordan and racah coefficients
 # 2: we get symbolic results, which are nicer to work with (and can easily be converted to numerical values)
-if len(sys.argv) != 3:
-	print("Usage: python angular_correlation.py <j1> <l1> \nAssuming j = 2, j2 = 0, and l2 = 2")
+if not (len(sys.argv) == 3 or len(sys.argv) == 6):
+	print("Usage: python angular_correlation.py <j1> <l1> \n(Assuming j = 2, j2 = 0, and l2 = 2)")
+	print("\nAlternatively: python angular_correlation.py <j1> <j2> <j> <l1> <l2>")
 	exit(1)
 
-j1 = int(sys.argv[1]) # 12C
-j = 2 # 8B
-j2 = 0 # final alpha
-l1 = int(sys.argv[2]) # first alpha (from 12C -> a + 8B)
-l2 = 2 # second alpha (from 8B -> a + a)
-print(f"Calculating the angular correlation for j1 = {j1}, j = {j}, j2 = {j2}, l1 = {l1}, l2 = {l2}\n")
+j1, j, j2, l1, l2 = 0, 0, 0, 0, 0
+if len(sys.argv) == 3:
+	j1 = int(sys.argv[1]) # 12C
+	j = 2 # 8B
+	j2 = 0 # final alpha
+	l1 = int(sys.argv[2]) # first alpha (from 12C -> a + 8B)
+	l2 = 2 # second alpha (from 8B -> a + a)
 
+elif len(sys.argv) == 6: 
+	j1 = int(sys.argv[1]) # 12C
+	j2 = int(sys.argv[2]) # 12C
+	j = int(sys.argv[3]) # 12C
+	l1 = int(sys.argv[4]) # 12C
+	l2 = int(sys.argv[5]) # 12C
+
+print(f"Calculating the angular correlation for j1 = {j1}, j = {j}, j2 = {j2}, l1 = {l1}, l2 = {l2}\n")
 
 W = sympy.S(0) # initialize W to 0
 theta = sympy.symbols("\u03B8") # unicode for theta
 
 # iterate over the summation symbol
-for i in range(0, min([l1, l2, j])+1, 1):
-	n = 2*i
+for n in range(0, min([2*l1, 2*l2, 2*j])+2, 2):
 	a1 = calc_a(n, l1)
 	a2 = calc_a(n, l2)
 	F1 = calc_F(n, l1, j1, j)
 	F2 = calc_F(n, l2, j2, j)
 	P = legendre(n, sympy.cos(theta))
+	print(f"Step \u03BD = {n}: \n    b(l1) = {a1}\n    b(l2) = {a2}\n    F(l1, j1, j) = {F1} = {F1.evalf():.4f}\n    F(l2, j2, j) = {F2} = {F2.evalf():.4f}\n    P = {P}\n")
 	W += (a1*F1)*(a2*F2)*P
 
-print(f"Symbolic result: W(\u03B8) = {W}")
-print(f"Numeric result: W(\u03B8) = {W.evalf()}")
+print(f"Symbolic result:              W(\u03B8) = {W}")
+print(f"Symbolic result (simplified): W(\u03B8) = {W.simplify()}")
+print(f"Numeric result:               W(\u03B8) = {W.simplify().evalf()}")
