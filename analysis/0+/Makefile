@@ -101,20 +101,6 @@ clean_build:
 	@ rm -f -r ../calibrate/build/*
 	@ rm -f -r analysis/build/*
 
-#####################
-### DEBUG TARGETS ###
-#####################
-debug_match: $(calibrate_rec)
-	../calibrate/build/mul_compare $(addprefix match/,$(shell ls match))
-
-test: $(calibrate_rec) $(calibrate_true)
-	$(calibrate_rec) output/2455_000.root output/2455_001.root output/2455_002.root
-
-test_all: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
-	$(calibrate_rec) $(addprefix output/,$(shell ls data))
-
-### end of debug targets ###
-
 #######################
 ### tdc_calibration ###
 #######################
@@ -127,12 +113,24 @@ tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell 
 	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 ### compile the calibration programs if necessary ###
-analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../calibrate/*
+analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../scripts/calibrate/*
 	make -C analysis/build/ tdc_calibration_reconstructed
 
-analysis/build/tdc_calibration_true: $(build) analysis/tdc_calibration_true.cpp ../calibrate/*
+analysis/build/tdc_calibration_true: $(build) analysis/tdc_calibration_true.cpp ../scripts/calibrate/*
 	make -C analysis/build/ tdc_calibration_true
 	
+#####################
+### DEBUG TARGETS ###
+#####################
+debug_match: $(calibrate_rec)
+	../calibrate/build/mul_compare $(addprefix match/,$(shell ls match))
+
+test: $(calibrate_rec) $(calibrate_true)
+	$(calibrate_rec) output/2455_000.root output/2455_001.root output/2455_002.root
+
+test_all: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
+	$(calibrate_rec) $(addprefix output/,$(shell ls data))
+
 #######################
 ### REAL ROOT FILES ###
 #######################

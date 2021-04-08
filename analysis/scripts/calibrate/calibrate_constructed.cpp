@@ -25,58 +25,6 @@
 using namespace std;
 using boost::format;
 
-// perform a gaussian fit to both FT and BT and remove outliers beyond n_sigma
-// note this is almost the same as gauss_filter from data_fix.cpp, except we only check the non-zero BT/FT alphas here
-void gauss_filter_custom(data_container* data, int n_sigma, vector<double> ft_peak, vector<double> bt_peak) {
-    print_title("### Removing outliers ###");
-    vector<double>& ft = *data->get_double("FT");
-    vector<double>& bt = *data->get_double("BT");
-    vector<int>& id = *data->get_int("ID");
-
-    map<string, double> ft_result = gauss_fit(&ft, ft_peak, plot::gauss_cut);
-    map<string, double> bt_result = gauss_fit(&bt, bt_peak, plot::gauss_cut);
-
-    vector<vector<double>> peak = {{ft_result.at("mean") - n_sigma*ft_result.at("sigma"), ft_result.at("mean") + n_sigma*ft_result.at("sigma")}, 
-                                   {bt_result.at("mean") - n_sigma*bt_result.at("sigma"), bt_result.at("mean") + n_sigma*bt_result.at("sigma")}};
-
-    int n = ft.size();
-    int m = n/3;
-    int c = 0; // counter for output information
-    vector<bool> filter(n, false);
-    for (int i1 = 0; i1 < m; i1++) {
-        int i2 = i1 + m; 
-        int i3 = i2 + m;
-
-        // FT check, only applicable to the W1 detectors
-        if ((ft[i1] != 0) && (id[i1] == 2 || id[i1] == 3) && !(peak[0][0] < ft[i1] && ft[i1] < peak[0][1])) continue;
-        if ((ft[i2] != 0) && (id[i2] == 2 || id[i2] == 3) && !(peak[0][0] < ft[i2] && ft[i2] < peak[0][1])) continue;
-        if ((ft[i3] != 0) && (id[i3] == 2 || id[i3] == 3) && !(peak[0][0] < ft[i3] && ft[i3] < peak[0][1])) continue;
-
-        // BT check
-        if ((bt[i1] != 0) && !(peak[1][0] < bt[i1] && bt[i1] < peak[1][1])) continue;
-        if ((bt[i2] != 0) && !(peak[1][0] < bt[i2] && bt[i2] < peak[1][1])) continue;
-        if ((bt[i3] != 0) && !(peak[1][0] < bt[i3] && bt[i3] < peak[1][1])) continue;
-
-        filter[i1] = filter[i2] = filter[i3] = true;
-        c++;
-    }
-
-    if (plot::gauss_cut) {
-        std::cout << format("Imposing a cut at %1% sigma, keeping %2% of %3% elements.") % n_sigma % (3*c) % n << endl; 
-        hist_info info_ft(plot::x_axes::FT, "gauss_cut_ft", "title", "ft", "count");
-        hist1D(&ft, ft_result.at("mean"), n_sigma*ft_result.at("sigma"), info_ft);
-
-        hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
-        hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
-
-        auto dt = calc_dt(&ft, &bt);
-        hist_info info_dt(plot::x_axes::standard, "gauss_cut_dt", "title", "dt", "count");
-        hist1D(&dt, info_dt);
-
-    }
-    data->filter(&filter);
-}
-
 // load a fit calibration file
 tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> load_calibration() {
     print_title("*** LOADING CALIBRATION RESULTS ***");

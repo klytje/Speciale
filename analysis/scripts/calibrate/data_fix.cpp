@@ -75,7 +75,15 @@ void repair_peaks(data_container* data) {
 
         // show "before" plot
         if (plot::repair_peaks) {
+            plot.GetXaxis()->SetTitle(name.c_str());
+            plot.GetYaxis()->SetTitle("Count");
+            plot.GetXaxis()->CenterTitle();
+            plot.GetYaxis()->CenterTitle();
+            plot.SetNdivisions(205, "X");
+            plot.SetNdivisions(205, "Y");
             plot.Draw();
+
+            canvas->SetLeftMargin(0.15);
             canvas->Modified(); canvas->Update();
             if (plot::save) {
                 string file = plot::path + filename + "_before" + plot::format;
@@ -96,7 +104,15 @@ void repair_peaks(data_container* data) {
 
             // show "after" plot
             if (plot::repair_peaks) {
+                plot.GetXaxis()->SetTitle(name.c_str());
+                plot.GetYaxis()->SetTitle("Count");
+                plot.GetXaxis()->CenterTitle();
+                plot.GetYaxis()->CenterTitle();
+                plot.SetNdivisions(205, "X");
+                plot.SetNdivisions(205, "Y");
                 plot.Draw();
+
+                canvas->SetLeftMargin(0.15);
                 canvas->Modified(); canvas->Update();
                 if (plot::save) {
                     string file = plot::path + filename + "_after" + plot::format;
@@ -126,8 +142,8 @@ void repair_peaks(data_container* data) {
     };
 
     for (int det = 0; det < 4; det++) {
-        TH1D ft_plot("", "", 500, 65000, 65600);
-        TH1D bt_plot("", "", 500, 65000, 65600);
+        TH1D ft_plot("", "", int(plot::x_axes::FT[0]), plot::x_axes::FT[1], plot::x_axes::FT[2]);
+        TH1D bt_plot("", "", int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]);
         vector<double> ft = detector_filter(FT, ID, det);
         vector<double> bt = detector_filter(BT, ID, det);
 
@@ -181,7 +197,7 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         bt_plot.Fill(bt[i]);
     }
 
-    auto multi_gauss_fit = [&canvas] (TH1* hist, vector<vector<int>> peaks, TF1* total, string filename) {
+    auto multi_gauss_fit = [&canvas] (TH1* hist, vector<vector<int>> peaks, TF1* total, string name) {
         // before we can fit multiple gauss simultaneously, we fit them indiviually within their ranges to get some nice initial parameter estimates
         vector<TF1*> gauss(peaks.size()); 
         for (int i = 0; i < peaks.size(); i++) {
@@ -199,10 +215,19 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
 
         if (plot::align_peaks) {
             std::cout << "Results of the individual Gauss fits is shown on the figure." << endl;
+            hist->GetXaxis()->SetTitle(name.c_str());
+            hist->GetXaxis()->CenterTitle();
+            hist->GetXaxis()->SetLabelOffset(0.005);
+            hist->GetYaxis()->SetTitle("Count");
+            hist->GetYaxis()->CenterTitle();
+            hist->SetNdivisions(205, "X");
+            hist->SetNdivisions(205, "Y");
             hist->Draw();
+
+            canvas->SetLeftMargin(0.15);
             canvas->Modified(); canvas->Update();
             if (plot::save) {
-                string file = plot::path + filename + "_individual" + plot::format;
+                string file = plot::path + "align_peaks_" + name + "_individual" + plot::format;
                 canvas->SaveAs(file.c_str());
             }
             canvas->WaitPrimitive();
@@ -214,10 +239,18 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
 
         if (plot::align_peaks) {
             std::cout << "Results of the total Gauss fit is shown on the figure." << endl;
+            hist->GetXaxis()->SetTitle(name.c_str());
+            hist->GetXaxis()->CenterTitle();
+            hist->GetYaxis()->SetTitle("Count");
+            hist->GetYaxis()->CenterTitle();
+            hist->SetNdivisions(205, "X");
+            hist->SetNdivisions(205, "Y");
             hist->Draw();
+
+            canvas->SetLeftMargin(0.15);
             canvas->Modified(); canvas->Update();
             if (plot::save) {
-                string file = plot::path + filename + "_simultaneous" + plot::format;
+                string file = plot::path + "align_peaks_" + name + "_simultaneous" + plot::format;
                 canvas->SaveAs(file.c_str());
             }
             canvas->WaitPrimitive();
@@ -225,7 +258,7 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         }
     };
 
-    auto perform_shift = [&canvas, &data] (vector<double>* t, TH1* hist, TF1* total, int n_sigma, string filename) {
+    auto perform_shift = [&canvas, &data] (vector<double>* t, TH1* hist, TF1* total, int n_sigma, string name) {
         int n = total->GetNumberFreeParameters()/3; // for looping over all means
         // cout << "Number of free parameters: " << n << endl;
         double result[3*n]; // allocate space for the result vector
@@ -264,10 +297,18 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         }
 
         if (plot::align_peaks) {
+            hist->GetXaxis()->SetTitle(name.c_str());
+            hist->GetXaxis()->CenterTitle();
+            hist->GetYaxis()->SetTitle("Count");
+            hist->GetYaxis()->CenterTitle();
+            hist->SetNdivisions(205, "X");
+            hist->SetNdivisions(205, "Y");
             href.Draw();
+
+            canvas->SetLeftMargin(0.15);
             canvas->Modified(); canvas->Update();
             if (plot::save) {
-                string file = plot::path + filename + plot::format;
+                string file = plot::path + "align_peaks_" + name + "_aligned" + plot::format;
                 canvas->SaveAs(file.c_str());
             }
             canvas->WaitPrimitive();
@@ -275,15 +316,24 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         }
     };
     //### FT ###//
-    // these values are manually read off my data
-    TF1* total = new TF1("total", "gaus(0) + gaus(3)", 65000, 66000); // the multi-gauss fit function
-    multi_gauss_fit(&ft_plot, ft_peaks, total, "align_peaks_FT");
-    perform_shift(&ft, &ft_plot, total, 3, "align_peaks_FT_aligned");
+    // "arg" must be a string describing how many gauss functions we expect, in a specific notation 
+    // if we are fitting 5 gaussians, it should be "gaus(0) + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    string arg = "gaus(0)";
+    for (int i = 1; i < ft_peaks.size(); i++) {
+        arg += (format(" + gaus(%1%)") % (3*i)).str();
+    }
+    TF1* total = new TF1("total", arg.c_str(), plot::x_axes::FT[1], plot::x_axes::FT[2]); // the multi-gauss fit function
+    multi_gauss_fit(&ft_plot, ft_peaks, total, "FT");
+    perform_shift(&ft, &ft_plot, total, 3, "FT");
 
     //### BT ###//
-    total = new TF1("total", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + gaus(12) + gaus(15)", 65000, 66000); // the multi-gauss fit function
-    multi_gauss_fit(&bt_plot, bt_peaks, total, "align_peaks_BT");
-    perform_shift(&bt, &bt_plot, total, 3, "align_peaks_BT_aligned");
+    arg = "gaus(0)";
+    for (int i = 1; i < 6; i++) {
+        arg += (format(" + gaus(%1%)") % (3*i)).str();
+    } 
+    total = new TF1("total", arg.c_str(), plot::x_axes::BT[1], plot::x_axes::BT[2]); // the multi-gauss fit function
+    multi_gauss_fit(&bt_plot, bt_peaks, total, "BT");
+    perform_shift(&bt, &bt_plot, total, 3, "BT");
 }
 
 // perform a gaussian fit to both FT and BT and remove outliers beyond n_sigma
@@ -328,6 +378,58 @@ void gauss_filter(data_container* data, int n_sigma, vector<double> ft_peak, vec
 
         hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
         hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
+    }
+    data->filter(&filter);
+}
+
+// perform a gaussian fit to both FT and BT and remove outliers beyond n_sigma
+// note this is almost the same as the gauss_filter above, except we only check the non-zero BT/FT alphas here
+void gauss_filter_custom(data_container* data, int n_sigma, vector<double> ft_peak, vector<double> bt_peak) {
+    print_title("### Removing outliers ###");
+    vector<double>& ft = *data->get_double("FT");
+    vector<double>& bt = *data->get_double("BT");
+    vector<int>& id = *data->get_int("ID");
+
+    map<string, double> ft_result = gauss_fit(&ft, ft_peak, plot::gauss_cut);
+    map<string, double> bt_result = gauss_fit(&bt, bt_peak, plot::gauss_cut);
+
+    vector<vector<double>> peak = {{ft_result.at("mean") - n_sigma*ft_result.at("sigma"), ft_result.at("mean") + n_sigma*ft_result.at("sigma")}, 
+                                   {bt_result.at("mean") - n_sigma*bt_result.at("sigma"), bt_result.at("mean") + n_sigma*bt_result.at("sigma")}};
+
+    int n = ft.size();
+    int m = n/3;
+    int c = 0; // counter for output information
+    vector<bool> filter(n, false);
+    for (int i1 = 0; i1 < m; i1++) {
+        int i2 = i1 + m; 
+        int i3 = i2 + m;
+
+        // FT check, only applicable to the W1 detectors
+        if ((ft[i1] != 0) && (id[i1] == 2 || id[i1] == 3) && !(peak[0][0] < ft[i1] && ft[i1] < peak[0][1])) continue;
+        if ((ft[i2] != 0) && (id[i2] == 2 || id[i2] == 3) && !(peak[0][0] < ft[i2] && ft[i2] < peak[0][1])) continue;
+        if ((ft[i3] != 0) && (id[i3] == 2 || id[i3] == 3) && !(peak[0][0] < ft[i3] && ft[i3] < peak[0][1])) continue;
+
+        // BT check
+        if ((bt[i1] != 0) && !(peak[1][0] < bt[i1] && bt[i1] < peak[1][1])) continue;
+        if ((bt[i2] != 0) && !(peak[1][0] < bt[i2] && bt[i2] < peak[1][1])) continue;
+        if ((bt[i3] != 0) && !(peak[1][0] < bt[i3] && bt[i3] < peak[1][1])) continue;
+
+        filter[i1] = filter[i2] = filter[i3] = true;
+        c++;
+    }
+
+    if (plot::gauss_cut) {
+        std::cout << format("Imposing a cut at %1% sigma, keeping %2% of %3% elements.") % n_sigma % (3*c) % n << endl; 
+        hist_info info_ft(plot::x_axes::FT, "gauss_cut_ft", "title", "ft", "count");
+        hist1D(&ft, ft_result.at("mean"), n_sigma*ft_result.at("sigma"), info_ft);
+
+        hist_info info_bt(plot::x_axes::BT, "gauss_cut_bt", "title", "bt", "count");
+        hist1D(&bt, bt_result.at("mean"), n_sigma*bt_result.at("sigma"), info_bt);
+
+        auto dt = calc_dt(&ft, &bt);
+        hist_info info_dt(plot::x_axes::standard, "gauss_cut_dt", "title", "dt", "count");
+        hist1D(&dt, info_dt);
+
     }
     data->filter(&filter);
 }

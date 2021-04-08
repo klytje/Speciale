@@ -1,6 +1,7 @@
 autogen/
 latex/*
 
+!latex/figures/*
 !latex/*.tex
 
 simX_fork/boost*

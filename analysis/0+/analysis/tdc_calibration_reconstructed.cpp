@@ -14,10 +14,10 @@ int main(int argc, char *argv[]) {
     data_container data;
     prepare_data(argc, argv, &data, "mul==-1");
 
-    gROOT->SetBatch(kTRUE); // no graphics display
+    gROOT->SetBatch(kTRUE); // no graphics display. if kFALSE, you must click on each figure as it appears to continue the script
     plot::path += "reconstructed/";
 
-    // start a ROOT application window such that the plots can actually be shown
+    // start a ROOT application window such that the plots can actually be shown (probably not necessary in batch mode)
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
     // ensures that the file path exists

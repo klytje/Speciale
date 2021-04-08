@@ -40,8 +40,8 @@ struct plot {
         static inline vector<double> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
         static inline vector<double> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
         static inline vector<double> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
-        static inline vector<double> FT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
-        static inline vector<double> BT = {500, 65000, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<double> FT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<double> BT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
     };
 
     // a struct to avoid polluting this namespace with y-axis stuff. use the y_axis map to access them
@@ -180,8 +180,10 @@ void hist1D(const vector<T> *input, double mean, int sigma, const hist_info info
     h->GetYaxis()->SetTitle(info.y_label.c_str());
     h->GetXaxis()->CenterTitle();
     h->GetYaxis()->CenterTitle();
-    h->GetXaxis()->SetMaxDigits(3);
+    h->SetNdivisions(205, "X");
+    h->SetNdivisions(205, "Y");
     h->Draw();
+
     vline_l->Draw();
     vline_r->Draw();
     

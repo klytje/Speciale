@@ -752,7 +752,7 @@ void setup() {
 
 // attempt to fit a gaussian to the input, and, optionally, plot it
 template <typename T>
-map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axis = {1000, -500, 500}, bool plot = true) {
+map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axis = {1000, -500, 500}, bool plot = true, bool save = false) {
     const vector<T> &data = *input;
     TCanvas* canvas = new TCanvas("diff", "diff", 600, 600);
     TH1D *h = new TH1D("1D Histogram", "temporary histogram", int(x_axis[0]), x_axis[1], x_axis[2]); 
@@ -782,6 +782,10 @@ map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axi
         canvas->SetRightMargin(0.15);
         canvas->Modified(); canvas->Update();
         canvas->WaitPrimitive();
+    }
+    if (save) { // this is mainly meant for debugging, and currently overwrites the same file if multiple fits are saved. don't use batch mode instead
+        string path = plot::path + "gauss_fit" + plot::format;
+        canvas->SaveAs(path.c_str());
     }
     canvas->Close();
     h->Delete();

@@ -1,0 +1,69 @@
+\section{Analysis}
+\note{Remember to generate all figures with the full dataset to replace the placeholders.} \\
+
+This thesis is based on a series of experiments carried out by the \SI{5}{MeV} accelerator at Aarhus University in 2017. From these, specifically the experiments involving the \SI{17.76}{MeV} $0+$ resonance of \ce{^12C} is of interest. \\
+
+To populate this resonance, a \SI{2001}{KeV} \ce{H^+} beam is directed onto a \ce{^11B} target on carbon backing. By capturing a proton from the beam, the \ce{^11B} can form the expected resonance of \ce{^12C} as illustrated on figure \ref{fig: analysis: resonance population}.
+
+\begin{wrapfigure}{R}{0.5\linewidth}
+	\begin{center}
+		\includegraphics[width=\linewidth]{figures/p+11B.png}
+	\end{center}
+	\caption{\note{Caption needed.}}
+	\label{fig: analysis: resonance population}
+\end{wrapfigure}
+
+\subsection{Tools}
+ROOT \cite{ROOT} is an object-oriented \CPP framework created at CERN in 1994. It was designed to be a replacement of the then-used FORTRAN library, which was quickly approaching its limits with the pure quantity of data being generated at the facility. Due to these roots, ROOT was originally designed to handle the high-energy physics data being generated at the facility in an efficient manner. In the many years since its conception, it has grown into a true stand-alone language capable of most types of data analysis. \\
+
+ROOT contains a vast quantity of methods and classes for most conceivable types of analysis. The basic storage type relevant for this work is the \texttt{TTree} class, consisting of a number of named branches. Each branch corresponds to some variable of an event, such as the multiplicity or alpha energies. These trees can then be directly written to disk, which is the approach used by AUSAlib to store its data. \\
+
+Another important type is the \texttt{RDataFrame} class, which in this context can be thought of as a wrapper around the \texttt{TTree}. It is then able to perform efficient and parallel operations on the underlying \texttt{TTree} structure through a simple interface. They are somewhat limited in their capabilities, however, and thus have mostly been used for generating plots. \\
+
+AUSAlib (\textit{Aarhus University Subatomic library}) \cite{AUSAlib} is another \CPP framework built on top of ROOT developed here at Aarhus. Since the experimental setups are typically similar between different experiments, it would mean a rather large overlap in analysis code. Thus a common framework was created, intended primarily as a transformation tool from raw data to readily analyzable data. Since this process typically involves many distinct steps, AUSAlib consists of multiple individual modules, each handling one aspect of the transformation. As is common in such frameworks, it eventually grew beyond its intended use, and now also includes a simulation library called \texttt{simX}. The basic idea with this custom simulator is to account for the detection system, such as to allow a direct comparison with the experimental data. 
+
+\subsubsection{Unpacker}
+The first module converts the raw data from the acquisition system to a ROOT \texttt{TTree} format. This is done by utilizing the third-party unpacking program \texttt{ucesb} \cite{ucesb}. The setup-files for this program defines the general \texttt{TTree} branch structure which will be used throughout the rest of this project, and so a brief introduction to it is in order. \note{This feels superfluous!} \\
+
+The output of the Unpacker is, as mentioned above, a ROOT \texttt{TTree}. Most branch names consists of a detector prefix, followed by either an "F" or "B", depending on whether the front side or back side of the detector was hit, respectively. Following this is a suffix denoting what kind of information is stored. As an example, "\_T" is used for storing TDC information, while "\_E" is used for storing ADC information. \note{Revise.}
+
+\subsubsection{Calibrator}
+At this point, the energies and detection times are still stored in the form of channel numbers. Before they can be used in an analysis, they must be converted to a more meaningful form. The calibrator is designed to handle one of these issues by converting the ADC channel number into an actual energy. To perform such a calibration, it is assumed that the channel numbers are linearly related to the energies, meaning that a measured spectrum may both be shifted and stretched. By then measuring a known source, its expected spectrum can be compared with the measured, thus uniquely determining the variables of the linear relationship. \\
+
+There is a further complication that must be taken care of, however. The detectors all have a small dead layer, which any particle must first pass through, thus losing some energy depending on the stopping power of the material. Furthermore, this energy loss is heavily dependent on the effective thickness of the dead layer $\Delta x_{eff}$, which again depends on the angle of incidence, $\theta$. A simple geometric exercise gives the relationship between the effective and actual thickness as $\Delta x_{eff} = \Delta x / \cos \theta$, such that the net effect can be described as
+\begin{align}
+	E' = E - \frac{dE}{dx} \frac{\Delta x}{\cos \theta}
+\end{align}
+
+where $E$ is the original energy of the particle, $dE/dx$ the stopping power of the material, and $\Delta x$ the actual thickness of the dead layer. The stopping power is calculated with SRIM \cite{SRIM}. \\
+
+All of this is handled by the Calibrator. As input it takes the unpacked input of a measurement of a single source, along with a file specifying the locations of the expected peaks. From this the tool corrects for the energy loss and establishes a linear relationship between channel numbers and energies. The result of this is then written to disk in a separate calibration file, which is passed as an argument to some of the other modules. \\
+
+Note that as the Calibrator should not change its input, and since it does not output a new \texttt{TTree}, the only way it can account for the energy loss is by correcting the expected peak energies. The correction of the data itself is performed by the Identifier, which will be discussed later. 
+
+\subsubsection{Sorter}
+The purpose of the Sorter is to generate new ROOT files based on the unpacked data. During this process, various operations can be applied on the data, such as applying a previously determined energy calibration. Another important operation is matching and combining events from the front and back sides of each detector. If only a single hit is detected on each side, this is trivial. If there are multiple, a greedy matching algorithm sequentially picks the pair of hits with the lowest energy difference. \\
+
+After the event matching has been performed, the previously individual detector hits are converted to particle detections. Thus it is now possible to associate the physical properties with actual particles. This is reflected in the output \texttt{TTree}, which has a slightly different structure than the input. The centerpiece is now the newly defined "mul" branch, containing the multiplicity of each event. The properties of each particle are now stored in various branches of length mul. \note{consider rewording this.}
+
+\subsubsection{Identifier}
+The Identifier is, as its name suggests, meant as a tool for identifying the participating particles. As mentioned previously, it is also responsible for carrying out the energy loss corrections, not only due to the dead layers of the detectors, but also due to passage through the target. \\
+
+The standard approach to identify particles is to place a second detector behind the thin DSSD. The particles then lose some energy depending on the stopping power of the DSSD, which is particle-specific. Their remaining energy is picked up by the second detector, such that it is easy to deduce how much energy they lost in transit. Another approach is to look at the energy deposited in the DSSD, which may be too large to come from a lighter particle, which can thus be excluded. However, these two are not strong enough to uniquely determine a given particle. Because of this, the tool requires further aid by the means of a list of particles it should search for. \\
+
+No secondary detector was used in this setup, however, leaving only the second imprecise approach. \note{How does that work in my experiment? We identify alphas without a secondary detector!}
+
+\subsubsection{Eventbuilder}
+The final module of the standard AUSAlib pipeline is the Eventbuilder. The purpose of it is to remove any dependency on the experimental setup from the data, leaving only the physical events. To do this, each reaction is reconstructed, and the user must decide on some criteria to either accept or reject a given reaction. As an example relevant to this experiment, one can require that three alpha particles participated in the reaction, and remove any other unwanted particles. \\
+
+The module also allows the user to define new properties, such as the four-momenta of each particle, which can then be used for further analysis. The module is not meant for aggregate analysis of the data, but only analysis of each individual decay event. The user is expected to implement any further analysis by himself. 
+
+\subsubsection{simX}
+When comparing the measured data with a theoretical model, two distinct steps must be simulated: the actual physical process, and its interaction with the experimental setup. simX handles both of these. It can also be configured to take the first step as input, and only simulate their interaction with the detection system, which allows users to generate their Monte Carlo data in any way they like. \\
+
+The output of simX is an unpacked ROOT file identical to the output of the Unpacker. This means that after a simulation is performed, the data can be subjected to all the same operations as the experimental data, right up to the analysis. 
+
+\subsubsection{sim3a}
+This final module is not officially part of AUSAlib, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the reaction \ce{^12C -> ^8Be + \alpha} through the balamuth equation \note{reference?}, and outputs the data in a format suitable for input to simX. 
+
+\subsection{Calibration}

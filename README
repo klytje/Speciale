@@ -1,10 +1,11 @@
+This is the original README from Morten's project. 
 The data analysis mostly makes use of the standard AUSAlib stack, but with a few changes.
 
 For SimX:
 	SimX now includes a cml flag for seeding the random number generator. This is useful for trivially parallelizing the simulation by simply running multiple instances of the program at once.
 
 For sim3a:
-	Modified to allow for interference between different values of orbital angular momentum.
+	Modified to allow for interference between different values of orbital angular momentum. (Unstable, does not work for the 0+ state)
 	The current implementation doesn't interface cleanly with AUSAlib, the weight for the events generated at this stage are not carried through the entire data analysis, instead they are merget into the resulting root files at the end of the analysis.
 	This is done using the ROOT-script "merger.C".
 	The format of the weights are as described in eq. 43 of Morten Kuhlwein's Masters thesis.
@@ -12,7 +13,7 @@ For sim3a:
 	The great thing here is that you don't need to choose delta and k until after the simulation + analysis, which means you don't need to simulate data with different values k and delta.
 	
 
-In addition to this I have modified the CMakeList.txt-files to use a more recent version of the c++ compiler, in order for it to work with my linux-distro. They should all contain a line with a comment saying "#We use C++11" and then a "set" command with "std=c++17". It might be necessary to change this back to "std=c++11", depending on your compiler.
+In addition to this I have modified the CMakeList.txt-files to use a more recent version of the c++ compiler, in order for it to work with my linux-distro. They should all contain a line with a comment saying "#We use C++11" and then a "set" command with "std=c++17". It might be necessary to change this back to "std=c++11", depending on your compiler. (C++17 is now mandatory for most of my new stuff)
 
 The analysis is mostly setup with a Makefile, I'll outline the process here.
 All make commands are executed from a folder corresponding to the "5_degrees" folder. There should be 1 folder for each experimental setup, with the corresponding AUSAlib config files contained in each folder.
@@ -20,11 +21,11 @@ For data (non-simulated):
 	- Sorting/Matching with AUSAlib
 	- Identification with AUSAlib
 	- Analysis with AUSAlib, calculates variables of interest. Written independently for each experiment, but probably doesn't need many/any changes as long as we are working with C12->3alpha.
-	- TDC-cut, this code is made specifically for this data since it was corrupted. The analysis is hardcoded for this specific data, I do NOT recommend that this code is used for any other data. Please use the TDC-cut that is built into AUSAlib during the analysis step.
+	- TDC-cut, this code is made specifically for this data since it was corrupted. The analysis is hardcoded for this specific data, I do NOT recommend that this code is used for any other data. Please use the TDC-cut that is built into AUSAlib during the analysis step. (I could not understand what his TDC-cut code was actually doing, and so I've redone this whole section. All of the necessary scripts are located in analysis/scripts/calibrate, while the actual calibrations depend on the data, and so are defined for each project in e.g. analysis/0+/analysis/tdc_calibration_true.cpp. See also the makefile for instructions on how to use it. )
 	The final output is a bunch of analyzed files in the "output"-folder, one for each corresponding file in the original "data" folder with raw data.
-	The TDC-cut data is placed in a file named "data_tdc_cut.root"
+	The TDC-cut data is placed in a file named "data_tdc_cut.root" (Now called true_events and reconstruced_events, depending on whether they are true 3-alpha coincidences or reconstructed from 2-alpha coincidences. The difference between them is significant.)
 
-The files at each step can be generated using make commands, if you have a raw datafile named "X.root" in the "data" folder you can run commands like:
+The files at each step can be generated using make commands, if you have a raw datafile named "X.root" in the "data" folder you can run commands like: (See the makefile instead, I've streamlined the process dramatically)
 	make match/Xm.root
 	make id/Xmi.root
 	make output/X.root
@@ -33,17 +34,18 @@ These files are then used in further analysis on equal footing with simulated da
 
 For simulated data:
 	The amount of data generated is controlled by the "N" variable defined at the top of the Makefile. I've usually used N=100 to get a dataset of comparable size to the measured data, you might be able to get away with less depending on the dataset.
-	Simulated data is defined in the folder "sim" in the root directory. There are several different formats for defining a simulation.
+	Simulated data is defined in the folder "sim" in the root directory. There are several different formats for defining a simulation. (Moved the "sim" folder to each individual project instead, since it was quickly becoming a mess)
 	- .simX - Stardard simX reaction scheme.
 	- .balamuth - command line arguments for sim3a program without interference
-	- .balamuth_i command line arguments for sim3a program with interference
+	- .balamuth_i command line arguments for sim3a program with interference (as mentioned before, this does not work)
 	
 	balamuth_i and simX_fork are the compiled outputs of sim3a and simX with the previously mentioned modifications.
 	
-	The simulated data is placed in sim/data. In the case of balamuth simulations with interference there are also files generated to sim/data_i which is the "raw" simulated data before it is passed through simX. These contain information about the weight of each event and will be merged into the final output files at the end of the analysis.
+	The simulated data is placed in sim/data. In the case of balamuth simulations with interference there are also files generated to sim/data_i which is the "raw" simulated data before it is passed through simX. These contain information about the weight of each event and will be merged into the final output files at the end of the analysis. (Now stored in e.g. analysis/0+/sim/)
 
-	From here, sorted, identified and analysed data files can be generated as for the non-simulated data.
+	From here, sorted, identified and analysed data files can be generated as for the non-simulated data. (See the makefile for comments. I've once again streamlined this process.)
 
+	(Everything below here has been either been redone or doesn't work. See the makefile for instructions on how to make figures. )
 	The final part of the analysis is carried out using python with numpy, IMinuit and matplotlib.
 	You might need to use an older version of IMinuit or update the code to get it to run, it seems that the interface of IMinuit has changed as of version 2.0, but it should run with any version up to 1.5.4.
 	There are two categories of scripts used for this part, scripts used for generating figures/histograms for single data sets, and scripts used for comparing figures/histograms of different data sets.

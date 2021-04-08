@@ -2,8 +2,8 @@
 #include <TROOT.h>
 
 void setup_style() {
-    gStyle->SetPalette(kViridis);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
+    gStyle->SetPalette(kViridis); // set the global color scheme of figures
+    gStyle->SetOptStat(0); // hide legends
+    gStyle->SetOptTitle(0); // hide titles
     gROOT->ForceStyle();
 }
