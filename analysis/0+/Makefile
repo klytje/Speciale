@@ -131,20 +131,31 @@ test: $(calibrate_rec) $(calibrate_true)
 test_all: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
 	$(calibrate_rec) $(addprefix output/,$(shell ls data))
 
+temp: calibration/setup.json
+	$(calibrator) -s $< -k setup/source.json -d SU -o calibration/ calibration/SU/2478_000.root
+
 #######################
 ### REAL ROOT FILES ###
 #######################
 ### calibration ###
-setup/%.cal :
-	$(calibrator) -s setup/setup.json -k setup/source.json -d $* caldata/$*/*.root -o setup/ --eloss
-calibration : setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal
+# performs a calibration of detector %, using all root files present in the folder calibration/%/
+# it uses a small script to duplicate the setup file from setup/setup.json, while removing any mention of "calibration: ", 
+# since this breaks the calibrator, but is required for some of the other tools. 
+setup/%.cal: ../scripts/special/calibrate_setup.py setup/setup.json
+	python3 $< setup/setup.json calibration/setup.json
+	$(calibrator) -s calibration/setup.json -k setup/source.json -d $* -o calibration/ --eloss --gui calibration/$*/*.root 
+	@ cp calibration/*.cal setup/
+	@ rm calibration/setup.json
+
+# simple target to calibrate all detectors
+calibrate: setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal;
 
 ### matching ###
-match/%m.root : data/%.root matcher.json setup/*
+match/%m.root : data/%.root matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 # this target allows us to use simulated data from this point on
-match/%m.root : sim/data/%.root matcher.json setup/*
+match/%m.root : sim/data/%.root matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 ### identification ###

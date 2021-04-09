@@ -5,3 +5,5 @@ Dalitz_3D <output/X.root>: creates an interactive 3D Dalitz plot for the given i
 sim_compare <output/X.root> <output/Y.root>: X should be a root file with measured events, while Y should be the simulated events. It creates a Dalitz plot for both inputs and binwise divides each value. Thus the generated figure tells us how the simulation differs from the measurement. 
 
 angular_correlation <j1> <l1>: calculates the angular correlation for 12C --> a + 8Be (ex: 3MeV) --> a + a + a
+
+calibrate_setup <setup/setup.json> <calibration/setup.json>: duplicates the setup file and removes any mention of "calibration". The calibrator tool cannot handle that, while some of the other tools requires it to be present, so this is a hacky solution that keeps everyone happy. 
