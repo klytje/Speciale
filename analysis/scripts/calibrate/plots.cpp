@@ -11,7 +11,7 @@ using namespace std;
 
 // plot settings
 struct plot {
-    static const bool save = true; // note that only "enabled" figures are actually created and can be saved
+    static inline bool save = true; // note that only "enabled" figures are actually created and can be saved
     static inline string path = "analysis/figures/";
     static const inline string format = ".png";
 

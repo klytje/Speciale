@@ -8,7 +8,7 @@ identifier := ~/tools/identifier/build/Identifier
 .PHONY: clean clean_build
 
 help: 
-	@ echo "Main targets: "
+	@ echo "Main targets: (consider using the -jX flag if data/ contains many files)"
 	@ echo "\"build\": Prepares all executables for compilation. Must be run once to initialize the project. \n"
 	@ echo "\"fig/X\": Generates the figures for data source X. data/X.root, output/X.root, sim/configs/X.bahamut, or sim/configs/X.simX must exist. \n"
 	@ echo "\"tdc_calibration\": Takes all files in data/ and performs a TDC calibration on them. Outputs output/true_events.root, output/reconstructed_events.root, and output/all_events.root which can be used as targets for another call to fig/X. \n"
@@ -110,7 +110,8 @@ calibrate_true := analysis/build/tdc_calibration_true
 tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
 	$(calibrate_true) $(addprefix output/,$(shell ls data))	
 	$(calibrate_rec) $(addprefix output/,$(shell ls data))
-	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
+	@ echo "Creating output/all_events.root ..."
+	@ hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 ### compile the calibration programs if necessary ###
 analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../scripts/calibrate/*
@@ -202,7 +203,7 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 figures/%.pdf: output/$$(*D).root ../scripts/basic/build/$$(*F)
 	@ echo "Building "$@"..."
 	@ mkdir -p figures/$(*D)
-	@ ../scripts/basic/build/$(*F) $< $(shell pwd)/figures/$(*D)/
+	../scripts/basic/build/$(*F) $< $(shell pwd)/figures/$(*D)/
 
 # contains a list of all possible pdf files
 figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../scripts/basic/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
@@ -224,21 +225,32 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
 Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	@ echo "Creating interactive 3D Dalitz plot..."
-	@ ../scripts/special/build/Dalitz_3D $<
+	../scripts/special/build/Dalitz_3D $<
 
 # creates two histograms, one for % and another for output/all_events.
 # it then binwise divides each histogram to give the output histogram, showing the deviations
 figures/%/sim_compare_raw.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
 	@ echo "Building "$@"..."
-	@ ../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
+	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
 
 # same as above, but now with a cut on bin values to enhance smaller details and fix the z axis
 figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
 	@ echo "Building "$@"..."
-	@ ../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/ 3
+	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/ 3
 
 # this is just for easy access to the two commands above. simply use "make sim_compare/X" to create both sim_compare plots for output/X.root
 sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
+
+### thesis specific figures ###
+# specific build target for tdc_plot since it also depends on the calibrate scripts
+../scripts/special/build/tdc_plot: ../scripts/special/tdc_plot.cpp ../scripts/calibrate/*
+	make -C ../scripts/special/build/ $*
+
+# plots before / after of the TDC values
+tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
+	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
+	$< $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
+
 
 ###################
 ### SIMULATIONS ###

@@ -7,3 +7,8 @@ sim_compare <output/X.root> <output/Y.root>: X should be a root file with measur
 angular_correlation <j1> <l1>: calculates the angular correlation for 12C --> a + 8Be (ex: 3MeV) --> a + a + a
 
 calibrate_setup <setup/setup.json> <calibration/setup.json>: duplicates the setup file and removes any mention of "calibration". The calibrator tool cannot handle that, while some of the other tools requires it to be present, so this is a hacky solution that keeps everyone happy. 
+
+### ARTICLE FIGURES ###
+These scripts have been made specifically for my thesis, and are probably not relevant for anyone else. They should still be functional, however. 
+
+TDC_plot <output/X.root>: compares the TDC values for the four detectors. Note that the locations of the peaks are hardcoded into the script. 

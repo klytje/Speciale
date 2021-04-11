@@ -23,7 +23,7 @@ To populate this resonance, a \SI{2001}{KeV} \ce{H^+} beam is directed onto a \c
 	\label{fig: analysis: resonance population}
 \end{wrapfigure}
 
-\subsection{Tools}
+\subsection{Tools} \label{section: analysis: tools}
 \ROOT{} \cite{ROOT} is an object-oriented \CPP{} framework created at CERN in 1994. It was designed to be a replacement of the then-used \texttt{FORTRAN} library, which was quickly approaching its limits with the pure quantity of data being generated at the facility. Due to these roots, \ROOT{} was originally designed to handle the high-energy physics data being generated at the facility in an efficient manner. In the many years since its conception, it has grown into a true stand-alone language capable of most types of data analysis. \\
 
 \ROOT{} contains a vast quantity of methods and classes for most conceivable types of analysis. The basic storage type relevant for this work is the \texttt{TTree} class, consisting of a number of named branches. Each branch corresponds to some variable of an event, such as the multiplicity or alpha energies. These trees can then be directly written to disk, which is the approach used by \AUSAlib{} to store its data. \\
@@ -79,7 +79,7 @@ This final module is not officially part of \AUSAlib{}, but is rather a small to
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}
 	\caption{\note{Insert caption and redo figure in .pdf format.}}
-	\label{analysis: AUSAlib pipeline}
+	\label{analysis: figure: AUSAlib pipeline}
 	
 \end{figure}
 
@@ -99,17 +99,17 @@ Due to some general issues with the data taken for this run, it was decided to r
 		& 5804.77(5)
 	\end{tabular}
 	\caption{The decay energies of the composite target used for the calibration. They are taken from the NNDC \cite{nudat}.}
-	\label{analysis: calibration table}
+	\label{analysis: table: calibration}
 \end{wraptable}
 
-A composite $\alpha$-source was placed at the target position, and rotated to face each of the four detectors in turn. Thus four sets of calibration data, one for each detector, were made, and given to the \Calibrator{} tool. The composite source contains the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm}; their $\alpha$-energies are listed in table \ref{analysis: calibration table}. The tool automatically corrects these energies to account for the energy loss of the alpha particles through the dead layer of the detectors. \\
+A composite $\alpha$-source was placed at the target position, and rotated to face each of the four detectors in turn. Thus four sets of calibration data, one for each detector, were made, and given to the \Calibrator{} tool. The composite source contains the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm}; their $\alpha$-energies are listed in table \ref{analysis: table: calibration}. The tool automatically corrects these energies to account for the energy loss of the alpha particles through the dead layer of the detectors. \\
 
-The \Calibrator{} uses a peak-finding algorithm to roughly identify where the peaks are located. It then performs a simultaneous multi-Gaussian fit on them, thus obtaining a (channel, energy) pair. Finally a linear fit is made to all such pairs to obtain the final calibration. An example of the multi-Gaussian fits can be seen on figure \ref{analysis: calibration figure}, while the final linear fit can be seen on figure \note{figure reference in appendix} in the appendix. 
+The \Calibrator{} uses a peak-finding algorithm to roughly identify where the peaks are located. It then performs a simultaneous multi-Gaussian fit on them, thus obtaining a (channel, energy) pair. Finally a linear fit is made to all such pairs to obtain the final calibration. An example of the multi-Gaussian fits can be seen on figure \ref{analysis: figure: calibration}, while the final linear fit can be seen on figure \note{figure reference in appendix} in the appendix. 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/calibration.png}
 	\caption{\note{Insert caption and redo figure in .pdf format.}}
-	\label{analysis: calibration figure}
+	\label{analysis: figure: calibration}
 \end{figure}
 
 \subsection{Preparation of data}
@@ -117,8 +117,20 @@ Before the actual analysis can be performed, the raw data must be transformed to
 
 The very first step is to convert the raw data to a format \ROOT{} recognizes. This is done by utilizing the \Unpacker{}, a wrapper around the \ucesb{} tool. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
 
-As can be seen on figure \ref{analysis: AUSAlib pipeline}, the \Sorter{} is where the simulated files from \simX{} can join the pipeline. Thus from this point on, they are subject to the same treatment as the ordinary data. 
+As can be seen on figure \ref{analysis: figure: AUSAlib pipeline}, the \Sorter{} is also where the simulated files from \simX{} can join the pipeline. Thus from this point on, they are subject to the same treatment as the ordinary data. \\
 
+The \Sorter{} applies the energy calibration, and performs event-matching for the frontside and backside of each detector. Following this, the data is passed to the \Identifier{}, which corrects for the energy loss due to passage through the target and the dead layer of the detectors. It also attempts to identify any participating particle based on the energy deposited in the detectors. Finally, the data is passed to the \EventBuilder{}. \note{mention disabled strips somewhere.}
+
+As mentioned in section \ref{section: analysis: tools}, the \EventBuilder{} is the step where each event is analyzed individually. Thus this is offers an excellent opportunity to not only impose cuts on the data, but also define new relevant properties for each event. \\
+
+Since the data is passed to various other scripts afterwards, it would be nice to transform it into a consistent format. As it is when it enters the \EventBuilder{}, each event corresponds to a measurement of any number of particles in a single decay, which is difficult to work with. Thus the first cut is to discard any event with less than two $\alpha$-particle detections, while also removing any detected protons. Thus after this step, each event consists of three $\alpha$-particle detections (the third particle can be reconstructed if only two were detected). \note{revise. mention the differences between mul = 2 and mul = 3 events. (3 = possible to do momentum / energy cuts)} \\
+
+As for new properties, it now becomes possible to define the 4-momenta of each particle, both in the laboratory frame and the center-mass frame. Likewise all existing properties can be boosted to their center-mass variants. After this step, the data is finally ready for the actual analysis. \\
+
+\subsection{Analysis}
+After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. However, during a cursory check of the contents, a major issue was revealed with the TDC values. 
+
+\subsubsection{The issue}
 
 
 \note{section about how the data is transformed into analyzable data}

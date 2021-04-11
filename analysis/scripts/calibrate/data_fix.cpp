@@ -36,9 +36,9 @@ void repair_peaks(data_container* data) {
             double sum = std::accumulate(std::begin(bin), std::end(bin), 0.0);
             mean =  sum / bin.size();
         }
-        int step_req = mean*4; // if it jumps more than step_req in a single step, assume it is the edge we're looking for
+        int step_req = mean*3; // if it jumps more than step_req in a single step, assume it is the edge we're looking for
         int background = mean/4; // background limit, previous bin must be lower than this
-        for (int i = 1; i < bin.size(); i++) {
+        for (int i = 2; i < bin.size(); i++) {
             if (left[1] == 0) { // we are still searching for the right edge of the first peak
                 if (left[0] == 0) { // we are still searching for the left edge of the first peak
                     if (bin[i-1] < background) { // if the last bin was background noise

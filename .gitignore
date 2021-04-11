@@ -3,6 +3,10 @@ latex/*
 
 !latex/figures/*
 !latex/*.tex
+!analysis/**/calibration/SD
+!analysis/**/calibration/SU
+!analysis/**/calibration/Det1
+!analysis/**/calibration/Det2
 
 simX_fork/boost*
 
@@ -27,7 +31,7 @@ analysis/**/tdc/
 analysis/**/sim/raw/*
 analysis/**/sim/data/*
 analysis/**/sim/data_i/*
-analysis/**/calibration/
+analysis/**/calibration/*
 analysis/**/autogen/
 
 analysis/**/analysis/calibrate_reconstructed
