@@ -57,10 +57,6 @@ clean/%:
 	mkdir -p ../../sim3a_i/build
 	cd ../../sim3a_i/build; cmake ../
 
-../scripts/calibrate/build/Makefile: ../scripts/calibrate/CMakeLists.txt
-	mkdir -p ../calibrate/build
-	cd ../calibrate/build; cmake ../
-
 ../scripts/basic/build/Makefile: ../scripts/basic/CMakeLists.txt
 	mkdir -p ../scripts/basic/build
 	cd ../scripts/basic/build; cmake ../
@@ -75,7 +71,7 @@ analysis/build/Makefile: analysis/CMakeLists.txt
 
 # this variable keeps track of changes in all CMakeLists.txt and rebuilds if necessary
 # every time a CMakeLists is modified, run this target
-build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/calibrate/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
+build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
 
 ####################
 ### DEPENDENCIES ###
@@ -196,7 +192,7 @@ output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
 # $* --> abc/xyz
 
 # compiles a given figure program
-../scripts/basic/build/%: ../scripts/basic/%.cpp 
+../scripts/basic/build/%: ../scripts/basic/%.cpp ../scripts/calibrate/*
 	make -C ../scripts/basic/build/ $*
 
 # generates a single pdf file for the data source %
@@ -242,15 +238,19 @@ figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/s
 sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
 
 ### thesis specific figures ###
-# specific build target for tdc_plot since it also depends on the calibrate scripts
-../scripts/special/build/tdc_plot: ../scripts/special/tdc_plot.cpp ../scripts/calibrate/*
-	make -C ../scripts/special/build/ $*
-
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
 	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
 	$< $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
 
+# illustrates how the peaks depend on the multiplicity
+mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
+	@ echo "Creating figures/article/mul_compare.pdf"
+	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
+
+mul_compare_debug: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
+	@ echo "Creating figures/article/mul_compare.pdf"
+	$< match/2455_000m.root $(shell pwd)/figures/article/
 
 ###################
 ### SIMULATIONS ###

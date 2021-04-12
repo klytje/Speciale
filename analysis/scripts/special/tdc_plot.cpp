@@ -41,24 +41,19 @@ int main(int argc, char *argv[])
                 bt_plot.Fill(bt[i]);
             }
 
-            switch (det) {
-                case 0: // set the y axis labels
-                    c->cd(1);
-                    bt_plot.GetYaxis()->SetTitle("BT");
-                    bt_plot.GetYaxis()->SetTitleSize(0.1);
-                    bt_plot.GetYaxis()->SetTitleOffset(0.3);
-                    bt_plot.GetYaxis()->CenterTitle();
+            // y axis labels
+            if (det == 0) {
+                c->cd(1);
+                bt_plot.GetYaxis()->SetTitle("BT");
+                bt_plot.GetYaxis()->SetTitleSize(0.1);
+                bt_plot.GetYaxis()->SetTitleOffset(0.3);
+                bt_plot.GetYaxis()->CenterTitle();
 
-                    c->cd(5);
-                    ft_plot.GetYaxis()->SetTitle("FT");
-                    ft_plot.GetYaxis()->SetTitleSize(0.1);
-                    ft_plot.GetYaxis()->SetTitleOffset(0.3);
-                    ft_plot.GetYaxis()->CenterTitle();
-                    break;        
-                case 1:
-                    break;
-                default: // case 2 and 3, makes the FT plot
-                    break;
+                c->cd(5);
+                ft_plot.GetYaxis()->SetTitle("FT");
+                ft_plot.GetYaxis()->SetTitleSize(0.1);
+                ft_plot.GetYaxis()->SetTitleOffset(0.3);
+                ft_plot.GetYaxis()->CenterTitle();
             }
 
             // BT plot
@@ -76,6 +71,7 @@ int main(int argc, char *argv[])
             ft_plot.GetXaxis()->SetTitleOffset(0.3);
             ft_plot.GetXaxis()->CenterTitle();
 
+            // x axis labels
             ft_plot.SetLabelSize(0, "X");
             ft_plot.SetTickLength(0, "X");
             ft_plot.SetLabelSize(0, "Y");
@@ -91,7 +87,7 @@ int main(int argc, char *argv[])
     // before
     TCanvas *cb = new TCanvas("before", "", 1200, 600);
     plot(cb);
-    string path = plot::path + "tdc_plot_before.pdf";
+    string path = plot::path + "tdc_plot_before" + plot::format;
     cb->SaveAs(path.c_str());
 
     repair_peaks(&data);
@@ -99,6 +95,6 @@ int main(int argc, char *argv[])
     // after
     TCanvas *ca = new TCanvas("after", "", 1200, 600);
     plot(ca);
-    path = plot::path + "tdc_plot_after.pdf";
+    path = plot::path + "tdc_plot_after" + plot::format;
     ca->SaveAs(path.c_str());
 }

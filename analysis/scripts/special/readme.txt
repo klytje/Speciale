@@ -11,4 +11,6 @@ calibrate_setup <setup/setup.json> <calibration/setup.json>: duplicates the setu
 ### ARTICLE FIGURES ###
 These scripts have been made specifically for my thesis, and are probably not relevant for anyone else. They should still be functional, however. 
 
-TDC_plot <output/X.root>: compares the TDC values for the four detectors. Note that the locations of the peaks are hardcoded into the script. 
+tdc_plot <output/X1.root> ... <output/XN.root> <output folder>: compares the TDC values for the four detectors. Note that the locations of the peaks are taken from ../calibrate/plots.cpp (FT & BT), but they can be overwritten locally in any .cpp file.
+
+mul_compare <match/X1.root> ... <match/XN.root> <output folder>: illustrates how each peak depends on "mul". 
