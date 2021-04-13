@@ -15,12 +15,12 @@ The basic assumption of R-matrix theory is that the space between the two nuclei
 As is usually the case when defining two separate regions in quantum mechanics, the wave functions, along with their derivatives, are then required to match at the boundary surface. \\
 
 \subsection{R-matrix theory}
-Consider the scattering by a potential for some arbitrary partial wave. The assumption is that the potential $V$ only differs from the Coulomb potential $V_C$ by a short-range term, such that
+Consider the potential scattering of some arbitrary partial wave. A core assumption of R-matrix theory is that the potential $V$ only differs from the Coulomb potential $V_C$ by a short-range term, such that
 \begin{align*}
 	V(r) \xrightarrow[r \rightarrow \infty]{} V_C(r) = \frac{Z_1 Z_2 e^2}{4\pi\epsilon_0 r}
 \end{align*}
 
-The central idea of R-matrix theory is now that beyond some specific radius $r = a$, the short-range term can be neglected. Thus this interaction radius $a$ effectively divides space into two regions: an internal region, where the nuclear interactions must be accounted for, and an external region, where only the Coulomb interaction matters. The internal region is treated as a confined system, allowing the total wave function to be expanded into a finite set of eigenstates. In the external region, the wave function can be approximated by its asymptotic value, leaving only an unknown phase shift. By matching the two wave functions at the boundary, this phase shift can be identified.
+The central idea of the theory is that beyond some specific radius $r = a$, the short-range term can be neglected. Thus this interaction radius $a$ effectively divides space into two regions: an internal region, where the nuclear interactions must be accounted for, and an external region, where only the Coulomb interaction matters. The internal region is treated as a confined system, allowing the total wave function to be expanded into a finite set of eigenstates. In the external region, the wave function can be approximated by its asymptotic value, leaving only an unknown phase shift. By matching the two wave functions at the boundary, this phase shift can be identified.
 
 \subsubsection{The internal and external wave functions}
 Assume that we have two particles with the reduced mass $\mu$, which interacts through the central potential $V$ with some positive energy 
@@ -74,10 +74,10 @@ where $I_l = G_l - iF_l$ and $O_l = G_l + iF_l$ are the incoming and outgoing Co
 
 As per the base assumption of R-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\phi_j$:
 \begin{align} \label{theory: r-matrix: internal expansion}
-	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \phi_j(r)
+	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \varphi_j(r)
 \end{align}
 
-To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. They are not required to be orthogonal or to satisfy any specific boundary condition at $r = a_c$. Instead continuity of the total wave function $u_l$ and its first derivative across this boundary will be used to connect the internal and external wave functions. 
+To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. Although they are not strictly required to be orthogonal at this stage, we will assume they are for later use. Neither are they required to satisfy any specific boundary condition at $r = a$. Instead continuity of the total wave function $u_l$ and its first derivative across the boundary will be used to connect the internal and external wave functions. 
 
 \subsubsection{Bloch operator}
 At this stage, a major issue becomes apparent: the Hamiltonian $H_l$ is not Hermitian in the internal region:
@@ -86,14 +86,14 @@ At this stage, a major issue becomes apparent: the Hamiltonian $H_l$ is not Herm
 &= -\frac{\hbar^2}{2\mu}\bigg(f(a)g'(a) - g(a)f'(a)\bigg)
 \end{align}
 
-Bloch \note{citation needed} neatly solved this issue by introducing a new surface operator
+Bloch \cite{Bloch} neatly solved this issue by introducing a new surface operator
 \begin{align*}
 	\mathcal{L} = \frac{\hbar^2}{2\mu}\delta(r-a)\frac{d}{dr}
 \end{align*}
 
 The operator is specifically designed to cancel (\ref{theory: r-matrix: hamiltonian hermitian}), as can be seen by repeating the calculation:
 \begin{align*}
-	\int_0^a f \mathcal{L} g dr - \int_0^a g \mathcal{L} f dr &= \bigg(-\frac{\hbar^2}{2\mu}\bigg)\bigg[\int_0^a f \delta(r-a)\frac{d}{dr}gdr - \int_0^a g \delta(r-a)\frac{d}{dr}fdr \bigg] \nonumber \\ 
+	\int_0^a f \mathcal{L} g dr - \int_0^a g \mathcal{L} f dr &= \bigg(-\frac{\hbar^2}{2\mu}\bigg)\bigg[\int_0^a f \delta(r\shortminus a)\frac{d}{dr}gdr - \int_0^a g \delta(r\shortminus a)\frac{d}{dr}fdr \bigg] \nonumber \\ 
 	&= \frac{\hbar^2}{2\mu}\bigg(f(a)g'(a) - g(a)f'(a)\bigg)
 \end{align*}
 
@@ -106,13 +106,13 @@ This equation turns out to be equivalent to
 \begin{align*}
 	(H_l - E)u^{\text{int}}_l = 0 && u_l^{\text{int} \prime}(a) = u_l^{\text{ext} \prime}(a)
 \end{align*}
-which is the first half of our continuity condition for the total wave function. Thus by supplementing it with the other half
+that is, the original Schrödinger equation (\ref{theory: r-matrix: schrodinger}) confined to the internal region, along with the first half of our continuity condition for the total wave function. Thus by supplementing it with the other half
 \begin{align*}
 	u^{\text{int}}_l(a) = u^{\text{ext}}_l(a)
 \end{align*}
 the Bloch operator guarantees continuity of the total wave function and its first derivative across the boundary. 
 
-\subsubsection{The R-matrix}
+\subsubsection{The calculable R-matrix}
 The namesake of the theory is defined by the equation
 \begin{align} \label{theory: r-matrix: r-matrix}
 	u_l(a) = R_l(a, E)au'_l(a)
@@ -121,27 +121,95 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is a single number. More generally its dimensions are equal to the number of channels; more on this later \note{remember this}. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the new basis $\phi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is just a number; generally it will be a matrix of dimension equal to the number of channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the new basis $\phi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
-	\sum_{j}^{N}\langle \phi_i | T_l + \mathcal{L} + V - E | \phi_j \rangle c_j = \frac{\hbar^2}{2\mu} \phi_i(a)u^{\text{ext}\prime}_l(a)
+	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
 
 Here it is convenient to introduce the symmetric $\bm{C}$-matrix 
 \begin{align*}
-	C_{ij}(E) = \langle \phi_i | T_l + \mathcal{L} + V - E | \phi_j \rangle
+	\bm{C}_{ij}(E) = \langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle
 \end{align*}
 
 By solving equation (\ref{theory: r-matrix: r-matrix C}) for the expansion coefficients $c_j$, we get the equation
 \begin{align*}
-	c_j = \frac{\hbar^2}{2\mu}u_l^{\text{ext}\prime}(a)\sum_{i}^{N}(\bm{C}^{-1})_{ij}\phi_i(a)
+	c_j = \frac{\hbar^2}{2\mu}u_l^{\text{ext}\prime}(a)\sum_{i}^{N}(\bm{C}^{-1})_{ij}\varphi_i(a)
 \end{align*}
 
 We can insert them back into the expansion equation (\ref{theory: r-matrix: internal expansion}) and compare with the first equation for the R-matrix (\ref{theory: r-matrix: r-matrix}) to get an equation for the calculable $R$-matrix
 \begin{align*}
-	R_l(a, E) = \frac{\hbar^2}{2\mu a}\sum_{i, j}^{N}\phi_i(a)(\bm{C}^{-1})_{ij}\phi_j(a)
+	R_l(a, E) = \frac{\hbar^2}{2\mu a}\sum_{i, j}^{N}\varphi_i(a)(\bm{C}^{-1})_{ij}\varphi_j(a)
 \end{align*}
 
-With these two equations defining the $R$-matrix, we have all the tools necessary for determining both the phase shift and the scattering matrix $U_l$ from equation (\ref{theory: r-matrix: solution 2}). For the phase shift, simply insert the solution for the external wave function (\ref{theory: r-matrix: solution 1}) into the first definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}), and solve for $\delta_l$. Similarly for the scattering matrix, (\ref{theory: r-matrix: solution 2}) can be inserted into the same definition (\ref{theory: r-matrix: r-matrix}). 
+To complete this definition of $R$, we thus need to invert the $C$-matrix. To do this, we will finally need the orthonormality of the basis functions $\varphi_i(r)$. Remember that $\bm{C}$ implicitly depends on the energy $E$. Consider its non-zero eigenvalues $E_{nl}$ and corresponding eigenvectors $\bm{v}_{nl}$ evaluated for $E = 0$
+\begin{align*}
+	\bm{C}(0)\bm{v}_{nl} = E_{nl}\bm{v}_{nl}
+\end{align*}
+
+with the orthonormality condition $\bm{v}_{nl}^T \bm{v}_{nl} = \delta_{nn'}$. The requirements listed here are exactly what we need to invert it through its eigendecomposition, where the inverse is given as \note{link to wikipedia? maybe do the actual calculations in an appendix \href{https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix\#Matrix_inverse_via_eigendecomposition}{link}} 
+
+\begin{align*}
+	\bm{C}(0)^{-1} = \sum_n^N \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl}}
+\end{align*}
+
+This can easily be modified to work for any non-zero energy $E$: simply subtract it from the denominator, such that
+\begin{align} \label{theory: r-matrix: C-inverse}
+	\bm{C}(E)^{-1} = \sum_n^N \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl} - E}
+\end{align}
+
+Before we get to one of the primary results of R-matrix theory, there is a minor detail that should be corrected. So far we have worked with a finite basis, and thus everything is only approximately correct. To fix this issue, we can simply let $N$ tend toward infinity in all our sums. Going on with the derivation, we can now insert (\ref{theory: r-matrix: C-inverse}) into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix C}) to get the equation
+\begin{align*}
+	R_l(E) &= \frac{\hbar^2}{2\mu a} \sum_{i, j}^{\infty} \phi_i(a)\bigg(\sum_n^\infty \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl} - E}\bigg)_{ij}\phi_j(a) \\
+	&= \sum_{n}^{\infty} \frac{\gamma^2_{nl}}{E_{nl} - E}
+\end{align*}
+
+where $\gamma_{nl}$ is defined as 
+\begin{align} \label{theory: r-matrix: reduced width}
+	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \sum_{i}^{\infty}\bm{v}_{nl, i}\varphi_i(a)
+\end{align}
+
+$\gamma_{nl}$ is known as the reduced width amplitude. It is easier to see its significance by casting (\ref{theory: r-matrix: reduced width}) into its integral form \note{citation \href{https://www.researchgate.net/publication/238973586_AZURE_An_R-matrix_code_for_nuclear_astrophysics\#pf11}{link, eq 7b}}, 
+\begin{align*}
+	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \int dS X^*_l\varphi
+\end{align*}
+
+where \note{ask Hans about this!}. \\
+
+Note that the R-matrix has an infinity of real simple poles, bounded from below. If we instead only want to deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. Instead of going through the derivation, we refer to \note{citation}, and list the primary result
+\begin{align} \label{theory: r-matrix: Gamma gamma}
+	\Gamma = \frac{2 \gamma_{nl}^2 P(E_R)}{1 + \gamma_{nl}^2 S'(E_R)}
+\end{align}
+which relates the usual width $\Gamma$ to the reduced width $\gamma_{nl}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant when we want to compare simulations from different reaction models. 
+
+\subsubsection{Applications}
+One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). \\
+
+For the phase shift, we obtain the equation
+\begin{align*}
+	F_l(\rho) \cos\delta_l  + G_l(\rho) \sin\delta_l = \rho R_l(E)\big[F_l'(\rho)\cos\delta_l + G_l'(\rho)\sin\delta_l \big]
+\end{align*}
+
+By solving for the phase shift $\delta_l$, we get the equation
+\begin{align*}
+	\tan\delta_l = -\frac{F_l(\rho) - \rho R_l(E)F_l'(\rho)}{G_l(\rho) - \rho R_l(E)G_l'(\rho)}
+\end{align*}
+
+We can repeat the exact same calculations for the scattering matrix to get the equation
+\begin{align} \label{theory: r-matrix: scattering matrix}
+	U_l = \frac{I_l(\rho) - \rho R_l(E)I_l'(\rho)}{O_l(\rho) - \rho R_l(E)O_l'(\rho)} = e^{2i\phi_l}\frac{1 - L_l^* R_l(E)}{1 - L_l R_l(E)}
+\end{align}
+
+The third term is obtained by defining the logarithmic derivative of $O_l$ at the channel radius (remember $\rho = ak$), along with the hard-sphere phase shift $\phi_l$ \note{do the actual calculation in an appendix}
+\begin{align*}
+	L_l = \rho \frac{O_l'(\rho)}{O_l(\rho)} && \phi_l = -\arctan \frac{F_l(\rho)}{G_l(\rho)}
+\end{align*}
+
+$L_l$ is commonly separated into its real and imaginary parts as
+\begin{align*}
+	L_l = S_l + iP_l
+\end{align*}
+where $S_l$ and $P_l$ are the shift and penetrability factors. 
+
 
 \subsubsection{Other stuff}
 The first step is to introduce the idea of a channel. The wave function at the boundary is expanded in terms of channels, each defined by a specific particle pair with some angular momentum coupling. Thus each channel index can be specified as $c = \alpha s l$, where $s$ is the channel spin, $l$ the relative angular momentum, while $\alpha$ defines the particle pair. \\
