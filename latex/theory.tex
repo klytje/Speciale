@@ -1,14 +1,170 @@
 \section{Theory}
 This section will introduce all of the relevant theory for this thesis. 
 
-\subsection{Compound nucleus mechanism}
-Bohr suggested this in 1936. 
+\subsection{The compound nucleus}
+One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
+
+Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, which is based on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually lead to the development of the R-matrix theory. 
 
 \subsection{R-matrix theory}
-There are two main issues with the compound nucleus description: firstly, it strictly defines a specific physical picture of how a reaction proceeds \note{expand somewhere, from first page of Lane}, and secondly, it is based on time-dependent perturbation theory. It is especially hard to justify the second issue, since nuclear forces can certainly not be treated as mere perturbations. Thus R-matrix theory was developed to solve these issues. \\
-
-Note that there is nothing wrong with the physical picture provided by the compound nucleus description. In fact, it is rather useful, and will be used here when describing R-matrix theory as well. The problem is that in the compound nucleus description, it is the \textit{only} picture available; R-matrix theory can theoretically describe all types of reaction mechanisms. \\
-
-The goal is to describe the intermediate compound nucleus in terms of a set of states, or \textit{channels}, as they are called within the theory. To do this, an interaction radius $a_c$ is defined. The idea is that this radius divides the space between the two particles into two regions: outside the radius, the only interaction is the Coulomb force, while inside the radius the nuclear forces dominate. Since this radius obviously depends on the strength of the Coulomb force, it will in general depend on the interacting nuclei. A popular choice for its value is to use the nuclear radii \note{reference Lane p. 266 eq 1.1}: \begin{align*}
+The basic assumption of R-matrix theory is that the space between the two nuclei can be divided into two regions: an internal region where the total wave function can be expanded into a complete set of eigenstates, and an external region consisting of the possible particle pairs, or \textit{channels}. Interactions within the internal region are dominated by the nuclear forces, while the external region contains only the Coulomb interaction. The boundary between these two regions is defined as the interaction radius $a_c$. Since this radius obviously depends on the strength of the Coulomb force, it will in general depend on the interacting nuclei. A popular choice for its value is to use the nuclear radii \note{reference Lane p. 266 eq 1.1}: 
+\begin{align*}
 	a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx 1.4fm
 \end{align*}
+
+As is usually the case when defining two separate regions in quantum mechanics, the wave functions, along with their derivatives, are then required to match at the boundary surface. \\
+
+\subsection{R-matrix theory}
+Consider the scattering by a potential for some arbitrary partial wave. The assumption is that the potential $V$ only differs from the Coulomb potential $V_C$ by a short-range term, such that
+\begin{align*}
+	V(r) \xrightarrow[r \rightarrow \infty]{} V_C(r) = \frac{Z_1 Z_2 e^2}{4\pi\epsilon_0 r}
+\end{align*}
+
+The central idea of R-matrix theory is now that beyond some specific radius $r = a$, the short-range term can be neglected. Thus this interaction radius $a$ effectively divides space into two regions: an internal region, where the nuclear interactions must be accounted for, and an external region, where only the Coulomb interaction matters. The internal region is treated as a confined system, allowing the total wave function to be expanded into a finite set of eigenstates. In the external region, the wave function can be approximated by its asymptotic value, leaving only an unknown phase shift. By matching the two wave functions at the boundary, this phase shift can be identified.
+
+\subsubsection{The internal and external wave functions}
+Assume that we have two particles with the reduced mass $\mu$, which interacts through the central potential $V$ with some positive energy 
+\begin{align*}
+	E = \frac{\hbar^2 k^2}{2\mu}
+\end{align*}
+
+By applying the Schrödinger equation to this situation, we get
+\begin{align*}
+	\bigg(-\frac{\hbar^2}{2\mu} \Delta + V(r)\bigg)\psi(\bm{r}) = E\psi(\bm{r})
+\end{align*}
+
+Since we are dealing with a central potential, the wave function can be factorized into its radial and spherical components
+\begin{align} \label{theory: r-matrix: factorization}
+	\psi(r, \theta, \phi) = R_l(r) Y^m_l(\theta, \phi)
+\end{align}
+
+Note that in contrast to the usual factorization, $R_l$ also depends on the orbital angular momentum $l$ since we are still dealing with only a single partial wave. To simplify matters a bit, we make the change of variables $u(r) = rR(r)$, such that (\ref{theory: r-matrix: factorization}) becomes
+\begin{align*}
+	\psi(r, \theta, \phi) = \frac{u_l(r) Y^m_l(\theta, \phi)}{r}
+\end{align*}
+
+This allows us to write the radial part of the Schrödinger equation as
+\begin{align*}
+	\bigg[-\frac{\hbar^2}{2\mu} \bigg(\frac{d^2}{dr^2} + \frac{l(l+1)}{r^2} \bigg) + V(r)\bigg]u_l(r) = Eu_l(r)	
+\end{align*}
+
+Defining everything on the left-hand side as the Hamiltonian $H_l$, this can be written as
+\begin{align} \label{theory: r-matrix: schrodinger}
+	(H_l - E)u_l = 0
+\end{align}
+
+We are interested in the bounded radial solutions $u_l$ of (\ref{theory: r-matrix: schrodinger}) vanishing at the origin $u_l(0) = 0$. The positive energy solutions to this have the asymptotic behaviour 
+\begin{align} \label{theory: r-matrix: solution 1}
+	u_l(r) \xrightarrow[r\rightarrow \infty]{} F_l(\eta, \rho) \cos \delta_l  + G_l(\eta, \rho) \sin \delta_l 
+\end{align}
+where $F_l$ and $G_l$ are the regular and irregular Coulomb functions, and $\delta_l$ the phase shift. The arguments to the Coulomb functions are $\rho = kr$ and the Sommerfeld parameter
+\begin{align*}
+	\eta = \frac{Z_1 Z_2 e^2}{4 \pi \epsilon_0 \hbar v}
+\end{align*}
+where $v = \sqrt{2E/\mu}$ is the relative velocity of the interacting nuclei. \\
+
+Another possible solution is given as
+\begin{align} \label{theory: r-matrix: solution 2}
+u_l(r) \xrightarrow[r\rightarrow \infty]{} I_l(\eta, \rho)  - U_l O_l(\eta, \rho) 
+\end{align}
+where $I_l = G_l - iF_l$ and $O_l = G_l + iF_l$ are the incoming and outgoing Coulomb functions, and $U_l$ the scattering matrix defined by 
+\begin{align*}
+	U_l = e^{2i\delta_l}
+\end{align*}
+
+As per the base assumption of R-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\phi_j$:
+\begin{align} \label{theory: r-matrix: internal expansion}
+	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \phi_j(r)
+\end{align}
+
+To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. They are not required to be orthogonal or to satisfy any specific boundary condition at $r = a_c$. Instead continuity of the total wave function $u_l$ and its first derivative across this boundary will be used to connect the internal and external wave functions. 
+
+\subsubsection{Bloch operator}
+At this stage, a major issue becomes apparent: the Hamiltonian $H_l$ is not Hermitian in the internal region:
+\begin{align} \label{theory: r-matrix: hamiltonian hermitian}
+\int_0^a fH_lgdr - \int_0^a gH_lfdr &= \bigg(-\frac{\hbar^2}{2\mu}\bigg)\bigg[\int_0^a f \frac{d^2}{dr^2}gdr - \int_0^a g \frac{d^2}{dr^2}fdr \bigg] \nonumber \\ 
+&= -\frac{\hbar^2}{2\mu}\bigg(f(a)g'(a) - g(a)f'(a)\bigg)
+\end{align}
+
+Bloch \note{citation needed} neatly solved this issue by introducing a new surface operator
+\begin{align*}
+	\mathcal{L} = \frac{\hbar^2}{2\mu}\delta(r-a)\frac{d}{dr}
+\end{align*}
+
+The operator is specifically designed to cancel (\ref{theory: r-matrix: hamiltonian hermitian}), as can be seen by repeating the calculation:
+\begin{align*}
+	\int_0^a f \mathcal{L} g dr - \int_0^a g \mathcal{L} f dr &= \bigg(-\frac{\hbar^2}{2\mu}\bigg)\bigg[\int_0^a f \delta(r-a)\frac{d}{dr}gdr - \int_0^a g \delta(r-a)\frac{d}{dr}fdr \bigg] \nonumber \\ 
+	&= \frac{\hbar^2}{2\mu}\bigg(f(a)g'(a) - g(a)f'(a)\bigg)
+\end{align*}
+
+Thus when combined with the Hamiltonian, $H_l + \mathcal{L}$, the total operator \textit{is} Hermitian. This new combined operator allows us to approximate the Schrödinger equation for the internal region by the Bloch-Schrödinger equation
+\begin{align} \label{theory: r-matrix: Bloch-Schrödinger}
+	(H_l + \mathcal{L} - E)u^{\text{int}}_l = \mathcal{L}u^{\text{int}}_l
+\end{align}
+
+This equation turns out to be equivalent to
+\begin{align*}
+	(H_l - E)u^{\text{int}}_l = 0 && u_l^{\text{int} \prime}(a) = u_l^{\text{ext} \prime}(a)
+\end{align*}
+which is the first half of our continuity condition for the total wave function. Thus by supplementing it with the other half
+\begin{align*}
+	u^{\text{int}}_l(a) = u^{\text{ext}}_l(a)
+\end{align*}
+the Bloch operator guarantees continuity of the total wave function and its first derivative across the boundary. 
+
+\subsubsection{The R-matrix}
+The namesake of the theory is defined by the equation
+\begin{align} \label{theory: r-matrix: r-matrix}
+	u_l(a) = R_l(a, E)au'_l(a)
+\end{align}
+Thus its inverse 
+\begin{align*}
+	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
+\end{align*}
+is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is a single number. More generally its dimensions are equal to the number of channels; more on this later \note{remember this}. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the new basis $\phi_i(r)$:
+\begin{align} \label{theory: r-matrix: r-matrix C}
+	\sum_{j}^{N}\langle \phi_i | T_l + \mathcal{L} + V - E | \phi_j \rangle c_j = \frac{\hbar^2}{2\mu} \phi_i(a)u^{\text{ext}\prime}_l(a)
+\end{align}
+
+Here it is convenient to introduce the symmetric $\bm{C}$-matrix 
+\begin{align*}
+	C_{ij}(E) = \langle \phi_i | T_l + \mathcal{L} + V - E | \phi_j \rangle
+\end{align*}
+
+By solving equation (\ref{theory: r-matrix: r-matrix C}) for the expansion coefficients $c_j$, we get the equation
+\begin{align*}
+	c_j = \frac{\hbar^2}{2\mu}u_l^{\text{ext}\prime}(a)\sum_{i}^{N}(\bm{C}^{-1})_{ij}\phi_i(a)
+\end{align*}
+
+We can insert them back into the expansion equation (\ref{theory: r-matrix: internal expansion}) and compare with the first equation for the R-matrix (\ref{theory: r-matrix: r-matrix}) to get an equation for the calculable $R$-matrix
+\begin{align*}
+	R_l(a, E) = \frac{\hbar^2}{2\mu a}\sum_{i, j}^{N}\phi_i(a)(\bm{C}^{-1})_{ij}\phi_j(a)
+\end{align*}
+
+With these two equations defining the $R$-matrix, we have all the tools necessary for determining both the phase shift and the scattering matrix $U_l$ from equation (\ref{theory: r-matrix: solution 2}). For the phase shift, simply insert the solution for the external wave function (\ref{theory: r-matrix: solution 1}) into the first definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}), and solve for $\delta_l$. Similarly for the scattering matrix, (\ref{theory: r-matrix: solution 2}) can be inserted into the same definition (\ref{theory: r-matrix: r-matrix}). 
+
+\subsubsection{Other stuff}
+The first step is to introduce the idea of a channel. The wave function at the boundary is expanded in terms of channels, each defined by a specific particle pair with some angular momentum coupling. Thus each channel index can be specified as $c = \alpha s l$, where $s$ is the channel spin, $l$ the relative angular momentum, while $\alpha$ defines the particle pair. \\
+
+At the boundary surface, the radial part of the external channel wave function takes the form
+\begin{align} \label{theory: r-matrix radial wave}
+	u_c^{\text{ext}} = \bigg(\frac{1}{v_c}\bigg)^{1/2} (y_c I_c + x_c O_c)
+\end{align}
+where $I_c$ and $O_c$ represents the incoming and outgoing wave functions, which in general depends on both the regular and irregular Coulomb wave functions $F_c$ and $G_c$. $x_c$ and $y_c$ then represents the amplitudes of the outgoing and incoming wave functions, respectively, while $v_c$ is the relative channel velocity. This allows the definition of the collision matrix $\bm{U}$
+\begin{align} \label{theory: r-matrix collision matrix}
+	x_c = -\sum_{c'}\bm{U}_{cc'} y_{c'}
+\end{align}
+which relates the amplitudes of the incoming and outgoing waves. By inserting eq \ref{theory: r-matrix collision matrix} into eq \ref{theory: r-matrix radial wave}, the amplitude $x_c$ can be eliminated:
+\begin{align*}
+	u_c^{\text{ext}} = \bigg(\frac{1}{v_c}\bigg)^{1/2} \bigg(y_c I_c - \sum_{c'} \bm{U}_{cc'}y_{c'}O_c\bigg)
+\end{align*}
+
+As per the assumption of the internal region, the total internal wave function is expanded into some finite basis of $N$ linearly independent functions $\phi_j$
+\begin{align*}
+	u_l^{\text{int}} = \sum^N_{j} c_j \phi_j
+\end{align*}
+
+\begin{gather*}
+	\eta = \frac{Z_1 Z_2 e^2}{\hbar v_0} = \frac{Z_1 Z_2 e^2}{\hbar} \sqrt{\frac{\mu}{2E}} \\
+	\eta = \frac{Z_1 Z_2 e^2 \mu}{\hbar^2 k} = \frac{Z_1 Z_2 e^2 \mu}{\hbar^2} \sqrt{\frac{\hbar^2}{2\mu E}} = \frac{Z_1 Z_2 e^2}{\hbar} \sqrt{\frac{\mu}{2E}}
+\end{gather*}
