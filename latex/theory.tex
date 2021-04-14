@@ -48,20 +48,16 @@ This allows us to write the radial part of the Schrödinger equation as
 	\bigg[-\frac{\hbar^2}{2\mu} \bigg(\frac{d^2}{dr^2} + \frac{l(l+1)}{r^2} \bigg) + V(r)\bigg]u_l(r) = Eu_l(r)	
 \end{align*}
 
-Defining everything on the left-hand side as the Hamiltonian $H_l$, this can be written as
+Defining everything on the left-hand side as the Hamiltonian $H_l$, the equation can be restated more simply as
 \begin{align} \label{theory: r-matrix: schrodinger}
 	(H_l - E)u_l = 0
 \end{align}
 
-We are interested in the bounded radial solutions $u_l$ of (\ref{theory: r-matrix: schrodinger}) vanishing at the origin $u_l(0) = 0$. The positive energy solutions to this have the asymptotic behaviour 
+We are interested in the bounded radial solutions $u_l$ of (\ref{theory: r-matrix: schrodinger}) vanishing at the origin $u_l(0) = 0$ \note{why}. The positive energy solutions to this have the asymptotic behaviour 
 \begin{align} \label{theory: r-matrix: solution 1}
 	u_l(r) \xrightarrow[r\rightarrow \infty]{} F_l(\eta, \rho) \cos \delta_l  + G_l(\eta, \rho) \sin \delta_l 
 \end{align}
-where $F_l$ and $G_l$ are the regular and irregular Coulomb functions, and $\delta_l$ the phase shift. The arguments to the Coulomb functions are $\rho = kr$ and the Sommerfeld parameter
-\begin{align*}
-	\eta = \frac{Z_1 Z_2 e^2}{4 \pi \epsilon_0 \hbar v}
-\end{align*}
-where $v = \sqrt{2E/\mu}$ is the relative velocity of the interacting nuclei. \\
+where $F_l$ and $G_l$ are the regular and irregular Coulomb functions, and $\delta_l$ the phase shift. The arguments to the Coulomb functions are $\rho = kr$ and the Sommerfeld parameter $\eta = Z_1 Z_2 e^2 / 4 \pi \epsilon_0 \hbar v$, with $v = \sqrt{2E/\mu}$ the relative velocity of the interacting nuclei. It can be shown that the two Coulomb functions satisfies the Wronskian (temporarily suppressing $\rho$ and $\eta$) $F_l' G_l - G_l' F_l = 1$, which will be useful later. \\
 
 Another possible solution is given as
 \begin{align} \label{theory: r-matrix: solution 2}
@@ -77,7 +73,7 @@ As per the base assumption of R-matrix theory, we can approximate the radial wav
 	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \varphi_j(r)
 \end{align}
 
-To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. Although they are not strictly required to be orthogonal at this stage, we will assume they are for later use. Neither are they required to satisfy any specific boundary condition at $r = a$. Instead continuity of the total wave function $u_l$ and its first derivative across the boundary will be used to connect the internal and external wave functions. 
+To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. Although they are not strictly required to be orthogonal at this stage, we will assume they are for later use. Neither are they required to satisfy any specific boundary condition at $r = a$. Instead, continuity of the total wave function $u_l$ and its first derivative across the boundary will be used to connect the internal and external wave functions. 
 
 \subsubsection{Bloch operator}
 At this stage, a major issue becomes apparent: the Hamiltonian $H_l$ is not Hermitian in the internal region:
@@ -121,12 +117,12 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is just a number; generally it will be a matrix of dimension equal to the number of channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the new basis $\phi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is just a number; generally it will be a matrix of dimension equal to the number of channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
 	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
 
-Here it is convenient to introduce the symmetric $\bm{C}$-matrix 
+Here it is convenient to introduce the symmetric $\bm{C}$-matrix \note{what does it mean}
 \begin{align*}
 	\bm{C}_{ij}(E) = \langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle
 \end{align*}
@@ -182,33 +178,38 @@ Note that the R-matrix has an infinity of real simple poles, bounded from below.
 which relates the usual width $\Gamma$ to the reduced width $\gamma_{nl}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant when we want to compare simulations from different reaction models. 
 
 \subsubsection{Applications}
-One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). \\
+One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
 
 For the phase shift, we obtain the equation
 \begin{align*}
-	F_l(\rho) \cos\delta_l  + G_l(\rho) \sin\delta_l = \rho R_l(E)\big[F_l'(\rho)\cos\delta_l + G_l'(\rho)\sin\delta_l \big]
+	F_l \cos\delta_l  + G_l \sin\delta_l = \rho R_l\big[F_l'\cos\delta_l + G_l'\sin\delta_l \big]
 \end{align*}
 
 By solving for the phase shift $\delta_l$, we get the equation
 \begin{align*}
-	\tan\delta_l = -\frac{F_l(\rho) - \rho R_l(E)F_l'(\rho)}{G_l(\rho) - \rho R_l(E)G_l'(\rho)}
+	\tan\delta_l = -\frac{F_l - \rho R_l F_l'}{G_l - \rho R_l G_l'}
 \end{align*}
 
 We can repeat the exact same calculations for the scattering matrix to get the equation
 \begin{align} \label{theory: r-matrix: scattering matrix}
-	U_l = \frac{I_l(\rho) - \rho R_l(E)I_l'(\rho)}{O_l(\rho) - \rho R_l(E)O_l'(\rho)} = e^{2i\phi_l}\frac{1 - L_l^* R_l(E)}{1 - L_l R_l(E)}
+	U_l = \frac{I_l - \rho R_l I_l'}{O_l - \rho R_l O_l'} = e^{2i\phi_l}\frac{1 - L_l^* R_l}{1 - L_l R_l}
 \end{align}
 
-The third term is obtained by defining the logarithmic derivative of $O_l$ at the channel radius (remember $\rho = ak$), along with the hard-sphere phase shift $\phi_l$ \note{do the actual calculation in an appendix}
+The third term is obtained through some tedious calculations by defining the logarithmic derivative of $O_l$ at the channel radius, along with the hard-sphere phase shift $\phi_l$ as
 \begin{align*}
-	L_l = \rho \frac{O_l'(\rho)}{O_l(\rho)} && \phi_l = -\arctan \frac{F_l(\rho)}{G_l(\rho)}
+	L_l = \rho \frac{O_l'}{O_l} && \phi_l = -\arctan \frac{F_l}{G_l}
 \end{align*}
 
-$L_l$ is commonly separated into its real and imaginary parts as
+The meaning of these two equations are not that relevant for this discussion. It is worth noting that $L_l$ is typically an imaginary number, and so it is often split into its real and imaginary parts as
 \begin{align*}
 	L_l = S_l + iP_l
 \end{align*}
-where $S_l$ and $P_l$ are the shift and penetrability factors. 
+
+where $S_l$ and $P_l$ are called the shift and penetrability factors. Through the definition of $L_l$ and the Wronskian relation satisfied by the Coulomb functions $F_l$ and $G_l$, a short derivation (see appendix \ref{appendix: shift and pen}) gives the equation for $P_l$ and $S_l$
+\begin{align*}
+	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
+\end{align*}
+
 
 
 \subsubsection{Other stuff}

@@ -1,26 +1,17 @@
 \appendix
-\section{Solving the scattering potential}
-The starting point for this appendix is equation (\ref{theory: r-matrix: scattering matrix}), replicated here for convenience:
+\section{Supplementary calculations}
+\subsection{Deriving the shift and penetrability factors}\label{appendix: shift and pen}
+The starting point for these calculations is the Wronskian relation satisfied by the Coulomb functions $F_l$ and $G_l$
 \begin{align*}
-	U_l = \frac{I_l(\rho) - \rho R_l(E)I_l'(\rho)}{O_l(\rho) - \rho R_l(E)O_l'(\rho)} = e^{2i\phi_l}\frac{1 - L_l^* R_l(E)}{1 - L_l R_l(E)}
+	F_l'G_l - G_l'F_l = 1
 \end{align*}
 
-We want to derive all the steps between the second and third term. \\
+Starting from the definition of $L_l$, and remembering that $I_l = G_l - iF_l$ and $O_l = G_l + iF_l$, we can now derive the expressions for $S_l$ and $P_l$
 \begin{align*}
-	I_l O_l' - I_l' O_l = 2i
-\end{align*}
-
-\begin{align*}
-	\frac{I_l'}{I_l} = \frac{I_l O_l' - 2i}{O_l I_l} = \frac{O_l'}{O_l} - \frac{2i}{O_l I_l}
-\end{align*}
-
-\begin{align*}
-		U_l &= \frac{I_l - \rho R_l I_l'}{O_l - \rho R_l O_l'} \\
-		&= \frac{I_l(1 - I_l^2 \rho R_l \frac{I_l'}{I_l})}{O_l(1 - O_l^2 \rho R_l \frac{O_l'}{O_l})} \\
-		&= \frac{I_l(1 - I_l^2 \rho R_l (\frac{O_l'}{O_l} - \frac{2i}{O_l I_l})}{O_l(1 - O_l^2 \rho R_l \frac{O_l'}{O_l})} \\
-		&= \frac{I_l}{O_l}\frac{1 - I_l^2\rho R_l \frac{O_l'}{O_l} - 2i \rho R_l \frac{I_l}{O_l}}{1 - O_l^2 \rho R_l \frac{O_l'}{O_l}}
-\end{align*}
-
-\begin{align*}
-	e^{2i\phi_l}\frac{1 - (\rho\frac{O_l'}{O_l})^* R_l(E)}{1 - \rho\frac{O_l'}{O_l} R_l(E)}
+	L_l &= \rho \frac{O_l'}{O_l}\\
+	&= \rho\frac{G_l'+iF_l'}{G_l+iF_l}\\
+	&=\rho\frac{G_l'+iF_l'}{G_l+iF_l}\frac{G_l-iF_l}{G_l-iF_l}\\
+	&=\rho\frac{G_l'G_l+F_l'F_l+i(G_lF_l'-F_lG_l')}{G_l^2 + F_l^2}\\
+	&=\rho\frac{G_l'G_l+F_l'F_l}{G_l^2+F_l^2} + i\frac{\rho}{G_l^2+F_l^2}\\
+	&=S_l + iP_l
 \end{align*}
