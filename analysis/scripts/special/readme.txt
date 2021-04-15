@@ -6,6 +6,8 @@ sim_compare <output/X.root> <output/Y.root>: X should be a root file with measur
 
 angular_correlation <j1> <l1>: calculates the angular correlation for 12C --> a + 8Be (ex: 3MeV) --> a + a + a
 
+width_converter <reduced width amplitude [keV^(1/2)]>: calculates the width Gamma corresponding to the reduced width input. Note that there are two implementations: one in python and one in cpp. The python implementation has been tested against a few figures from other papers, while the cpp has not, although it should work just as well. I recommend only using the python implementation anyway, though. 
+
 calibrate_setup <setup/setup.json> <calibration/setup.json>: duplicates the setup file and removes any mention of "calibration". The calibrator tool cannot handle that, while some of the other tools requires it to be present, so this is a hacky solution that keeps everyone happy. 
 
 ### ARTICLE FIGURES ###

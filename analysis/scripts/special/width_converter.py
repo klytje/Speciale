@@ -11,6 +11,7 @@ fm = const.femto
 MeV = 1e6*const.eV
 m_p = 931.494*MeV/c**2
 
+# these units define MeV = fm = 1 to avoid precision errors
 # hbar = 197.329
 # c = 1
 # fm = 1
@@ -19,9 +20,15 @@ m_p = 931.494*MeV/c**2
 
 ### setup ###
 # check input
-if not (len(sys.argv) == 2):
+if not (len(sys.argv) == 2 or len(sys.argv) == 3):
 	print("Usage: python width_converter <reduced width amplitude in keV^(1/2)>")
+	print("List mode outputs \"gamma [keV] Gamma [MeV]\" for easy piping (no units). List mode: -l")
 	exit(0)
+
+listmode = False
+if (len(sys.argv) == 3): 
+	if sys.argv[2] == "-l":
+		listmode = True
 
 # read input
 gamma = float(sys.argv[1])*mpmath.sqrt(MeV/1000) # reduced width amplitude to be converted. input is in keV^(1/2), converted to MeV^(1/2)
@@ -79,112 +86,119 @@ P = pen(l, rho)
 S = shift(l, rho)
 
 Gamma = 2*gamma**2*P/(1 + gamma**2*Sp*hbar)/MeV
-print(f"The ordinary width corresponding to the reduced width {sys.argv[1]} keV^½ is")
-print(f"{Gamma} MeV")
+if listmode:
+	print(f"{sys.argv[1]} {Gamma}")
+else: 
+	print(f"The ordinary width corresponding to the reduced width {sys.argv[1]} keV^½ is")
+	print(f"{Gamma} MeV")
 
-# Replicating the German stuff
-x = np.linspace(0.01, 10, 50)*MeV # linspace of rho
-# Z1 = 2
-# Z2 = 4
-# A1 = 4
-# A2 = 8
-# a = 5*fm
-# mu = A1*A2/(A1 + A2)*m_p # reduced mass
+### debug ###
+plot_german = False # creates a set of figures for 4He + 8Be which can be compared to the German thesis
+plot_Baye = False # creates a plot of the shift and penetration factors for the neutral atom, which can be compared to the document by D. Baye
 
-# S0, S2 = [], []
-# P0, P2 = [], []
-# for i in x:
-# 	rho = a*k(i)
-# 	P0.append(float(pen(0, rho)))
-# 	P2.append(float(pen(2, rho)))
-# 	S0.append(float(shift(0, rho)))
-# 	S2.append(float(shift(2, rho)))
+# replicates the German figures
+if plot_german:
+	E = np.linspace(0.01, 10, 50)*MeV # linspace of rho
+	Z1 = 2
+	Z2 = 4
+	A1 = 4
+	A2 = 8
+	a = 5*fm
+	mu = A1*A2/(A1 + A2)*m_p # reduced mass
 
-# plt.figure()
-# plt.title("Penetrability factor")
-# plt.xlabel("E [MeV]")
-# plt.ylabel("Pl")
-# plt.plot(x/MeV, P0, label="l = 0")
-# plt.plot(x/MeV, P2, label="l = 2")
+	# penetrability and shift plots
+	S0, S2 = [], []
+	P0, P2 = [], []
+	for e in E:
+		rho = a*k(e)
+		P0.append(float(pen(0, rho)))
+		P2.append(float(pen(2, rho)))
+		S0.append(float(shift(0, rho)))
+		S2.append(float(shift(2, rho)))
 
-# plt.figure()
-# plt.title("Shift factor")
-# plt.xlabel("E [MeV]")
-# plt.ylabel("Sl")
-# plt.plot(x/MeV, S0, label="l = 0")
-# plt.plot(x/MeV, S2, label="l = 2")
-# plt.show()
+	rho = a*k(E_res)
+	B = shift(l, rho)
+	dos = []
+	# Be8 profile
+	for e in E:
+		rho = a*k(e)
+		# shift_rho = lambda rho : shift(l, rho)
+		# Sp = mpmath.diff(shift_rho, rho)*rho/(2*e) # dS/dE = dS/drho * drho/dE = dS/drho * rho/2E
+		P = pen(l, rho)
+		S = shift(l, rho)
 
+		Gamma = 2*gamma**2*P
+		Delta = -gamma**2*(S - B)
 
-# t1 = list(F(0, 0, z) for z in x)
-# t2 = list(F(1, 0, z) for z in x)
-# t3 = list(F(2, 0, z) for z in x)
-# t4 = list(F(3, 0, z) for z in x)
-# t5 = list(F(4, 0, z) for z in x)
+		dos.append(Gamma/((E_res + Delta - e)**2 + Gamma**2/4)) # density of states
 
-# v1 = list(G(0, 0, z) for z in x)
-# v2 = list(G(1, 0, z) for z in x)
-# v3 = list(G(2, 0, z) for z in x)
-# v4 = list(G(3, 0, z) for z in x)
-# v5 = list(G(4, 0, z) for z in x)
+	E /= MeV # set unit on x-axis
+	# penetrability plot
+	plt.figure()
+	plt.title("Penetrability factor")
+	plt.xlabel("E [MeV]")
+	plt.ylabel(r"P_l")
+	plt.plot(E, P0, label="l = 0")
+	plt.plot(E, P2, label="l = 2")
 
-# plt.figure()
-# plt.title("Regular Coulomb functions")
-# plt.xlabel("rho")
-# plt.ylabel("Fl")
-# plt.plot(x, t1, label="l = 0")
-# plt.plot(x, t2, label="l = 1")
-# plt.plot(x, t3, label="l = 2")
-# plt.plot(x, t4, label="l = 3")
-# plt.plot(x, t5, label="l = 4")
-# plt.legend()
+	# shift plot
+	plt.figure()
+	plt.title("Shift factor")
+	plt.xlabel("E [MeV]")
+	plt.ylabel(r"S_l")
+	plt.plot(E, S0, label="l = 0")
+	plt.plot(E, S2, label="l = 2")
 
-# plt.figure()
-# plt.title("Irregular Coulomb functions")
-# plt.xlabel("rho")
-# plt.ylabel("Gl")
-# plt.plot(x, v1, label="l = 0")
-# plt.plot(x, v2, label="l = 1")
-# plt.plot(x, v3, label="l = 2")
-# plt.plot(x, v4, label="l = 3")
-# plt.plot(x, v5, label="l = 4")
-# plt.axis([0, 10, -2, 4])
-# plt.legend()
-# plt.show()
-Z1 = 0 
-Z2 = 0
-x = np.linspace(0.01, 2, 50) # linspace of rho
-y1 = list(pen(0, z) for z in x)
-y2 = list(pen(1, z) for z in x)
-y3 = list(pen(2, z) for z in x)
-y4 = list(pen(3, z) for z in x)
-y5 = list(pen(4, z) for z in x)
+	# profile plot
+	plt.figure()
+	plt.title("8Be profile")
+	plt.xlabel("E [MeV]")
+	plt.ylabel("Density of states")
+	plt.plot(E, dos)
 
-z1 = list(shift(0, z) for z in x)
-z2 = list(shift(1, z) for z in x)
-z3 = list(shift(2, z) for z in x)
-z4 = list(shift(3, z) for z in x)
-z5 = list(shift(4, z) for z in x)
+	plt.show()
 
-plt.figure()
-plt.title("Penetration factor")
-plt.xlabel("rho")
-plt.ylabel("Pl")
-plt.plot(x, y1, label="l = 0")
-plt.plot(x, y2, label="l = 1")
-plt.plot(x, y3, label="l = 2")
-plt.plot(x, y4, label="l = 3")
-plt.plot(x, y5, label="l = 4")
-plt.legend()
+# replicates the neutral figure by Baye
+if plot_Baye:
+	Z1 = 0 
+	Z2 = 0
+	E = np.linspace(0.001, 2, 50)*hbar**2/(2*mu*a**2)
+	pen0, pen1, pen2, pen3, pen4 = [], [], [], [], []
+	shift0, shift1, shift2, shift3, shift4 = [], [], [], [], []
+	for e in E:
+		rho = a*k(e)
+		pen0.append(pen(0, rho))
+		pen1.append(pen(1, rho))
+		pen2.append(pen(2, rho))
+		pen3.append(pen(3, rho))
+		pen4.append(pen(4, rho))
 
-plt.figure()
-plt.title("Shift factors")
-plt.xlabel("rho")
-plt.ylabel("Sl")
-plt.plot(x, z1, label="l = 0")
-plt.plot(x, z2, label="l = 1")
-plt.plot(x, z3, label="l = 2")
-plt.plot(x, z4, label="l = 3")
-plt.plot(x, z5, label="l = 4")
-plt.legend()
-plt.show()
+		shift0.append(shift(0, rho))
+		shift1.append(shift(1, rho))
+		shift2.append(shift(2, rho))
+		shift3.append(shift(3, rho))
+		shift4.append(shift(4, rho))
+
+	E /= hbar**2/(2*mu*a**2)
+	plt.figure()
+	plt.title("Penetration factor")
+	plt.xlabel(r"$E\ [\hbar^2 / 2\mu a^2]$")
+	plt.ylabel(r"$P_l$")
+	plt.plot(E, pen0, label="l = 0")
+	plt.plot(E, pen1, label="l = 1")
+	plt.plot(E, pen2, label="l = 2")
+	plt.plot(E, pen3, label="l = 3")
+	plt.plot(E, pen4, label="l = 4")
+	plt.legend()
+
+	plt.figure()
+	plt.title("Shift factors")
+	plt.xlabel(r"$E\ [\hbar^2 / 2\mu a^2]$")
+	plt.ylabel(r"$S_l$")
+	plt.plot(E, shift0, label="l = 0")
+	plt.plot(E, shift1, label="l = 1")
+	plt.plot(E, shift2, label="l = 2")
+	plt.plot(E, shift3, label="l = 3")
+	plt.plot(E, shift4, label="l = 4")
+	plt.legend()
+	plt.show()

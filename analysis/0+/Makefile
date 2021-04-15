@@ -248,10 +248,6 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 	@ echo "Creating figures/article/mul_compare.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
-mul_compare_debug: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
-	@ echo "Creating figures/article/mul_compare.pdf"
-	$< match/2455_000m.root $(shell pwd)/figures/article/
-
 ###################
 ### SIMULATIONS ###
 ###################
@@ -261,14 +257,14 @@ N := 1000000
 # generate the simX configuration file required for simX
 # this is generated on the fly whenever it is needed, and is deleted afterwards
 sim/%.simX: sim/raw/$$(*F).dat
-	@echo "beam: p" > $@
-	@echo "target: B11" >> $@
-	@echo "-> {" >> $@
-	@echo "    generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
-	@echo "}" >> $@
+	@ echo "beam: p" > $@
+	@ echo "target: B11" >> $@
+	@ echo "-> {" >> $@
+	@ echo "    generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
+	@ echo "    a" >> $@
+	@ echo "    a" >> $@
+	@ echo "    a" >> $@
+	@ echo "}" >> $@
 
 # generate the raw event data from sim3a
 sim/raw/%.dat: sim/configs/%.balamuth $(balamuth)
@@ -283,65 +279,43 @@ sim/data/%.root: sim/$$*.simX sim/raw/%.dat $(simX)
 sim/data/%.root : sim/configs/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N $(N)
 
-###############
-### AUTOGEN ###
-###############
-directory = ~/projects/B11/autogen/$(notdir $(shell pwd))
-autogen :
-	+make autofig/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC)
-	rm $(directory)/sim/data_i/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/sim/data/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/match/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/id/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/output/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
+### thesis specific simulations ###
+# calculates a few different values of the width Gamma based on the reduced width amplitude gamma
+sim/temp/converted_widths.txt: ../scripts/special/width_converter.py
+	@ mkdir -p sim/temp
+	@ echo "gamma Gamma" > $@
+	@ for g in 5 10 15 20 25 30 35 40 38.431; do python3 $< $$g -l >> $@; done
 
-$(directory)/sim/data_i/auto_%.root :
-	cd ../sim; ./balamuth_i --JC $(JC) --JBe 2+ -L 3 --ExC 16.6MeV --L2 1 --phase 6 --ratio 0.7 -N 1000000 -o $(directory)/sim/data_i/auto_'$*'.root --seed 50$(subst .,,$(suffix $*)) --coulomb-radius $(coulomb-radius)fm --r0Be $(r0Be)fm --gBe $(gBe)'keV^(1/2)' --ExBe $(ExBe)keV
-	#cd ../sim; ./balamuth_i --JC $(JC) --JBe 2+ -L 3 --ExC 16.6MeV --L2 1 --phase 6 --ratio 0.7 -N 1000000 -o $(directory)/sim/data_i/auto_'$*'.root --seed 50$(subst .,,$(suffix $*)) --r0Be $(r0Be)fm --gBe $(gBe)'keV^(1/2)' --ExBe $(ExBe)keV
+sim/temp/0+_%.balamuth:
+	@ echo "--JC 0+ --JBe 2+ -L 2 --ExC 17.76MeV --ExBe 3030keV --gBe $*keV" > $@
 
-$(directory)/sim/data/%.root : $(directory)/sim/data_i/%.root
-	cd ../sim; python3 simX_factory.py $(directory)/sim/data_i/$*.root > $(directory)/sim/data/$*.simX
-	cd ../sim; ./simX_fork -c $(shell pwd)/sim/config.json -r $(directory)/sim/data/$*.simX -o $(directory)/sim/data/$*.root -N 1000000 -s $*
-	rm $(directory)/sim/data/$*.simX
+sim/temp/0+_%.simX: 
+	@ echo "beam: p" > $@
+	@ echo "target: B11" >> $@
+	@ echo "-> {" >> $@
+	@ echo "    a" >> $@
+	@ echo "    Be8 Ex: 3.03MeV G0: $*MeV" >> $@
+	@ echo "    -> {" >> $@ 
+	@ echo "        AD: TF1(phi=\"1\" theta=\"sin(x)*(11.25*cos(x)^4 - 7.5*cos(x)^2 + 1.25)\")" >> $@
+	@ echo "        a" >> $@
+	@ echo "        a" >> $@
+	@ echo "       }" >> $@
+	@ echo "   }" >> $@
+	@ echo "}" >> $@
 
-$(directory)/match/%m.root : $(directory)/sim/data/%.root matcher.json setup/*
-	$(sorter) $< -m matcher.json -o $(directory)/match/$*m.root
+# this is a bit of a mouthful, but basically it just takes each column of sim/temp/converted_widths.txt and prepends "sim/temp/0+_" to them. For the first column ".balamuth" is appended; for the second, ".simX"
+width_compare_configs: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')));
 
-$(directory)/id/%i.root : $(directory)/match/%.root
-	$(identifier) $(target) $(ions) $(margin) $(collectors) $^ -o $(directory)/id/$*i.root
+# simulate the detector setup with simX, using the generated events from sim3a
+sim/data/%.root: sim/temp/$$*.simX
+	$(simX) -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N $(N)
+	@ rm $<
 
-$(directory)/output/%.root : $(directory)/id/%mi.root analysis/EventAnalysis $(directory)/sim/data_i/%.root
-	./analysis/EventAnalysis $(directory)/output/$*.root $(directory)/id/$*mi.root $(directory)/match/$*m.root
-	echo $(directory)/sim/data_i/$*.root $(directory)/output/$*.root |root -l ../merger.C
-
-$(directory)/figures/%.pdf : $(addprefix $(directory)/,$$(call fun1,%)) ../figure_scripts/$$(call fun,%).py $(addprefix $(directory)/,$(call simfiles,auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC),$(N)))
-	mkdir -p $(directory)/figures/$(subst /,,$(dir $*))
-	echo $(addprefix $(directory)/,$(call fun1,$*)) | python3 ../figure_scripts/$(notdir $(basename $@)).py $(directory)/figures/$(subst /,,$(dir $*))
-
-autofig/% : $(addprefix $(directory)/,$(addprefix figures/%/,$(figure_pdf)))
-	echo $(addprefix $(directory)/,$(addprefix figures/$*/,$(figure_pdf)))
-
-automaker :
-	cat ../list2 |python3 ../automaker.py $(shell pwd)
-
-###############
-### SCRIPTS ###
-###############
-
-test.pdf : ../scripts/test.py figures/data_tdc_cut/dalitz_forfit.pdf
-	python3 ../scripts/test.py $(shell pwd) > test.log
-test_automake.pdf : ../scripts/test_automake.py figures/data_tdc_cut/dalitz_forfit.pdf
-	python3 ../scripts/test_automake.py $(shell pwd) > test_automake.log
-
-surf.pdf : ../scripts/surf.py
-	python3 ../scripts/surf.py $(shell pwd)
-
-test_noecut.pdf : ../scripts/test_noecut.py
-	python3 ../scripts/test_noecut.py $(shell pwd) > test_noecut.log
-	
-all.pdf : ../scripts/all.py
-	python3 ../scripts/all.py $(shell pwd) > all.log
+# simulate everything solely with simX
+sim/data/%.root : sim/temp/%.simX $(simX)
+	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N $(N)
 
 
-%.pdf : ../scripts/%.py
-	python3 ../scripts/$*.py $(shell pwd)
+# same explanation as above, except this time it prepends "output/0+_" and appends ".root", such that the entire AUSAlib pipeline is executed on all simulations. note that this takes *a lot* of time to do - I highly recommend using the -jX flag for this!
+width_compare_output: width_compare_configs $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
+	rm $(addprefix sim/configs/0+_, $(addsuffix .*, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))

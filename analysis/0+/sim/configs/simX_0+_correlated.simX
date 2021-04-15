@@ -2,7 +2,7 @@ beam: p
 target: B11
 -> {
     a
-    Be8 Ex: 3MeV G0: 1.5MeV
+    Be8 Ex: 3.03MeV G0: 1.5MeV
     -> {
         AD: TF1(phi="1" theta="sin(x)*(11.25*cos(x)^4 - 7.5*cos(x)^2 + 1.25)")
         a

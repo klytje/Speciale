@@ -31,6 +31,7 @@ analysis/**/tdc/
 analysis/**/sim/raw/*
 analysis/**/sim/data/*
 analysis/**/sim/data_i/*
+analysis/**/sim/temp/*
 analysis/**/calibration/*
 analysis/**/autogen/
 
