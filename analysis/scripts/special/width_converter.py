@@ -85,7 +85,7 @@ Sp = mpmath.diff(shift_rho, rho)*rho/(2*E_res) # dS/dE = dS/drho * drho/dE = dS/
 P = pen(l, rho)
 S = shift(l, rho)
 
-Gamma = 2*gamma**2*P/(1 + gamma**2*Sp*hbar)/MeV
+Gamma = 2*gamma**2*P/(1 + gamma**2*Sp)/MeV
 if listmode:
 	print(f"{sys.argv[1]} {Gamma}")
 else: 
@@ -93,7 +93,7 @@ else:
 	print(f"{Gamma} MeV")
 
 ### debug ###
-plot_german = False # creates a set of figures for 4He + 8Be which can be compared to the German thesis
+plot_german = True # creates a set of figures for 4He + 8Be which can be compared to the German thesis
 plot_Baye = False # creates a plot of the shift and penetration factors for the neutral atom, which can be compared to the document by D. Baye
 
 # replicates the German figures

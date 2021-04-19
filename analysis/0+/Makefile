@@ -249,8 +249,8 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
 # compare multiple Dalitz plots from simX and sim3a with equivalent widths
-width_compare: ../scripts/special/build/width_compare sim/temp/output
-	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+width_compare: ../scripts/special/build/width_compare sim/temp/output output/all_events.root
+	$< $(shell pwd)/figures/article/ output/all_events.root $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 ###################
 ### SIMULATIONS ###
