@@ -293,7 +293,7 @@ sim/temp/converted_widths.txt: ../scripts/special/width_converter.py
 	@ for g in 5 10 15 20 25 30 35 40; do python3 $< $$g -l >> $@; done
 
 sim/temp/0+_%.balamuth:
-	@ echo "--JC 2- --JBe 2+ -L 1 --ExC 16.57MeV --ExBe 3030keV --gBe $*keV" > $@
+	@ echo "--JC 3- --JBe 2+ -L 1 --ExC 18.350MeV --ExBe 3030keV --gBe $*keV" > $@
 
 # generate the raw event data from sim3a
 sim/raw/%.dat: sim/temp/%.balamuth $(balamuth)
@@ -306,7 +306,7 @@ sim/temp/0+_%.simX:
 	@ echo "    a" >> $@
 	@ echo "    Be8 Ex: 3.03MeV G0: $*MeV" >> $@
 	@ echo "    -> {" >> $@ 
-	@ echo "        AD: TF1(phi=\"1\" theta=\"sin(x)*(1.5*sin(x)^2)\")" >> $@
+	@ echo "        AD: TF1(phi=\"1\" theta=\"sin(x)*(0.4286*cos(x)^2 + 0.8571)\")" >> $@
 	@ echo "        a" >> $@
 	@ echo "        a" >> $@
 	@ echo "       }" >> $@

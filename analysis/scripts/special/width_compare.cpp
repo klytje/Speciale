@@ -15,8 +15,7 @@
 using namespace std;
 using boost::format;
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     //*** DALITZ PLOT SETUP ***//
     // set the axes    
     double x_axis[] = {200, -1, 1};
@@ -78,15 +77,12 @@ int main(int argc, char const *argv[])
 
     //*** ACTUAL CODE ***//
     setup_style();
-    int prefiles = 3; // number of arguments preceding the root files
+    int prefiles = 2; // number of arguments preceding the root files
     int fileno = 0; // used for a simple progress bar
-    TH2D* hdata = dalitz(argv[3]);
 
     auto plot = [&] (const char* files[], int no) {
-        TCanvas *c_raw = new TCanvas("c_raw", "c", 1800, 900);
-        TCanvas *c_diff = new TCanvas("c_diff", "c", 1800, 900);
-        c_raw->Divide(4, 2, 0, 0);
-        c_diff->Divide(4, 2, 0, 0);
+        TCanvas *c = new TCanvas("c_raw", "c", 1800, 900);
+        c->Divide(4, 2, 0, 0);
 
         for (int file = 0; file < 8; file++) {
             fileno++;
@@ -120,26 +116,13 @@ int main(int argc, char const *argv[])
             hsim->SetLabelSize(0, "Z");
             hsim->SetTickLength(0, "Z");
 
-            c_raw->cd(file+1);
-            hsim->DrawClone("col");
-
-            // normalize the histograms
-            hdata->Scale(1000/hdata->Integral());
-            hsim->Scale(1000/hsim->Integral());
-
-            // divide hdata by hsim binwise
-            hsim->Add(hdata, -1);
-
-            c_diff->cd(file+1);
+            c->cd(file+1);
             hsim->DrawClone("col");
         }
 
-        string rawpath = string(argv[1]) + (format("width_compare_%1%_raw.pdf") % no).str();
-        string diffpath = string(argv[1]) + (format("width_compare_%1%_diff.pdf") % no).str();
-        c_raw->SetLogz();
-        c_diff->SetLogz();
-        c_raw->SaveAs(rawpath.c_str());
-        c_diff->SaveAs(diffpath.c_str());
+        string path = string(argv[1]) + (format("width_compare_%1%.pdf") % no).str();
+        c->SetLogz();
+        c->SaveAs(path.c_str());
     };
     const char* first[8]; 
     const char* second[8]; 

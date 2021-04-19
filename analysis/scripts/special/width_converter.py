@@ -93,7 +93,7 @@ else:
 	print(f"{Gamma} MeV")
 
 ### debug ###
-plot_german = True # creates a set of figures for 4He + 8Be which can be compared to the German thesis
+plot_german = False # creates a set of figures for 4He + 8Be which can be compared to the German thesis
 plot_Baye = False # creates a plot of the shift and penetration factors for the neutral atom, which can be compared to the document by D. Baye
 
 # replicates the German figures
