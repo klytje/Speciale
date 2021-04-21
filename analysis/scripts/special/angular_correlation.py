@@ -47,7 +47,7 @@ elif len(sys.argv) == 6:
 print(f"Calculating the angular correlation for j1 = {j1}, j = {j}, j2 = {j2}, l1 = {l1}, l2 = {l2}\n")
 
 W = sympy.S(0) # initialize W to 0
-theta = sympy.symbols("\u03B8") # unicode for theta
+theta = sympy.symbols("θ") # unicode for theta
 
 # iterate over the summation symbol
 for n in range(0, min([2*l1, 2*l2, 2*j])+2, 2):
@@ -59,6 +59,16 @@ for n in range(0, min([2*l1, 2*l2, 2*j])+2, 2):
 	print(f"Step \u03BD = {n}: \n    b(l1) = {a1}\n    b(l2) = {a2}\n    F(l1, j1, j) = {F1} = {F1.evalf():.4f}\n    F(l2, j2, j) = {F2} = {F2.evalf():.4f}\n    P = {P}\n")
 	W += (a1*F1)*(a2*F2)*P
 
-print(f"Symbolic result:              W(\u03B8) = {W}")
-print(f"Symbolic result (simplified): W(\u03B8) = {W.simplify()}")
-print(f"Numeric result:               W(\u03B8) = {W.simplify().evalf()}")
+print(f"Symbolic result:              W(θ) = {W}")
+
+print(f"Symbolic result (simplified): W(θ) = {W.simplify()}")
+print(f"Numeric result:               W(θ) = {W.evalf()}")
+
+# we determine the normalization constant by evaluating the result at θ = 0 and θ = pi/2. I think these are the only two options, since the result is 
+# either of the form cos(θ) or sin(θ)
+maxval = 0
+for i in range(2):
+	val = W.evalf(subs={theta: i*sympy.pi/2})
+	if maxval < val:
+		maxval = val
+print(f"Normalized result:            W(θ) = {W/maxval}")

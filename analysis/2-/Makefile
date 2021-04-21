@@ -252,6 +252,10 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 width_compare: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
+# compare the angular correlation implicit in sim3a with the theoretical prediction
+ang_compare: ../scripts/special/build/ang_compare
+	$< $(shell pwd)/figures/article/ output/0+_5.root
+
 ###################
 ### SIMULATIONS ###
 ###################

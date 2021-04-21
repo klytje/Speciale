@@ -12,6 +12,7 @@ simX_fork/boost*
 
 *.root
 *.pdf
+*.dat
 
 **/CMakeFiles/
 **/CMakeCache.txt

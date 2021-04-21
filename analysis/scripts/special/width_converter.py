@@ -87,7 +87,7 @@ S = shift(l, rho)
 
 Gamma = 2*gamma**2*P/(1 + gamma**2*Sp)/MeV
 if listmode:
-	print(f"{sys.argv[1]} {Gamma}")
+	print(f"{sys.argv[1]} {float(Gamma):.4f}") # since this value is used in filenames, we limit it to 4 decimals
 else: 
 	print(f"The ordinary width corresponding to the reduced width {sys.argv[1]} keV^½ is")
 	print(f"{Gamma} MeV")
