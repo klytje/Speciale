@@ -16,17 +16,41 @@
 
 using namespace std;
 using boost::format;
-//W(θ) = 0.25*(3*sin(θ)**2 - 2)**2
-
-double ang_corr(Double_t* x, Double_t* par) {
-        double d = par[0]; 
-        double maxval = par[1];
-        double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
-        double res = 2.25*pow(cos(xp), 4) - 1.5*pow(cos(xp), 2) + 0.25;
-        return 150*res;
-}
 
 int main(int argc, char const *argv[]) {
+    //*** PREPARE CORRELATION FUNCTION ***//
+    // they are all calculated with my own angular_correlation.py script
+    function<double(Double_t*, Double_t*)> ang_corr; 
+    string state = string(argv[2]);
+    string l = string(argv[3]);
+    if (state == "0+" && l == "2") {
+        ang_corr = [] (Double_t* x, Double_t* par) {
+            double d = par[0]; 
+            double maxval = par[1];
+            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
+            double res = 2.25*pow(cos(xp), 4) - 1.5*pow(cos(xp), 2) + 0.25;
+            return maxval*res;
+        };
+    } else if (state == "2-" && l == "1") {
+        ang_corr = [] (Double_t* x, Double_t* par) {
+            double d = par[0]; 
+            double maxval = par[1];
+            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
+            double res = 1 - pow(cos(xp), 2);
+            return maxval*res;
+        };
+    } else if (state == "3-" && l == "1") {
+        ang_corr = [] (Double_t* x, Double_t* par) {
+            double d = par[0]; 
+            double maxval = par[1];
+            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
+            double res = 1./3*pow(cos(xp), 2) + 2./3;
+            return maxval*res;
+        };
+    } else {
+        cout << format("The given state %1% l = %2% is not implemented yet! \nYou can do it pretty easily yourself in ../scripts/special/ang_compare.cpp") % state % l << endl;
+    }
+
     //*** DALITZ PLOT SETUP ***//
     double bins = 200;
     // set the axes    
@@ -92,6 +116,8 @@ int main(int argc, char const *argv[]) {
     // call convention is ./ang_compare <output path> <nuclear state> <l1> <sim3a files> <simX files>
     int sim3a_start = 4; // number of arguments preceding the root files
     int fileno = 0; // used for a simple progress bar
+    string x_labels[8]; // contains the name of each column
+    double bounds[2] = {0.35, 0.45}; // y axis bounds where the cut is imposed
     
     auto plot = [&] (const char* files[], int no) {
         // prepare the plots
@@ -108,59 +134,23 @@ int main(int argc, char const *argv[]) {
             cout << format("Analyzing file %1%/%2%.") % (fileno) % (argc-sim3a_start) << "\r";
             TH2D* h = dalitz(files[file]);
 
-            // setup labels and general plot style
-            if (file == 0) {
-                h->GetYaxis()->SetTitle("sim3a");
-                h->GetYaxis()->SetTitleSize(0.1);
-                h->GetYaxis()->SetTitleOffset(0.3);
-                h->GetYaxis()->CenterTitle();
-            } else if (file == 4) {
-                h->GetYaxis()->SetTitle("simX");
-                h->GetYaxis()->SetTitleSize(0.1);
-                h->GetYaxis()->SetTitleOffset(0.3);
-                h->GetYaxis()->CenterTitle();
+            // this small section extracts gamma or Gamma from the file names
+            string name = string(files[file]);
+            int start = 10; // we want to start at X in output/0+_X
+            int len = 0; // length of the number
+            for (; start+len < name.size(); len++) {
+                if (!isdigit(name.at(start+len))) {
+                    if (name.at(start+len) == '.') { // check if it is a dot
+                        if (isdigit(name.at(start+len+1))) { // check if it is a decimal separator (a number)
+                            continue;
+                        }
+                    }
+                    break;
+                }
             }
+            x_labels[file] = name.substr(start, len).c_str();
 
-            if (file >= 4) {
-                string title = to_string(5*(file+1-4) + 20*(no-1));
-                h->GetXaxis()->SetTitle(title.c_str());
-                h->GetXaxis()->SetTitleSize(0.1);
-                h->GetXaxis()->SetTitleOffset(0.3);
-                h->GetXaxis()->CenterTitle();    
-            }
-            
-            h->SetLabelSize(0, "X");
-            h->SetTickLength(0, "X");
-            h->SetLabelSize(0, "Y");
-            h->SetTickLength(0, "Y");
-            h->SetLabelSize(0, "Z");
-            h->SetTickLength(0, "Z");
-
-            if (file < 4) {
-                sim3a->cd(file+1);
-            } else {
-                simX->cd(file+1);
-            }
-            
-            // top row of Dalitz plot + Y cut
-            double bounds[2] = {0.35, 0.45}; // y axis bounds
-            TLine* bot = new TLine(-1, bounds[0], 1, bounds[0]);
-            TLine* top = new TLine(-1, bounds[1], 1, bounds[1]);
-            top->SetLineWidth(2);
-            bot->SetLineWidth(2);
-            top->SetLineColor(kRed);
-            bot->SetLineColor(kRed);
-            h->DrawClone("colz");
-            top->DrawClone("same");
-            bot->DrawClone("same");
-
-            // bottom row of projection plot + angular correlation function
-            if (file < 4) {
-                sim3a->cd(file+5);
-            } else {
-                simX->cd(file+5);
-            }
-
+            // calculate the projection plot
             int biny1 = 0;
             int biny2 = 0;
             int b = 0;
@@ -169,22 +159,107 @@ int main(int argc, char const *argv[]) {
                 if (bounds[0] < i && biny1 == 0) biny1 = b;
                 if (bounds[1] < i && biny2 == 0) biny2 = b;
             }
-            
-            // distance from 0 to the border of the circle at y = mean(y1, y2)
-            double d = sqrt(1 - pow((bounds[1] + bounds[0])/2, 2)); 
-
-            TF1 *corr = new TF1("corr", ang_corr, -1, 1, 1);
+                
             TH1D* hp = h->ProjectionX("px", biny1, biny2);
-            corr->SetParameter(0, d);
+            TF1 *corr; // defined outside the lambda expression because we need it afterwards
 
-            hp->DrawClone();
-            corr->DrawCopy("same");
+            //*** FIGURE SETUP ***//
+            // y labels for the leftmost plots
+            auto set_ylabel = [] (const char title[], TH1* hist) {
+                hist->GetYaxis()->SetTitle(title);
+                hist->GetYaxis()->SetTitleSize(0.1);
+                hist->GetYaxis()->SetTitleOffset(0.3);
+                hist->GetYaxis()->CenterTitle();
+            };
 
-            // mixed plot
+            if (file == 0) {
+                set_ylabel("Dalitz", h);
+                set_ylabel("Projection", hp);
+            } else if (file == 4) {
+                set_ylabel("Dalitz", h);
+                set_ylabel("Projection", hp);
+            }
+
+            // hide ticks for all plots
+            h->SetLabelSize(0, "X");
+            h->SetTickLength(0, "X");
+            h->SetLabelSize(0, "Y");
+            h->SetTickLength(0, "Y");
+
+            hp->SetLabelSize(0, "X");
+            hp->SetTickLength(0, "X");
+            hp->SetLabelSize(0, "Y");
+            hp->SetTickLength(0, "Y");
+
+            // x labels for all bottom row plots
+            auto set_xlabel = [] (const char title[], TH1* hist) {
+                hist->GetXaxis()->SetTitle(title);
+                hist->GetXaxis()->SetTitleSize(0.1);
+                hist->GetXaxis()->SetTitleOffset(0.3);
+                hist->GetXaxis()->CenterTitle();
+            };
+            set_xlabel((x_labels[file]).c_str(), hp);
+
+            // makes a Dalitz plot with two lines showing where the data is cut
+            auto plot_top = [&] () {
+                TLine* bot = new TLine(-1, bounds[0], 1, bounds[0]);
+                TLine* top = new TLine(-1, bounds[1], 1, bounds[1]);
+                top->SetLineWidth(2);
+                bot->SetLineWidth(2);
+                top->SetLineColor(kRed);
+                bot->SetLineColor(kRed);
+                h->DrawClone("colz");
+                top->DrawClone("same");
+                bot->DrawClone("same");
+            };
+
+            // makes a projection of the histogram down on the x-axis for the cut region. Also plots the correlation function
+            auto plot_bot = [&] () {
+                double maxval = hp->GetMaximum(); // maximum value in the histogram, used to scale the correlation function
+                double d = sqrt(1 - pow((bounds[1] + bounds[0])/2, 2)); // distance from 0 to the border of the circle at y = mean(y1, y2)
+
+                corr = new TF1("corr", ang_corr, -1, 1, 2);
+                corr->SetParameter(0, d);
+                corr->SetParameter(1, maxval);
+
+                hp->DrawClone();
+                corr->DrawCopy("same");
+            };
+
+            //*** MAKE THE sim3a PLOT ***//
+            if (file < 4) {
+                // top row
+                sim3a->cd(file+1);
+                plot_top();
+
+                // bottom row
+                sim3a->cd(file+5);
+                plot_bot();
+            } 
+
+            //*** MAKE THE simX PLOT ***//
+            else { // 4 < file
+                // top row
+                simX->cd(file-3);
+                plot_top();
+
+                // bottom row
+                simX->cd(file+1);
+                plot_bot();
+            }
+
+            //*** MIXED PLOT ***//
             c->cd(file+1);
+            if (file < 4) {
+                set_ylabel("sim3a", hp);
+            }
+            else {
+                set_xlabel((x_labels[file-4]).c_str(), hp); // we want the xlabels to be small gamma
+                set_ylabel("simX", hp);
+            }
+
             hp->DrawClone();
             corr->DrawCopy("same");
-
         }
         // save the figures
         string path = string(argv[1]) + (format("ang_compare_%1%_sim3a.pdf") % no).str();
