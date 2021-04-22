@@ -19,11 +19,18 @@ using boost::format;
 
 int main(int argc, char const *argv[]) {
     //*** PREPARE CORRELATION FUNCTION ***//
-    // they are all calculated with my own angular_correlation.py script
     function<double(Double_t*, Double_t*)> ang_corr; 
     string state = string(argv[2]);
     string l = string(argv[3]);
+
+    // these two values are determined by eye for all possibilities
+    vector<double> bounds; // y axis bounds
+    double interference_point; // point of maximum interference
+
+    // these are all calculated with my own angular_correlation.py script
     if (state == "0+" && l == "2") {
+        bounds = {0.35, 0.45};
+        interference_point = 0.7;
         ang_corr = [] (Double_t* x, Double_t* par) {
             double d = par[0]; 
             double maxval = par[1];
@@ -32,6 +39,8 @@ int main(int argc, char const *argv[]) {
             return maxval*res;
         };
     } else if (state == "2-" && l == "1") {
+        bounds = {0.28, 0.37};
+        interference_point = 0.56;
         ang_corr = [] (Double_t* x, Double_t* par) {
             double d = par[0]; 
             double maxval = par[1];
@@ -40,6 +49,8 @@ int main(int argc, char const *argv[]) {
             return maxval*res;
         };
     } else if (state == "3-" && l == "1") {
+        bounds = {0.28, 0.37};
+        interference_point = 0.56;
         ang_corr = [] (Double_t* x, Double_t* par) {
             double d = par[0]; 
             double maxval = par[1];
@@ -117,7 +128,6 @@ int main(int argc, char const *argv[]) {
     int sim3a_start = 4; // number of arguments preceding the root files
     int fileno = 0; // used for a simple progress bar
     string x_labels[8]; // contains the name of each column
-    double bounds[2] = {0.35, 0.45}; // y axis bounds where the cut is imposed
     
     auto plot = [&] (const char* files[], int no) {
         // prepare the plots
@@ -208,6 +218,10 @@ int main(int argc, char const *argv[]) {
                 bot->SetLineWidth(2);
                 top->SetLineColor(kRed);
                 bot->SetLineColor(kRed);
+                
+                top->SetLineStyle(11); //dashed linestyle
+                bot->SetLineStyle(11); 
+
                 h->DrawClone("colz");
                 top->DrawClone("same");
                 bot->DrawClone("same");
@@ -215,7 +229,19 @@ int main(int argc, char const *argv[]) {
 
             // makes a projection of the histogram down on the x-axis for the cut region. Also plots the correlation function
             auto plot_bot = [&] () {
-                double maxval = hp->GetMaximum(); // maximum value in the histogram, used to scale the correlation function
+                // we need to determine the max value of the histogram, but it cannot be at the interference point (about 0.6)
+                int maxval = 0;
+                double width = 0.1;
+                double bad_area[4] = {-(interference_point+width), -(interference_point-width), interference_point-width, interference_point+width};
+                for (int i = 0; i < bins; i++) {
+                    int count = hp->GetBinContent(i);
+                    double loc = hp->GetBinCenter(i);
+                    if (maxval < count) {
+                        if (!(bad_area[0] < loc && loc < bad_area[1]) && !(bad_area[2] < loc && loc < bad_area[3])) {
+                            maxval = count;
+                        }
+                    }
+                }
                 double d = sqrt(1 - pow((bounds[1] + bounds[0])/2, 2)); // distance from 0 to the border of the circle at y = mean(y1, y2)
 
                 corr = new TF1("corr", ang_corr, -1, 1, 2);

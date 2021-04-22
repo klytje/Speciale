@@ -252,9 +252,17 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 width_compare: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
-# compare the angular correlation implicit in sim3a with the theoretical prediction
-ang_compare: ../scripts/special/build/ang_compare
-	$< $(shell pwd)/figures/article/ output/0+_5.root
+# extra information for the next couple of targets
+state := 2-
+l := 1
+
+# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. ang_compare is probably more useful
+ang_compare_single: ../scripts/special/build/ang_compare_single
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/0+_5.root
+
+# same as ang_compare_single, but for all files simulated with width_compare
+ang_compare: ../scripts/special/build/ang_compare sim/temp/output
+	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 ###################
 ### SIMULATIONS ###
@@ -287,14 +295,16 @@ sim/data/%.root: sim/$$*.simX sim/raw/%.dat $(simX)
 sim/data/%.root : sim/configs/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N $(N)
 
+###################################
 ### thesis specific simulations ###
+###################################
 # I sometimes create new files (i.e. sim/temp/setup) which are not used for anything in this section. The idea is that they are just shortcuts for longer operations, and Makefile needs to know when such a target was last executed. Creating a new file is the perfect way to do just that.
 
 # calculates a few different values of the width Gamma based on the reduced width amplitude gamma
 sim/temp/converted_widths.txt: ../scripts/special/width_converter.py
 	@ mkdir -p sim/temp
 	@ echo "gamma Gamma" > $@
-	@ for g in 5 10 15 20 25 30 35 40; do python3 $< $$g -l >> $@; done
+	@ for g in 1 2 3 4 5 10 15 20 25 30 35 40; do python3 $< $$g -l >> $@; done
 
 sim/temp/0+_%.balamuth:
 	@ echo "--JC 2- --JBe 2+ -L 1 --ExC 16.57MeV --ExBe 3030keV --gBe $*keV" > $@
@@ -318,8 +328,7 @@ sim/temp/0+_%.simX:
 	@ echo "}" >> $@
 	
 # this is just a bit of logic that creates all the simX & sim3a configuration files in the sim/temp folder. 
-sim/temp/setup: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
-	@ echo "I'm just a dummy dependency to make Makefile work properly." > $@
+setup: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')));
 
 # simulate the detector setup with simX, using the generated events from sim3a
 sim/data/%.root: sim/temp/$$*.simX $(simX)
@@ -330,14 +339,10 @@ sim/data/%.root : sim/temp/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o $@ -N $(N)
 
 # same explanation as above, except this time it prepends "output/0+_" and appends ".root", such that the entire AUSAlib pipeline is executed on all simulations. note that this takes *a lot* of time to do - I highly recommend using the -jX flag for this!
-sim/temp/output: sim/temp/setup $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
+sim/temp/output: setup $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
 	@ echo "I'm just a dummy dependency to make Makefile work properly." > $@
 
-sim/temp/width_compare: sim/temp/converted_widths.txt
-	$(MAKE) sim/temp/output
-	@ echo "I'm just a dummy dependency to make Makefile work properly." > $@
-
-# cleans all files associated with the width_compare figure
-clean/width_compare: 
+# cleans all files created by this section figure
+clean/sim_widths: 
 	for file in $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt); do $(MAKE) clean/0+_$$file; done
 	rm -f sim/temp/*

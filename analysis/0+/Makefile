@@ -252,16 +252,19 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 width_compare: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
-# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. ang_compare is probably more useful
-ang_compare_single: ../scripts/special/build/ang_compare_single
-	$< $(shell pwd)/figures/article/ output/0+_5.root
-
-# extra information so the next target knows which angular correlation to plot
+# note that the next few targets depends on sim/temp/compared_widths.txt. Due to limitations of make (or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
+# extra information for the next couple of targets
 state := 0+
 l := 2
+
+# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. ang_compare is probably more useful
+ang_compare_single: ../scripts/special/build/ang_compare_single
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/0+_5.root
+
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+	
 ###################
 ### SIMULATIONS ###
 ###################
@@ -326,7 +329,9 @@ sim/temp/0+_%.simX:
 	@ echo "}" >> $@
 	
 # this is just a bit of logic that creates all the simX & sim3a configuration files in the sim/temp folder. 
-sim/temp/setup: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')));
+setup: sim/temp/converted_widths.txt 
+	@ for g in $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'); do $(MAKE) sim/temp/0+_$$g.balamuth; done
+	@ for g in $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'); do $(MAKE) sim/temp/0+_$$g.simX; done
 
 # simulate the detector setup with simX, using the generated events from sim3a
 sim/data/%.root: sim/temp/$$*.simX $(simX)
@@ -335,6 +340,7 @@ sim/data/%.root: sim/temp/$$*.simX $(simX)
 # simulate everything solely with simX
 sim/data/%.root : sim/temp/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o $@ -N $(N)
+
 
 # same explanation as above, except this time it prepends "output/0+_" and appends ".root", such that the entire AUSAlib pipeline is executed on all simulations. note that this takes *a lot* of time to do - I highly recommend using the -jX flag for this!
 sim/temp/output: setup $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
