@@ -256,9 +256,9 @@ width_compare: ../scripts/special/build/width_compare sim/temp/output
 state := 2-
 l := 1
 
-# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. ang_compare is probably more useful
-ang_compare_single: ../scripts/special/build/ang_compare_single
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/0+_5.root
+# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
+ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output

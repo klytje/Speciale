@@ -237,7 +237,9 @@ figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/s
 # this is just for easy access to the two commands above. simply use "make sim_compare/X" to create both sim_compare plots for output/X.root
 sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
 
+###############################
 ### thesis specific figures ###
+###############################
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
 	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
@@ -248,18 +250,22 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 	@ echo "Creating figures/article/mul_compare.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
-# compare multiple Dalitz plots from simX and sim3a with equivalent widths
-width_compare: ../scripts/special/build/width_compare sim/temp/output
-	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+# shows how theta' changes throughout the dalitz plot
+theta: ../scripts/special/build/theta
+	$< $(shell pwd)/figures/article/
 
-# note that the next few targets depends on sim/temp/compared_widths.txt. Due to limitations of make (or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
+# note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets
 state := 0+
 l := 2
 
-# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. ang_compare is probably more useful
-ang_compare_single: ../scripts/special/build/ang_compare_single
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/0+_5.root
+# compare multiple Dalitz plots from simX and sim3a with equivalent widths
+width_compare: ../scripts/special/build/width_compare sim/temp/output
+	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+
+# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
+ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output
@@ -288,7 +294,7 @@ sim/raw/%.dat: sim/configs/%.balamuth $(balamuth)
 	$(balamuth) $(shell cat $<) -N $(N) -o $(shell pwd)/sim/raw/$(*F).dat	
 
 # simulate the detector setup with simX, using the generated events from sim3a
-sim/data/%.root: sim/$$*.simX sim/raw/%.dat $(simX)
+sim/data/%.root: sim/%.simX $(simX)
 	$(simX) -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N $(N)
 	@ rm $<
 
@@ -329,24 +335,17 @@ sim/temp/0+_%.simX:
 	@ echo "}" >> $@
 	
 # this is just a bit of logic that creates all the simX & sim3a configuration files in the sim/temp folder. 
-setup: sim/temp/converted_widths.txt 
-	@ for g in $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'); do $(MAKE) sim/temp/0+_$$g.balamuth; done
-	@ for g in $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'); do $(MAKE) sim/temp/0+_$$g.simX; done
-
-# simulate the detector setup with simX, using the generated events from sim3a
-sim/data/%.root: sim/temp/$$*.simX $(simX)
-	$(simX) -c sim/config.json -r sim/temp/$*.simX -o $@ -N $(N)
+setup: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')));
 
 # simulate everything solely with simX
 sim/data/%.root : sim/temp/%.simX $(simX)
 	$(simX) -c sim/config.json -r $< -o $@ -N $(N)
 
-
 # same explanation as above, except this time it prepends "output/0+_" and appends ".root", such that the entire AUSAlib pipeline is executed on all simulations. note that this takes *a lot* of time to do - I highly recommend using the -jX flag for this!
 sim/temp/output: setup $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
 	@ echo "I'm just a dummy dependency to make Makefile work properly." > $@
 
-# cleans all files created by this section figure
+# cleans all files created by this section
 clean/sim_widths: 
 	for file in $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt); do $(MAKE) clean/0+_$$file; done
 	rm -f sim/temp/*

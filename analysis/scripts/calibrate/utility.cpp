@@ -806,7 +806,7 @@ void merge(int num, char *path[]) {
         // open the root files
         TFile *fa = TFile::Open(apath);
         TFile *fm = TFile::Open(mpath);
-        TTree *ta = (TTree *)fa->Get("a");
+        TTree *ta = (TTree *)fa->Get("tree");
         TTree *tm = (TTree *)fm->Get("a101");
 
         // define variables from analyzed tree
@@ -815,7 +815,7 @@ void merge(int num, char *path[]) {
         ta->SetBranchAddress("N", &N);
         ta->SetBranchAddress("mi", &mi);
         ta->SetBranchAddress("mul", &mul);
-        ta->SetBranchAddress("pt", &pt);
+        ta->SetBranchAddress("p_tot", &pt);
         ta->SetBranchAddress("deltaE", &deltaE);
         ta->SetBranchAddress("E_cm", &E_cm);
         ta->SetBranchAddress("E_lab", &E_lab);
@@ -829,7 +829,6 @@ void merge(int num, char *path[]) {
         // we must be very generous with the allocated space here, since otherwise we risk writing outside the bounds. 100 is probably overkill, though
         UInt_t FT[100], BT[100], FI[100], BI[100], ID[100]; 
         Double_t FE[100], BE[100];
-        // double* FTr = &FT[0], BTr = &BT[0], BIr = &BI[0], FEr = &FE[0], BEr = &BE[0], IDr = &ID[0];
         tm->SetBranchAddress("FI", &FI);
         tm->SetBranchAddress("FT", &FT);
         tm->SetBranchAddress("BI", &BI);

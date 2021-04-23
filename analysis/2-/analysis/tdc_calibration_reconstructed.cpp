@@ -14,29 +14,31 @@ int main(int argc, char *argv[]) {
     data_container data;
     prepare_data(argc, argv, &data, "mul==-1");
 
-    gROOT->SetBatch(kTRUE); // no graphics display. if kFALSE, you must click on each figure as it appears to continue the script
-    plot::path += "reconstructed/";
+    gROOT->SetBatch(kTRUE); // no graphics display
 
-    // start a ROOT application window such that the plots can actually be shown (probably not necessary in batch mode)
+    // start a ROOT application window such that the plots can actually be shown
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
+    // set the x_axis for FT and BT plots
+    plot::x_axes::standard = {100, -150, -50};
+    plot::x_axes::FT = {400, 13900, 14300};
+    plot::x_axes::BT = {400, 13900, 14300};
+    plot::path += "reconstructed/";
+    
     // ensures that the file path exists
     setup();
 
-    // attempt to repair the broken peaks
-    repair_peaks(&data);
-
     // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}};
-    vector<vector<int>> bt_peaks = {{65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
+    vector<vector<int>> ft_peaks = {{14000, 14150}}; // I manually read these off my data 
+    vector<vector<int>> bt_peaks = {{13930, 14020}, {14020, 14070}, {14070, 14160}, {14160, 14250}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
     // save(&data, "reconstructed_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 65400, 65500};
-    vector<double> bt_peak = {200, 65250, 65450};
-    gauss_filter_custom(&data, 3, ft_peak, bt_peak);
+    vector<double> ft_peak = {100, 14000, 14150}; // the area where we expect the peak to be. this is to help the fitting algorithm
+    vector<double> bt_peak = {100, 13930, 14020};
+    gauss_filter_custom(&data, 5, ft_peak, bt_peak);
 
     auto[deltaF, deltaB, offset] = load_calibration();
 

@@ -1,74 +1,158 @@
-# AUSAlib executables
+# AUSAlib executables. If globally installed, replace with "./"
 sorter := ~/tools/sorter/build/Sorter
 calibrator := ~/tools/calibrator/build/Calibrator
 identifier := ~/tools/identifier/build/Identifier
 
-.DEFAULT_GOAL := all
+.DEFAULT_GOAL := help
 .SECONDARY:
+.PHONY: clean clean/build clean/sim_widths
 
-.PHONY: clean cleandat
+help: 
+	@ echo "Main targets: (consider using the -jX flag if data/ contains many files)"
+	@ echo "\"build\": Prepares all executables for compilation. Must be run once to initialize the project. \n"
+	@ echo "\"fig/X\": Generates the figures for data source X. data/X.root, output/X.root, sim/configs/X.bahamut, or sim/configs/X.simX must exist. \n"
+	@ echo "\"tdc_calibration\": Takes all files in data/ and performs a TDC calibration on them. Outputs output/true_events.root, output/reconstructed_events.root, and output/all_events.root which can be used as targets for another call to fig/X. \n"
+	@ echo "\"clean/X\": Removes all generated data and figures associated with data source X, leaving only the raw source in data/ or sim/config/ . \n"
+	@ echo "\"clean\": Removes all generated files, leaving only the raw data sources. \n"
+	@ echo "There are also further figures available; take a look at the Makefile section \"figures\" for an overview. \n"
+	@ echo "Note that for any AUSAlib tool to work, you must update their executable paths in the first few lines of the Makefile. \n"
 
 # removes everything, leaving only the raw data files in data/
-clean:
+clean: clean/build clean/sim_widths
 	rm -f sim/raw/*
 	rm -f sim/data_i/*
 	rm -f sim/data/*
 	rm -f match/*
+	rm -f merged/*
 	rm -f id/*
 	rm -f output/*
 	rm -f -r figures/*
+	rm -f -r analysis/figures/*
 
 # removes all files associated with %, except for the raw data in data/
 # note: also removes any simulated data named %.root
 clean/%: 
-	@rm -f sim/raw/$(*F).dat
-	@rm -f sim/data_i/$(*F).root
-	@rm -f sim/data/$(*F).root
-	@rm -f match/$(*F)m.root
-	@rm -f id/$(*F)mi.root
-	@rm -f output/$(*F).root
-	@rm -f -r figures/$(*F)
-#	@rm -f data/$(*F).root
+	@ rm -f sim/raw/$(*F).dat
+	@ rm -f sim/data_i/$(*F).root
+	@ rm -f sim/data/$(*F).root
+	@ rm -f match/$(*F)m.root
+	@ rm -f id/$(*F)mi.root
+	@ rm -f output/$(*F).root
+	@ rm -f merged/$(*F).root
+	@ rm -f -r figures/$(*F)
+#	@ rm -f data/$(*F).root
 
-N = 10
+#############
+### CMAKE ###
+#############
+../../simX_fork/build/Makefile: ../../simX_fork/CMakeLists.txt
+	mkdir -p ../../simX_fork/build
+	cd ../../simX_fork/build; cmake ../
+	
+../../sim3a/build/Makefile: ../../sim3a/CMakeLists.txt
+	mkdir -p ../../sim3a/build
+	cd ../../sim3a/build; cmake ../
+
+../../sim3a_i/build/Makefile: ../../sim3a_i/CMakeLists.txt
+	mkdir -p ../../sim3a_i/build
+	cd ../../sim3a_i/build; cmake ../
+
+../scripts/basic/build/Makefile: ../scripts/basic/CMakeLists.txt
+	mkdir -p ../scripts/basic/build
+	cd ../scripts/basic/build; cmake ../
+
+../scripts/special/build/Makefile: ../scripts/special/CMakeLists.txt
+	mkdir -p ../scripts/special/build
+	cd ../scripts/special/build; cmake ../
+
+analysis/build/Makefile: analysis/CMakeLists.txt
+	mkdir -p analysis/build
+	cd analysis/build; cmake ../
+
+# this variable keeps track of changes in all CMakeLists.txt and rebuilds if necessary
+# every time a CMakeLists is modified, run this target
+build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
+
+####################
+### DEPENDENCIES ###
+####################
+simX := ../../simX_fork/build/simX
+balamuth := ../../sim3a/build/balamuth
+balamuth_i := ../../sim3a_i/build/balamuth
+
+# if any of the dependent executables doesn't exist, we compile them
+../../simX_fork/build/simX_fork/build/simX:
+	make -C ../../simX_fork/build/
+	
+../../sim3a/build/balamuth: ../../sim3a/balamuth/*
+	make -C ../../sim3a/build/
+
+../../sim3a_i/build/balamuth: ../../sim3a_i/balamuth/*
+	make -C ../../sim3a_i/build/
+
+# removes all executables
+clean/build: 
+	@ rm -f -r ../figure_scripts/build/*
+	@ rm -f -r ../special_figure_scripts/build/*
+	@ rm -f -r ../calibrate/build/*
+	@ rm -f -r analysis/build/*
 
 #######################
 ### tdc_calibration ###
 #######################
+calibrate_rec := analysis/build/tdc_calibration_reconstructed
+calibrate_true := analysis/build/tdc_calibration_true
 
-### temp targets for debugging ###
-debug_match: calibrate
-	calibrate/mul_compare $(addprefix match/,$(shell ls match))
+tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
+	$(calibrate_true) $(addprefix output/,$(shell ls data))	
+	$(calibrate_rec) $(addprefix output/,$(shell ls data))
+	@ echo "Creating output/all_events.root ..."
+	@ hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
-test: calibrate
-	analysis/calibrate_reconstructed output/2455_000.root output/2455_001.root output/2455_002.root
+### compile the calibration programs if necessary ###
+analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../scripts/calibrate/*
+	make -C analysis/build/ tdc_calibration_reconstructed
 
-test_all: calibrate $(addprefix output/,$(shell ls data))
-	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
-### --- ###
-		
-tdc_calibration: calibrate $(addprefix output/,$(shell ls data))
-	analysis/calibrate_true $(addprefix output/,$(shell ls data))	
-	analysis/calibrate_reconstructed $(addprefix output/,$(shell ls data))
-	hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
-
-calibrate: analysis/tdc_calibration_reconstructed analysis/tdc_calibration_true ../calibrate/*
-	cd analysis/; make calibrate_true; make calibrate_reconstructed
+analysis/build/tdc_calibration_true: $(build) analysis/tdc_calibration_true.cpp ../scripts/calibrate/*
+	make -C analysis/build/ tdc_calibration_true
 	
+#####################
+### DEBUG TARGETS ###
+#####################
+debug_match: $(calibrate_rec)
+	../calibrate/build/mul_compare $(addprefix match/,$(shell ls match))
+
+test: $(calibrate_rec) $(calibrate_true)
+	$(calibrate_rec) output/2455_000.root output/2455_001.root output/2455_002.root
+
+test_all: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
+	$(calibrate_rec) $(addprefix output/,$(shell ls data))
+
+temp: calibration/setup.json
+	$(calibrator) -s $< -k setup/source.json -d SU -o calibration/ calibration/SU/2478_000.root
+
 #######################
-### real root files ###
+### REAL ROOT FILES ###
 #######################
 ### calibration ###
-setup/%.cal :
-	$(calibrator) -s setup/setup.json -k setup/source.json -d $* caldata/$*/*.root -o setup/ --eloss
-calibration : setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal
+# performs a calibration of detector %, using all root files present in the folder calibration/%/
+# it uses a small script to duplicate the setup file from setup/setup.json, while removing any mention of "calibration: ", 
+# since this breaks the calibrator, but is required for some of the other tools. 
+setup/%.cal: ../scripts/special/calibrate_setup.py setup/setup.json
+	python3 $< setup/setup.json calibration/setup.json
+	$(calibrator) -s calibration/setup.json -k setup/source.json -d $* -o calibration/ --eloss --gui calibration/$*/*.root 
+	@ cp calibration/*.cal setup/
+	@ rm calibration/setup.json
+
+# simple target to calibrate all detectors
+calibrate: setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal;
 
 ### matching ###
-match/%m.root : data/%.root matcher.json setup/*
+match/%m.root : data/%.root matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 # this target allows us to use simulated data from this point on
-match/%m.root : sim/data/%.root matcher.json setup/*
+match/%m.root : sim/data/%.root matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 ### identification ###
@@ -80,21 +164,21 @@ id/%i.root : match/%.root
 	$(identifier) $(target) $(ions) $(margin) $(collectors) $^ -o id/$*i.root
 
 ### analysis ###
-analysis/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
-	make -C analysis/ EventAnalysis
+event_analysis := analysis/build/EventAnalysis
 
-output/%.root : id/%mi.root analysis/EventAnalysis
-	./analysis/EventAnalysis output/$*.root id/$*mi.root match/$*m.root
+analysis/build/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
+	make -C analysis/build/ EventAnalysis
+
+output/%.root : match/%m.root id/%mi.root $(event_analysis)
+	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 
 # Analysis with interference
-output/%.root : id/%mi.root analysis/EventAnalysis sim/data_i/%.root
-	./analysis/EventAnalysis output/$*.root id/$*mi.root match/$*m.root
+output/%.root : id/%mi.root $(event_analysis) sim/data_i/%.root
+	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 	echo sim/data_i/$*.root output/$*.root |root -l ../merger.C
 
-analysis: $(addprefix output/,$(shell ls data))
-
 ###############
-### figures ###
+### FIGURES ###
 ###############
 # the following line allows us to use automatic variables for prerequisites from this point on
 .SECONDEXPANSION:
@@ -105,22 +189,20 @@ analysis: $(addprefix output/,$(shell ls data))
 # *D --> abc
 # @F --> xyz.pdf
 # *F --> xyz
+# $* --> abc/xyz
 
 # compiles a given figure program
-../figure_scripts/%: ../figure_scripts/%.cpp
-	make -C ../figure_scripts/ $*
+../scripts/basic/build/%: ../scripts/basic/%.cpp ../scripts/calibrate/*
+	make -C ../scripts/basic/build/ $*
 
 # generates a single pdf file for the data source %
-figures/%.pdf: output/$$(*D).root ../figure_scripts/$$(*F)
-	@ echo "Building $(*F).pdf..."
+figures/%.pdf: output/$$(*D).root ../scripts/basic/build/$$(*F)
+	@ echo "Building "$@"..."
 	@ mkdir -p figures/$(*D)
-	@ ../figure_scripts/$(*F) $< $(shell pwd)/figures/$(*D)/
+	../scripts/basic/build/$(*F) $< $(shell pwd)/figures/$(*D)/
 
 # contains a list of all possible pdf files
-figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../figure_scripts/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
-
-temp: 
-	@ echo $(figure_pdf)
+figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../scripts/basic/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
 
 # concatenates all raw data in data/ and makes all combined figures for them
 figs: $(addprefix figures/data/,$(figure_pdf))
@@ -131,97 +213,133 @@ figs: $(addprefix figures/data/,$(figure_pdf))
 fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 	@ echo "Built figures/"$*
 
-###################
-### simulations ###
-###################
-# generate the simX configuration file required for simX
-sim/%.simX: sim/raw/$$(*F).dat
-	@echo "beam: p" > $@
-	@echo "target: B11" >> $@
-	@echo "-> {" >> $@
-	@echo "    generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
-	@echo "    a" >> $@
-	@echo "}" >> $@
+### special figures ###
+# compiles a given "special" figure program
+../scripts/special/build/%: ../scripts/special/%.cpp
+	make -C ../scripts/special/build/ $*
 
-# if the simX file already exists in ../sim/, copy it to sim/
-#sim/%.simX: ../sim/%.simX
-#	cp $< $@
+# creates an interactive 3D Dalitz plot of %. mainly used for debug
+Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
+	@ echo "Creating interactive 3D Dalitz plot..."
+	../scripts/special/build/Dalitz_3D $<
+
+# creates two histograms, one for % and another for output/all_events.
+# it then binwise divides each histogram to give the output histogram, showing the deviations
+figures/%/sim_compare_raw.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
+	@ echo "Building "$@"..."
+	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
+
+# same as above, but now with a cut on bin values to enhance smaller details and fix the z axis
+figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
+	@ echo "Building "$@"..."
+	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/ 3
+
+# this is just for easy access to the two commands above. simply use "make sim_compare/X" to create both sim_compare plots for output/X.root
+sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
+
+### thesis specific figures ###
+# plots before / after of the TDC values
+tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
+	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
+	$< $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
+
+# illustrates how the peaks depend on the multiplicity
+mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
+	@ echo "Creating figures/article/mul_compare.pdf"
+	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
+
+# note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
+# extra information for the next couple of targets
+state := 0+
+l := 2
+
+# compare multiple Dalitz plots from simX and sim3a with equivalent widths
+width_compare: ../scripts/special/build/width_compare sim/temp/output
+	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+
+# compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
+ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+
+# same as ang_compare_single, but for all files simulated with width_compare
+ang_compare: ../scripts/special/build/ang_compare sim/temp/output
+	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+	
+###################
+### SIMULATIONS ###
+###################
+# number of events generated by all simulations
+N := 100000
+
+# generate the simX configuration file required for simX
+# this is generated on the fly whenever it is needed, and is deleted afterwards
+sim/%.simX: sim/raw/%.dat
+	@ echo "beam: p" > $@
+	@ echo "target: B11" >> $@
+	@ echo "-> {" >> $@
+	@ echo "    generator: PREGEN(file=\""$(shell pwd)/$<"\" unit=\"keV\")" >> $@
+	@ echo "    a" >> $@
+	@ echo "    a" >> $@
+	@ echo "    a" >> $@
+	@ echo "}" >> $@
 
 # generate the raw event data from sim3a
-sim/raw/%.dat: ../sim/%.balamuth
-	../../sim3a/build/balamuth $(shell cat $<) -N 1000000 -o $(shell pwd)/sim/raw/$(*F).dat	
+sim/raw/%.dat: sim/configs/%.balamuth $(balamuth)
+	$(balamuth) $(shell cat $<) -N $(N) -o $(shell pwd)/sim/raw/$(*F).dat	
 
 # simulate the detector setup with simX, using the generated events from sim3a
-sim/data/%.root: sim/$$*.simX sim/raw/%.dat
-	../sim/simX_fork -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N 1000000
-	@rm $<
+sim/data/%.root: sim/%.simX $(simX)
+	$(simX) -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N $(N)
+	@ rm $<
 
 # simulate everything solely with simX
-sim/data/%.root : ../sim/%.simX
-	../sim/simX_fork -c sim/config.json -r $< -o sim/data/$(*F).root -N 1000000
-#	@rm $<
+sim/data/%.root : sim/configs/%.simX $(simX)
+	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N $(N)
 
-###########
-# AUTOGEN #
-###########
-directory = ~/projects/B11/autogen/$(notdir $(shell pwd))
-autogen :
-	+make autofig/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC)
-	rm $(directory)/sim/data_i/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/sim/data/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/match/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/id/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
-	rm $(directory)/output/auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC).*.root
+###################################
+### thesis specific simulations ###
+###################################
+# I sometimes create new files (i.e. sim/temp/setup) which are not used for anything in this section. The idea is that they are just shortcuts for longer operations, and Makefile needs to know when such a target was last executed. Creating a new file is the perfect way to do just that.
 
-$(directory)/sim/data_i/auto_%.root :
-	cd ../sim; ./balamuth_i --JC $(JC) --JBe 2+ -L 3 --ExC 16.6MeV --L2 1 --phase 6 --ratio 0.7 -N 1000000 -o $(directory)/sim/data_i/auto_'$*'.root --seed 50$(subst .,,$(suffix $*)) --coulomb-radius $(coulomb-radius)fm --r0Be $(r0Be)fm --gBe $(gBe)'keV^(1/2)' --ExBe $(ExBe)keV
-	#cd ../sim; ./balamuth_i --JC $(JC) --JBe 2+ -L 3 --ExC 16.6MeV --L2 1 --phase 6 --ratio 0.7 -N 1000000 -o $(directory)/sim/data_i/auto_'$*'.root --seed 50$(subst .,,$(suffix $*)) --r0Be $(r0Be)fm --gBe $(gBe)'keV^(1/2)' --ExBe $(ExBe)keV
+# calculates a few different values of the width Gamma based on the reduced width amplitude gamma
+sim/temp/converted_widths.txt: ../scripts/special/width_converter.py
+	@ mkdir -p sim/temp
+	@ echo "gamma Gamma" > $@
+	@ for g in 1 2 3 4 5 10 15 20 25 30 35 40; do python3 $< $$g -l >> $@; done
 
-$(directory)/sim/data/%.root : $(directory)/sim/data_i/%.root
-	cd ../sim; python3 simX_factory.py $(directory)/sim/data_i/$*.root > $(directory)/sim/data/$*.simX
-	cd ../sim; ./simX_fork -c $(shell pwd)/sim/config.json -r $(directory)/sim/data/$*.simX -o $(directory)/sim/data/$*.root -N 1000000 -s $*
-	rm $(directory)/sim/data/$*.simX
+sim/temp/0+_%.balamuth:
+	@ echo "--JC 0+ --JBe 2+ -L 2 --ExC 17.76MeV --ExBe 3030keV --gBe $*keV" > $@
 
-$(directory)/match/%m.root : $(directory)/sim/data/%.root matcher.json setup/*
-	$(sorter) $< -m matcher.json -o $(directory)/match/$*m.root
+# generate the raw event data from sim3a
+sim/raw/%.dat: sim/temp/%.balamuth $(balamuth)
+	$(balamuth) $(shell cat $<) -N $(N) -o $(shell pwd)/$@
 
-$(directory)/id/%i.root : $(directory)/match/%.root
-	$(identifier) $(target) $(ions) $(margin) $(collectors) $^ -o $(directory)/id/$*i.root
-
-$(directory)/output/%.root : $(directory)/id/%mi.root analysis/EventAnalysis $(directory)/sim/data_i/%.root
-	./analysis/EventAnalysis $(directory)/output/$*.root $(directory)/id/$*mi.root $(directory)/match/$*m.root
-	echo $(directory)/sim/data_i/$*.root $(directory)/output/$*.root |root -l ../merger.C
-
-$(directory)/figures/%.pdf : $(addprefix $(directory)/,$$(call fun1,%)) ../figure_scripts/$$(call fun,%).py $(addprefix $(directory)/,$(call simfiles,auto_$(coulomb-radius)_$(r0Be)_$(gBe)_$(ExBe)_$(JC),$(N)))
-	mkdir -p $(directory)/figures/$(subst /,,$(dir $*))
-	echo $(addprefix $(directory)/,$(call fun1,$*)) | python3 ../figure_scripts/$(notdir $(basename $@)).py $(directory)/figures/$(subst /,,$(dir $*))
-
-autofig/% : $(addprefix $(directory)/,$(addprefix figures/%/,$(figure_pdf)))
-	echo $(addprefix $(directory)/,$(addprefix figures/$*/,$(figure_pdf)))
-
-automaker :
-	cat ../list2 |python3 ../automaker.py $(shell pwd)
-
-###########
-# scripts #
-###########
-
-test.pdf : ../scripts/test.py figures/data_tdc_cut/dalitz_forfit.pdf
-	python3 ../scripts/test.py $(shell pwd) > test.log
-test_automake.pdf : ../scripts/test_automake.py figures/data_tdc_cut/dalitz_forfit.pdf
-	python3 ../scripts/test_automake.py $(shell pwd) > test_automake.log
-
-surf.pdf : ../scripts/surf.py
-	python3 ../scripts/surf.py $(shell pwd)
-
-test_noecut.pdf : ../scripts/test_noecut.py
-	python3 ../scripts/test_noecut.py $(shell pwd) > test_noecut.log
+sim/temp/0+_%.simX:
+	@ echo "beam: p" > $@
+	@ echo "target: B11" >> $@
+	@ echo "-> {" >> $@
+	@ echo "    a" >> $@
+	@ echo "    Be8 Ex: 3.03MeV G0: $*MeV" >> $@
+	@ echo "    -> {" >> $@ 
+	@ echo "        AD: TF1(phi=\"1\" theta=\"sin(x)*(11.25*cos(x)^4 - 7.5*cos(x)^2 + 1.25)\")" >> $@
+	@ echo "        a" >> $@
+	@ echo "        a" >> $@
+	@ echo "       }" >> $@
+	@ echo "   }" >> $@
+	@ echo "}" >> $@
 	
-all.pdf : ../scripts/all.py
-	python3 ../scripts/all.py $(shell pwd) > all.log
+# this is just a bit of logic that creates all the simX & sim3a configuration files in the sim/temp folder. 
+setup: sim/temp/converted_widths.txt $(addprefix sim/temp/0+_, $(addsuffix .simX, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix sim/temp/0+_, $(addsuffix .balamuth, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')));
 
+# simulate everything solely with simX
+sim/data/%.root : sim/temp/%.simX $(simX)
+	$(simX) -c sim/config.json -r $< -o $@ -N $(N)
 
-%.pdf : ../scripts/%.py
-	python3 ../scripts/$*.py $(shell pwd)
+# same explanation as above, except this time it prepends "output/0+_" and appends ".root", such that the entire AUSAlib pipeline is executed on all simulations. note that this takes *a lot* of time to do - I highly recommend using the -jX flag for this!
+sim/temp/output: setup $(addprefix output/0+_, $(addsuffix .root, $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt)))
+	@ echo "I'm just a dummy dependency to make Makefile work properly." > $@
+
+# cleans all files created by this section
+clean/sim_widths: 
+	for file in $(shell awk -vORS=" " 'NR>1 {print}' sim/temp/converted_widths.txt); do $(MAKE) clean/0+_$$file; done
+	rm -f sim/temp/*

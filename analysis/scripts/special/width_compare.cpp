@@ -87,7 +87,7 @@ int main(int argc, char const *argv[]) {
 
         for (int file = 0; file < 8; file++) {
             fileno++;
-            //cout << format("Analyzing file %1%/%2%.") % (fileno) % (argc-sim3a_start) << "\r";
+            cout << format("Analyzing file %1%/%2%.") % (fileno) % (argc-sim3a_start) << "\r";
             TH2D* hsim = dalitz(files[file]);
 
             if (file == 0) {
