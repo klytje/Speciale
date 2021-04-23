@@ -19,11 +19,10 @@ using namespace std;
 using boost::format;
 
 int main(int argc, char const *argv[]) {
-    vector<double> bounds; // y axis bounds
+    vector<double> y_bounds; // y axis bounds
     double interference_point; // point of maximum interference
     function<double(Double_t*, Double_t*)> ang_corr;
-
-    tie(ang_corr, bounds, interference_point) = get_angular_correlation_function(argv[2], argv[3]);
+    tie(ang_corr, y_bounds, interference_point) = get_angular_correlation_function(argv[2], argv[3]);
     int bins = 200;
     
     setup_style();
@@ -69,8 +68,8 @@ int main(int argc, char const *argv[]) {
             int b = 0;
             for (double i = -1; i < 1; i+=2./bins) {
                 b++;
-                if (bounds[0] < i && biny1 == 0) biny1 = b;
-                if (bounds[1] < i && biny2 == 0) biny2 = b;
+                if (y_bounds[0] < i && biny1 == 0) biny1 = b;
+                if (y_bounds[1] < i && biny2 == 0) biny2 = b;
             }
                 
             TH1D* hp = h->ProjectionX("px", biny1, biny2);
@@ -115,8 +114,8 @@ int main(int argc, char const *argv[]) {
 
             // makes a Dalitz plot with two lines showing where the data is cut
             auto plot_top = [&] () {
-                TLine* bot = new TLine(-1, bounds[0], 1, bounds[0]);
-                TLine* top = new TLine(-1, bounds[1], 1, bounds[1]);
+                TLine* bot = new TLine(-1, y_bounds[0], 1, y_bounds[0]);
+                TLine* top = new TLine(-1, y_bounds[1], 1, y_bounds[1]);
                 top->SetLineWidth(2);
                 bot->SetLineWidth(2);
                 top->SetLineColor(kRed);
@@ -145,11 +144,12 @@ int main(int argc, char const *argv[]) {
                         }
                     }
                 }
-                double d = sqrt(1 - pow((bounds[1] + bounds[0])/2, 2)); // distance from 0 to the border of the circle at y = mean(y1, y2)
 
-                corr = new TF1("corr", ang_corr, -1, 1, 2);
-                corr->SetParameter(0, d);
-                corr->SetParameter(1, maxval);
+                double y = (y_bounds[1] + y_bounds[0])/2; // we use the middle of the bounded area as the y coordinate
+                vector<double> x_bounds = {-sqrt(1-pow(y, 2)), sqrt(1-pow(y, 2))};
+                corr = new TF1("corr", ang_corr, x_bounds[0], x_bounds[1], 2);
+                corr->SetParameter(0, maxval);
+                corr->SetParameter(1, y);
 
                 hp->DrawClone();
                 corr->DrawCopy("same");

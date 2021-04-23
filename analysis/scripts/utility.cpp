@@ -9,69 +9,130 @@
 using namespace std;
 using boost::format;
 
-function<double(double, double)> calc_theta(string state) {
-    double E_tot;
-    if (state == "0+") {
-        E_tot = (17.76 - 10.39) + (10.39 - 7.27);
-    } else if (state == "2-") {
-        E_tot = (16.67 - 10.39) + (10.39 - 7.27);
-    } else if (state == "3-") {
-        E_tot = (18.350 - 10.39) + (10.39 - 7.27);
-    } else {
-        cout << format("The given state %1% is not specified yet! \nYou can do it pretty easily yourself in ../scripts/utility.cpp") % state << endl;
-        exit(1);
-    }
-    return [&E_tot] (double x, double y) {
-        double Q1 = (y+1)*E_tot/2;
-        double Q2 = E_tot - Q1;
-        return acos(x*E_tot/(2*sqrt(Q1*Q2)));
-    };
-}
-
-// returns the correlation function for a given state and l
+// returns the correlation function as a lambda for a given state and l
 tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angular_correlation_function(string state, string l) { 
     // these two values are determined by eye for all possibilities
     vector<double> bounds; // y axis bounds
     double interference_point; // point of maximum interference
     function<double(Double_t*, Double_t*)> ang_corr;
+    double E_tot;
 
     // these are all calculated with my own angular_correlation.py script
     if (state == "0+" && l == "2") {
-        bounds = {0.35, 0.45};
-        interference_point = 0.7;
+        bounds = {0.35, 0.45}; // the bounds on the beam of interest
+        interference_point = 0.7; // rough location of the points of interference. These will not be used for scaling the angular correlation function
         ang_corr = [] (Double_t* x, Double_t* par) {
-            double d = par[0]; 
-            double maxval = par[1];
-            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
-            double res = 2.25*pow(cos(xp), 4) - 1.5*pow(cos(xp), 2) + 0.25;
-            return maxval*res;
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+
+            double corr = 2.25*pow(cos(theta), 4) - 1.5*pow(cos(theta), 2) + 0.25; // the correlation function
+            return maxval*corr;
         };
-        // ang_corr = [] (Double_t* x, Double_t* par) {
-        //     double d = par[0]; 
-        //     double maxval = par[1];
-        //     double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
-        //     double res = 2.25*pow(cos(xp), 4) - 1.5*pow(cos(xp), 2) + 0.25;
-        //     return maxval*res;
-        // };
+    } else if (state == "1-" && l == "1") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = 0.75*pow(cos(theta), 2) + 0.25;
+            return maxval*corr;
+        };
+    } else if (state == "1+" && l == "2") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = -4*pow(cos(theta), 4) + 4*pow(cos(theta), 2);
+            return maxval*corr;
+        };
+    } else if (state == "1-" && l == "3") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = 1.25*pow(cos(theta), 4) - 0.5*pow(cos(theta), 2) + 0.25;
+            return maxval*corr;
+        };
     } else if (state == "2-" && l == "1") {
         bounds = {0.28, 0.37};
         interference_point = 0.56;
-        ang_corr = [] (Double_t* x, Double_t* par) {
-            double d = par[0]; 
-            double maxval = par[1];
-            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
-            double res = 1 - pow(cos(xp), 2);
-            return maxval*res;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = 1 - pow(cos(theta), 2);
+            return maxval*corr;
+        };
+    } else if (state == "2+" && l == "2") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = 2.25*pow(cos(theta), 4) - 2.25*pow(cos(theta), 2) + 1;
+            return maxval*corr;
+        };
+    } else if (state == "2-" && l == "3") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = -3.529*pow(cos(theta), 4) + 3.294*pow(cos(theta), 2) + 0.235;
+            return maxval*corr;
         };
     } else if (state == "3-" && l == "1") {
         bounds = {0.4, 0.47};
         interference_point = 0.78;
         ang_corr = [] (Double_t* x, Double_t* par) {
-            double d = par[0]; 
-            double maxval = par[1];
-            double xp = M_PI/2*(1 + x[0]/d); // beta = 180 - theta', and theta' = pi/2(1 - x/d)
-            double res = 1./3*pow(cos(xp), 2) + 2./3;
-            return maxval*res;
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+
+            double corr = 1./3*pow(cos(theta), 2) + 2./3;
+            return maxval*corr;
+        };
+    } else if (state == "3-" && l == "3") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {            
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = 2.368*pow(cos(theta), 4) - 2.526*pow(cos(theta), 2) + 1;
+            return maxval*corr;
         };
     } else {
         cout << format("The given state %1% l = %2% is not specified yet! \nYou can do it pretty easily yourself in ../scripts/utility.cpp") % state % l << endl;

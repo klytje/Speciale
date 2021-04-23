@@ -66,9 +66,12 @@ print(f"Numeric result:               W(θ) = {W.evalf()}")
 
 # we determine the normalization constant by evaluating the result at θ = 0 and θ = pi/2. I think these are the only two options, since the result is 
 # either of the form cos(θ) or sin(θ)
+# EDIT: Apparently I was wrong. Sometimes these functions gets pretty crazy, and we need to sample more locations. I've set it to 16, which should be enough
+# for most stuff. 
 maxval = 0
-for i in range(2):
-	val = W.evalf(subs={theta: i*sympy.pi/2})
+evals = 16 # we evaluate at all integer multiples of pi/evals 
+for i in range(evals):
+	val = W.evalf(subs={theta: i*sympy.pi/evals})
 	if maxval < val:
 		maxval = val
 print(f"Normalized result:            W(θ) = {W/maxval}")

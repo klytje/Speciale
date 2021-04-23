@@ -215,7 +215,7 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 
 ### special figures ###
 # compiles a given "special" figure program
-../scripts/special/build/%: ../scripts/special/%.cpp
+../scripts/special/build/%: ../scripts/special/%.cpp ../scripts/utility.cpp
 	make -C ../scripts/special/build/ $*
 
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
@@ -237,9 +237,6 @@ figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/s
 # this is just for easy access to the two commands above. simply use "make sim_compare/X" to create both sim_compare plots for output/X.root
 sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
 
-###############################
-### thesis specific figures ###
-###############################
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
 	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
@@ -252,6 +249,10 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 
 # shows how theta' changes throughout the dalitz plot
 theta: ../scripts/special/build/theta
+	$< $(shell pwd)/figures/article/
+
+# shows a bunch of different correlation functions. This was mainly to verify that they were correctly normalized
+corr_funcs: ../scripts/special/build/corr_funcs
 	$< $(shell pwd)/figures/article/
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
@@ -267,10 +268,15 @@ width_compare: ../scripts/special/build/width_compare sim/temp/output
 ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
 	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
 
+# same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
+# should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
+ang_cor_fit/%: ../scripts/special/build/ang_cor_fit sim/temp/output output/%.root
+	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
-	
+
 ###################
 ### SIMULATIONS ###
 ###################

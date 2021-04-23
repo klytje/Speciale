@@ -6,6 +6,7 @@
 #include <TCanvas.h>
 #include <TLine.h>
 #include <TF1.h>
+#include <TLegend.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -28,10 +29,16 @@ int main(int argc, char const *argv[]) {
     string l = argv[3];
     bool draw_excluded_area = true; // draw the areas which are excluded from the maximum value search (used to scale correlation function)
 
-    function<double(Double_t*, Double_t*)> ang_corr; // angular correlation function
     vector<double> y_bounds; // y axis bounds
     double interference_point; // point of maximum interference
-    tie(ang_corr, y_bounds, interference_point) = get_angular_correlation_function(state, l);
+    tie(std::ignore, y_bounds, interference_point) = get_angular_correlation_function(state, l);
+
+    if (string(argv[argc-1]).find("events") != string::npos) { // if we are dealing with real data
+        cout << "File name contains \"events\", assuming real data..." << endl;
+        if (state == "0+") {
+            y_bounds = {0.40, 0.54};
+        }
+    }
 
     setup_style();
     int bins = 200;
@@ -51,7 +58,7 @@ int main(int argc, char const *argv[]) {
     top->Draw();
     bot->Draw();
 
-    string path = string(argv[1]) + "ang_compare_cut.pdf";
+    string path = string(argv[1]) + "ang_cor_fit_cut.pdf";
     c->SetLogz();
     c->SetRightMargin(0.15);
     c->SaveAs(path.c_str());
@@ -66,7 +73,6 @@ int main(int argc, char const *argv[]) {
         if (y_bounds[0] < i && biny1 == 0) biny1 = b;
         if (y_bounds[1] < i && biny2 == 0) biny2 = b;
     }
-    cout << format("bins: %1%, %2%") % biny1 % biny2 << endl;
     TH1D* h1 = hist->ProjectionX("px", biny1, biny2);
     h1->Draw();
 
@@ -85,35 +91,30 @@ int main(int argc, char const *argv[]) {
             }
         }
     }
-    cout << format("Maximum histogram value found at bin %1%") % location << endl;
-    if (draw_excluded_area) {
-        TLine* l1 = new TLine(bad_area[0], 0, bad_area[0], maxval);
-        TLine* l2 = new TLine(bad_area[1], 0, bad_area[1], maxval);
-        TLine* l3 = new TLine(bad_area[2], 0, bad_area[2], maxval);
-        TLine* l4 = new TLine(bad_area[3], 0, bad_area[3], maxval);
-        l1->SetLineWidth(2);
-        l2->SetLineWidth(2);
-        l3->SetLineWidth(2);
-        l4->SetLineWidth(2);
-
-        l1->SetLineColor(kRed);
-        l2->SetLineColor(kRed);
-        l3->SetLineColor(kRed);
-        l4->SetLineColor(kRed);
-
-        l1->DrawClone();
-        l2->DrawClone();
-        l3->DrawClone();
-        l4->DrawClone();
-    }
-
     double y = (y_bounds[1] + y_bounds[0])/2; // we use the middle of the bounded area as the y coordinate
     vector<double> x_bounds = {-sqrt(1-pow(y, 2)), sqrt(1-pow(y, 2))};
-    TF1 *corr = new TF1("corr", ang_corr, x_bounds[0], x_bounds[1], 2);
-    corr->SetParameter(0, maxval);
-    corr->SetParameter(1, y);
-    corr->Draw("same");
 
-    path = string(argv[1]) + "ang_compare_projection.pdf";
+    // plot multiple correlation functions
+    vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3-"}; // parity doesn't actually matter
+    vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "3"};
+    vector<int> color =     {1   , 2   , 3   , 4   , 5   , 6   , 7   , 8   , 9};
+    function<double(Double_t*, Double_t*)> ang_corr;
+
+    auto legend = new TLegend(0.1, 0.75, 0.2, 0.9);
+    for (int i = 0; i < states.size(); i++) {
+        tie(ang_corr, std::ignore, std::ignore) = get_angular_correlation_function(states[i], ls[i]);
+
+        string label = (format("%1% %2%") % states[i] % ls[i]).str();
+        TF1 *corr = new TF1(label.c_str(), ang_corr, x_bounds[0], x_bounds[1], 2);
+        corr->SetParameter(0, maxval);
+        corr->SetParameter(1, y);
+        corr->SetLineColor(color[i]);
+        corr->DrawClone("same");
+
+        legend->AddEntry(label.c_str(), label.c_str(), "l");
+    }
+    legend->Draw();
+    
+    path = string(argv[1]) + "ang_cor_fit.pdf";
     c2->SaveAs(path.c_str());
 }
