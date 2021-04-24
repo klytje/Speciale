@@ -33,10 +33,15 @@ int main(int argc, char const *argv[]) {
     double interference_point; // point of maximum interference
     tie(std::ignore, y_bounds, interference_point) = get_angular_correlation_function(state, l);
 
+    // since the real data is slightly different from the simulations, I specify other values of y_bounds for them
+    bool real_data = false;
     if (string(argv[argc-1]).find("events") != string::npos) { // if we are dealing with real data
         cout << "File name contains \"events\", assuming real data..." << endl;
+        real_data = true;
         if (state == "0+") {
             y_bounds = {0.40, 0.54};
+        } else if (state == "2-") {
+            y_bounds = {0.35, 0.49};
         }
     }
 
@@ -92,7 +97,8 @@ int main(int argc, char const *argv[]) {
         }
     }
     double y = (y_bounds[1] + y_bounds[0])/2; // we use the middle of the bounded area as the y coordinate
-    vector<double> x_bounds = {-sqrt(1-pow(y, 2)), sqrt(1-pow(y, 2))};
+    // the x bounds needs to be sliiightly smaller than one would predict due to floating point errors (theta is undefined for x-values outside this bound)
+    vector<double> x_bounds = {-sqrt(1-pow(y, 2))+0.0001, sqrt(1-pow(y, 2))-0.0001};
 
     // plot multiple correlation functions
     vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3-"}; // parity doesn't actually matter
@@ -117,4 +123,31 @@ int main(int argc, char const *argv[]) {
     
     path = string(argv[1]) + "ang_cor_fit.pdf";
     c2->SaveAs(path.c_str());
+
+    if (!real_data) {
+        exit(0);
+    }
+
+    //*** FIT ***//
+    // attempt to fit the data (very specific to my thesis)
+    if (state == "0+" || state == "2-") {
+        TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
+        auto func = [] (double* x, double* par) {
+            double y = par[0];
+            double c1 = par[1];
+            double c3 = par[2];
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            return c1*(1 - pow(cos(theta), 2)) + c3*(-3.529*pow(cos(theta), 4) + 3.294*pow(cos(theta), 2) + 0.235);
+        };
+        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 3);
+        mix->FixParameter(0, y);
+        mix->SetParameter(1, maxval/3);
+        mix->SetParameter(2, maxval);
+        h1->Fit(mix, "QR");
+        cout << format("Fitted values: c1 = %1%, c3 = %2%") % (mix->GetParameter(1)/maxval) % (mix->GetParameter(2)/maxval) << endl;
+
+        h1->Draw();
+        path = string(argv[1]) + "ang_cor_fitted.pdf";
+        c3->SaveAs(path.c_str());
+    }
 }
