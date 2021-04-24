@@ -103,7 +103,7 @@ int main(int argc, char const *argv[]) {
     // plot multiple correlation functions
     vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3-"}; // parity doesn't actually matter
     vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "3"};
-    vector<int> color =     {1   , 2   , 3   , 4   , 5   , 6   , 7   , 8   , 9};
+    vector<int> color =     {1   , 2   , 3   , 4   , 5   , 6   , 7   , 28  , 9};
     function<double(Double_t*, Double_t*)> ang_corr;
 
     auto legend = new TLegend(0.1, 0.75, 0.2, 0.9);

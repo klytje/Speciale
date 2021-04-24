@@ -4,6 +4,7 @@
 #include <TCanvas.h>
 #include <TF1.h>
 #include <TH2D.h>
+#include <TLegend.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -46,4 +47,34 @@ int main(int argc, char const *argv[]) {
 
     string path = string(argv[1]) + "theta.pdf";
     c->SaveAs(path.c_str());
+
+    //*** theta(y) PLOT ***//
+    TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
+    auto func = [] (double* x, double* par) {
+        double y = par[0];
+        return acos(x[0]/sqrt(1-pow(y, 2)));
+    };
+
+    TF1 *dummy = new TF1("dummy", "3.14", -1, 1);
+    dummy->SetTitle("Angular correlation functions");
+    dummy->SetMaximum(M_PI);
+    dummy->SetMinimum(0);
+    dummy->SetLineColor(kBlack);
+    dummy->Draw();
+
+    auto legend = new TLegend(0.2, 0.4);
+    for (int i = 0; i < 8; i++) {
+        double y = 0 + double(i)/8;
+        double x = sqrt(1-pow(y, 2));
+        string label = (format("y = %1%") % y).str();
+        TF1 *corr = new TF1(label.c_str(), func, -x+0.0001, x-0.0001, 1);
+        corr->SetParameter(0, y);
+        corr->SetLineColor(i+1);
+        corr->DrawClone("same");
+
+        legend->AddEntry(label.c_str(), label.c_str(), "l");
+    }
+    legend->Draw();
+    path = string(argv[1]) + "theta(y).pdf";
+    c1->SaveAs(path.c_str());
 }

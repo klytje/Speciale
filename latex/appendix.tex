@@ -15,3 +15,31 @@ Starting from the definition of $L_l$, and remembering that $I_l = G_l - iF_l$ a
 	&=\rho\frac{G_l'G_l+F_l'F_l}{G_l^2+F_l^2} + i\frac{\rho}{G_l^2+F_l^2}\\
 	&=S_l + iP_l
 \end{align*}
+
+\subsection{Basic kinematics}
+The goal here is to derive the expressions for the energy of each particle in a two-step sequential decay, (\ref{theory: kinematics: E1}) to (\ref{theory: kinematics: E3}). \\
+
+Since it is a sequential decay, we will analyze it in steps. For the first step we have no preferred direction in space, and so we can freely pick our x-axis to align with the directions of motion after the first decay. With this choice, then in the center-of-mass frame momentum conservation gives us (defining the pure indices 1, 2 \& 3 as the $\alpha$-particles) $p_1 + p_{Be} = 0$. By now noting that $E = p^2/2m$ and imposing energy conservation, we get
+\begin{align*}
+	Q_1 = E_1 + E_{Be} = E_1 + \frac{(p^x_{Be})^2}{2(2m_{\alpha})} = E_1 + \frac{1}{2}\frac{(-p^x_1)^2}{2m_{\alpha}} = E_1 + \frac{1}{2}E_1 = \frac{3}{2}E_1
+\end{align*}
+Solving for $E_1$, we arrive at the first equation
+\begin{align*}
+	E_1 = \frac{2}{3}Q_1 && E_{Be} = \frac{1}{3}Q_1
+\end{align*}
+
+Now for the second decay. Since we have already defined our coordinate system, the calculations become slightly more tedious. In the \ce{^8Be} frame (denoted by primes), since the masses of the decay products are now equal, momentum conservation states that $\bm{p}'_2 = -\bm{p}'_3$. This trivially translates to $E'_2 = E'_3$, which, when combined with energy conservation, tells us that $E'_2 = Q_2/2$. By now boosting this result to the center-of-mass frame, we get the second equation
+\begin{align*}
+	E_2 &= \frac{1}{2}m_{\alpha}(v'+v_{Be})^2 \\
+	&= E'_2 + \frac{1}{2}E'_{Be} + m_{\alpha}v'v_{Be} \\
+	&= \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + m_{\alpha}\cos\theta \sqrt{\frac{2E'_2}{m_{\alpha}}}\sqrt{\frac{2E'_{Be}}{2m_{\alpha}}} \\
+	&= \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos\theta\sqrt{\frac{2Q_2}{2}\frac{2Q_3}{6}} \\
+	&= \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos\theta\sqrt{\frac{Q_1Q_2}{3}}
+\end{align*}
+
+Through energy conservation in the center-of-mass frame, we have the relation $E_{Be} + Q_2 = E_2 + E_3$. Through this we can easily obtain the third equation
+\begin{align*}
+	E_3 &= E_{Be} + Q_2 - E_2 \\
+	&= \frac{1}{3}Q_1 + Q_2 - (\frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos\theta\sqrt{\frac{Q_1Q_2}{3}}) \\
+	&= \frac{1}{6}Q_1 + \frac{1}{2}Q_2 - \cos\theta\sqrt{\frac{Q_1Q_2}{3}}
+\end{align*}
