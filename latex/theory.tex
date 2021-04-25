@@ -218,25 +218,62 @@ We will later have need of some basic kinematic results for a sequential decay, 
 If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be
 \begin{align}
 	&E_1 = \frac{2}{3}Q_1 \label{theory: kinematics: E1}\\
-	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \theta \sqrt{\frac{Q_1 Q_2}{3}} \\
+	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \theta \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
 	&E_3 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 - \cos \theta \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E3}
 \end{align}
 where $\theta$ is the angle between the axis defined by the first decay and the second $\alpha$-particle, as can be seen on figure \note{insert figure}. As this angle will be important later, it is worthwhile to write down its defining equation
-\begin{align}
-	\cos \theta = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
+\begin{align} \label{theory: kinematics: theta}
+	2\cos \theta = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
 \end{align}
 
 \subsubsection{The Dalitz plot}
+The goal of this thesis is to understand the excited states of \ce{^12C} based on the three $\alpha$-particles resulting from its decay. We can describe each of these decay products with a four-vector, for a total of $12$ degrees of freedom. Conservation of energy and momentum removes four degrees, the three masses $m_{\alpha}$ removes three, and finally the orientation of each product removes another three. Thus we are left wondering how best to choose the two remaining degrees of freedom. \\
+
+A popular choice in nuclear and particle physics is the Dalitz coordinates
+\begin{align} \label{theory: dalitz: xy}
+	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
+\end{align}
+
+devised by R. H. Dalitz back in 1953 \cite{Dalitz}. An illustration of this type of plot can be seen in figure \ref{fig: theory: dalitz: dalitz}. Conservation of energy restricts the energies to an equilateral triangle, while conservation of momentum further restricts them to the inscribed circle, due to their identical masses. \\
+
+Since we are dealing with three identical bosons, we can freely order the energies however we want. If we define the order to be $E_1 \geq E_2 \geq E_3$, then all events will fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}, thus introducing a six-fold symmetry to the plot. \\
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=.8\linewidth]{figures/Dalitz.eps}
+	\caption{The Dalitz plot showing both the Dalitz coordinates (\ref{theory: dalitz: xy}) and the normalized energy coordinates (\ref{theory: kinematics: E1}) to (\ref{theory: kinematics: E3}). The triangle and circle defines the regions allowed by energy and momentum conservation, respectively. By ordering the energies such that $E_1 \geq E_2 \geq E_3$, all events must fall within the hatched area. }
+	\label{fig: theory: dalitz: dalitz}
+\end{figure}
+
+The angle between the primary and secondary particles $\theta$ is given in the $\{ e_1, e_2, e_3 \}$ coordinate system through (\ref{theory: kinematics: theta}). Since we will be dealing exclusively with the Dalitz coordinates, it is useful to convert this to an equation of $\{x, y\}$ instead. A simple exercise gives the solution as
+\begin{align*}
+	\cos\theta = \frac{x}{\sqrt{y^2 - 1}}
+\end{align*}
+Since they depend on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$.
+
+\begin{figure}[!htb]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/theta.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/theta(y).pdf}
+	\end{minipage}
+	\caption{The angle $\theta$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$.}
+	\label{fig: theory: dalitz: theta}
+\end{figure}
 
 \subsection{Angular correlations}
 \note{introduce the effect when you understand it} \\
 
 The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. The correlation between the two decay products can be expressed as a series of Legendre polynomials in the angle between them
 \begin{align} \label{theory: angular correlations: W}
-	W(\theta) = \frac{1}{b_0} \sum_{n=0}^{N}b_n P_n(\cos\theta)
+	W(\beta) = \frac{1}{b_0} \sum_{n=0}^{N}b_n P_n(\cos\beta)
 \end{align}
 
-Remember that we assumed that each stage of the reaction has a well-defined parity. Thus the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\theta$ as $\theta \rightarrow \pi - \theta$, since the intensity does not depend on the azimuthal angle $\phi$ for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\theta) = W(\pi - \theta)$, meaning they are all symmetric about $\theta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
+Note that in this notation, the angle $\beta$ is defined in relation to the direction of motion of the primary particle, so $\beta = \pi - \theta$. Remember that we assumed that each stage of the reaction has a well-defined parity. Thus the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\beta$ as $\beta \rightarrow \pi - \beta$, since the intensity does not depend on the azimuthal angle $\phi$ for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\beta) = W(\pi - \beta)$, meaning they are all symmetric about $\beta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
 
 The $b_n$ coefficients in (\ref{theory: angular correlations: W}) depend on the quantum properties of the interacting nuclei. Biedenharn \cite{Biedenharn} calculated the related coefficients $F_n$, given as
 \begin{align*}
@@ -246,7 +283,7 @@ where $\langle L1L'-1|n0 \rangle$ and $W(JJLL';nj)$ denotes a Clebsh-Gordan and 
 
 In a two-step decay process, the angular correlation can then be written in terms of $F_n$ as
 \begin{align*}
-	W(\theta) =  \sum_{n = 0,2,...}[a_n(l_1)F_n(l_1j_1J)][a_n(l_2)F_n(l_2j_2J)]P_n(\cos\theta)
+	W(\beta) =  \sum_{n = 0,2,...}[a_n(l_1)F_n(l_1j_1J)][a_n(l_2)F_n(l_2j_2J)]P_n(\cos\beta)
 \end{align*}
 
 where $a_n(l)$ is given as
