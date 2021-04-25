@@ -1,0 +1,14 @@
+{
+  "target" : "setup/target.json",
+  "detection_system" : "detection_system.json",
+  "beam": "beam.simX",
+  "tabulation" : "SRIM13",
+  "target_propagator" : {
+    "type" : "ELOSS",
+    "tabulation" : "SRIM13"
+  },
+  "detection_propagator" : {
+    "type" : "ELOSS",
+    "tabulation" : "SRIM13"
+  }
+}
