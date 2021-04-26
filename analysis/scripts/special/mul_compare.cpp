@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     t->SetTextAlign(22);
     t->DrawClone();
 
-    string path = plot::path + "mul_compare" + plot::format;
+    string path = plot::path + "mul_compare.pdf";
     c->SaveAs(path.c_str());
     c->Close();
 }

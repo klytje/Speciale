@@ -203,6 +203,5 @@ TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
                     .Histo2D({"h1", "temp", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x_temp", "y_temp").GetValue();
         hist->Add(&htemp);
     } while (std::next_permutation(perms, perms+3)); // repeat for each of the 3! = 6 permutations of {1, 2, 3}
-    hist->SetContour(100); // set more colours
     return hist;
 }

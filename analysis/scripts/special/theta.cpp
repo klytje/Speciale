@@ -56,10 +56,16 @@ int main(int argc, char const *argv[]) {
     };
 
     TF1 *dummy = new TF1("dummy", "3.14", -1, 1);
-    dummy->SetTitle("Angular correlation functions");
     dummy->SetMaximum(M_PI);
     dummy->SetMinimum(0);
     dummy->SetLineColor(kBlack);
+
+    dummy->GetXaxis()->SetNdivisions(-2);
+    dummy->GetYaxis()->SetNdivisions(-2);
+    dummy->GetYaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, "-1");
+    dummy->GetYaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, "0");
+    dummy->GetYaxis()->ChangeLabel(2, -1, -1, -1, -1, -1, "#pi/2");
+    dummy->GetYaxis()->ChangeLabel(3, -1, -1, -1, -1, -1, "#pi");
     dummy->Draw();
 
     auto legend = new TLegend(0.2, 0.4);

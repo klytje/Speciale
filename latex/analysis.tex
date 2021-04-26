@@ -8,6 +8,9 @@
 \newcommand{\Identifier}{\texttt{Identifier}}
 \newcommand{\simX}{\texttt{simX}}
 \newcommand{\EventBuilder}{\texttt{EventBuilder}}
+\newcommand{\TDC}{\texttt{TDC}}
+\newcommand{\FT}{\texttt{FT}}
+\newcommand{\BT}{\texttt{BT}}
 
 \note{Remember to generate all figures with the full dataset to replace the placeholders.} \\
 
@@ -104,12 +107,12 @@ Due to some general issues with the data taken for this run, it was decided to r
 
 A composite $\alpha$-source was placed at the target position, and rotated to face each of the four detectors in turn. Thus four sets of calibration data, one for each detector, were made, and given to the \Calibrator{} tool. The composite source contains the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm}; their $\alpha$-energies are listed in table \ref{analysis: table: calibration}. The tool automatically corrects these energies to account for the energy loss of the alpha particles through the dead layer of the detectors. \\
 
-The \Calibrator{} uses a peak-finding algorithm to roughly identify where the peaks are located. It then performs a simultaneous multi-Gaussian fit on them, thus obtaining a (channel, energy) pair. Finally a linear fit is made to all such pairs to obtain the final calibration. An example of the multi-Gaussian fits can be seen on figure \ref{analysis: figure: calibration}, while the final linear fit can be seen on figure \note{figure reference in appendix} in the appendix. 
+The \Calibrator{} uses a peak-finding algorithm to roughly identify where the peaks are located. It then performs a simultaneous multi-Gaussian fit on them, thus obtaining a (channel, energy) pair. Finally a linear fit is made to all such pairs to obtain the final calibration. An example of the multi-Gaussian fits can be seen on figure \ref{fig: analysis: calibration}, while the final linear fit can be seen on figure \note{figure reference in appendix} in the appendix. 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/calibration.png}
 	\caption{\note{Insert caption and redo figure in .pdf format.}}
-	\label{analysis: figure: calibration}
+	\label{fig: analysis: calibration}
 \end{figure}
 
 \subsection{Preparation of data}
@@ -128,10 +131,36 @@ Since the data is passed to various other scripts afterwards, it would be nice t
 As for new properties, it now becomes possible to define the 4-momenta of each particle, both in the laboratory frame and the center-mass frame. Likewise all existing properties can be boosted to their center-mass variants. After this step, the data is finally ready for the actual analysis. \\
 
 \subsection{Analysis}
-After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. However, during a cursory check of the contents, a major issue was revealed with the TDC values. 
+After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. However, during a cursory check of the contents, we discovered a major issue with the \TDC{} values. 
 
 \subsubsection{The issue}
+\begin{figure}
+	\includegraphics[width=\linewidth]{figures/tdc_plot_before.pdf}
+	\caption{The issue with the \TDC{} values. The values on the y-axis are the \TDC{} values for the front side (\FT{}) and back side (\BT{}). The x-axis labels the four detectors used for the experiment. Note specifically the major difference between \BT{} and \FT{} for Det1 and Det2; the \FT{} peaks appear to be broken. }
+	\label{fig: analysis: tdc before}
+\end{figure}
 
+To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured TDC values by the detectors (x-axis), both for the front and back side (y-axis). Only the back side of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. The issue with this plot is that in half of the plots, some of the peaks appear to be broken in half. This looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between TDC values, we can choose to ignore the cause and simply fix the data. \\
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{figures/tdc_plot_after.pdf}
+	\caption{The corrected \TDC{} values. The issue seen on figure \ref{fig: analysis: tdc before} has now been corrected.}
+	\label{fig: analysis: tdc after}
+\end{figure}
+
+Figure \ref{fig: analysis: tdc after} shows the data after it has been corrected. This reveals another piece of the puzzle: the two halves of the peaks does not match up exactly. It is, however, a very close match, and so, once again, we have chosen to simply accept the data as it is. \\
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{figures/mul_compare.pdf}
+	\caption{The second issue with the data. The multiple peaks are due to primary and secondary activations. See the text for a detailed discussion. }
+	\label{fig: analysis: mul}
+\end{figure}
+
+This is not the only problem apparent on the two figures, however. There are clearly multiple significant peaks present, especially for the S3 detectors. To understand why this is the case, we need to discuss the inner workings of the detectors. \\
+
+A detector $A$ can be activated in two ways. The first case is when $A$ itself detects a hit, after which it will immediately send a signal to the \TDC{} converter. The second case is when another detector $B$ is hit, and sends an activation signal to $A$. Due to the additional length of wiring the signal must pass through from $B$ to $A$, the second case will in general be delayed compared to the first. Since the length of wiring may be different for signals from each detector $\{B, C, D,...\}$, this may result in a unique peak for each. I will refer to these two cases as primary and secondary activations, respectively. \\
+
+These two types of activations is exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data, only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}. With the cause of the issue identified, we can now solve it by simply shifting all the peaks on top of each other. \\
 
 \note{section about how the data is transformed into analyzable data}
 

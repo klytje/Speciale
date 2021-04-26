@@ -22,14 +22,23 @@ using boost::format;
 
 int main(int argc, char const *argv[])
 {
-    TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
+    setup_style();
+    TCanvas* c2 = new TCanvas("c2", "c2", 900, 600);
     double y = 0;
     double maxval = 1;
     vector<double> x_bounds = {-sqrt(1-pow(y, 2)), sqrt(1-pow(y, 2))};
 
     TF1 *dummy = new TF1("dummy", "1", -1, 1);
     dummy->SetTitle("Angular correlation functions");
-    dummy->SetMaximum(2);
+    dummy->GetXaxis()->SetNdivisions(3);
+    dummy->GetXaxis()->SetTitle("x");
+    dummy->GetXaxis()->CenterTitle();
+
+    dummy->GetYaxis()->SetNdivisions(2);
+    dummy->GetYaxis()->SetTitle("Angular correlation");
+    dummy->GetYaxis()->CenterTitle();
+
+    dummy->SetMaximum(1.2);
     dummy->SetMinimum(0);
     dummy->SetLineColor(kBlack);
     dummy->Draw();
@@ -37,10 +46,11 @@ int main(int argc, char const *argv[])
     // plot multiple correlation functions
     vector<string> states = {"0+", "1-", "1-", "2-", "2-", "3-", "3-"}; // parity doesn't actually matter
     vector<string> ls =     {"2" , "1" , "3" , "1" , "3" , "1" , "3"};
-    vector<int> color = {kRed, kYellow, kGreen, kViolet, kRose, kSienna, kRust};
+    vector<int> color = {1, 2, 3, 4, 5, 6, 7};
     function<double(Double_t*, Double_t*)> ang_corr;
 
-    auto legend = new TLegend(0.1, 0.6, 0.4, 0.9);
+    auto legend = new TLegend(0.1, 0.77, 0.9, 0.9);
+    legend->SetNColumns(7);
     for (int i = 0; i < states.size(); i++) {
         tie(ang_corr, std::ignore, std::ignore) = get_angular_correlation_function(states[i], ls[i]);
 
