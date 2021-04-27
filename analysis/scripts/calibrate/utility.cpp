@@ -811,11 +811,14 @@ void merge(int num, char *path[]) {
 
         // define variables from analyzed tree
         Int_t mi[3], mul, N;
-        Double_t pt, deltaE, E_cm[3], E_lab[3], exC12, theta_lab[3], theta_cm[3], phi_lab[3], phi_cm[3];
+        Double_t pt, px[3], py[3], pz[3], deltaE, E_cm[3], E_lab[3], exC12, theta_lab[3], theta_cm[3], phi_lab[3], phi_cm[3];
         ta->SetBranchAddress("N", &N);
         ta->SetBranchAddress("mi", &mi);
         ta->SetBranchAddress("mul", &mul);
         ta->SetBranchAddress("p_tot", &pt);
+        ta->SetBranchAddress("px", px);
+        ta->SetBranchAddress("py", py);
+        ta->SetBranchAddress("pz", pz);
         ta->SetBranchAddress("deltaE", &deltaE);
         ta->SetBranchAddress("E_cm", &E_cm);
         ta->SetBranchAddress("E_lab", &E_lab);
@@ -838,11 +841,15 @@ void merge(int num, char *path[]) {
         tm->SetBranchAddress("id", &ID);
 
         // define destination tree and set its branches
-        UInt_t ft[3], bt[3], fi[3], bi[3], id[3]; 
-        Double_t fe[3], be[3]; // write variables
+        int ft[3], bt[3], fi[3], bi[3], id[3]; 
+        double fe[3], be[3]; // write variables
         string dest = "merged/" + p.filename().string(); // file destination
         TFile f(dest.c_str(), "recreate");
         TTree t("tree", "merged tree for TDC calibration");
+        t.Branch("mul", &mul);
+        t.Branch("pt", &pt);
+        t.Branch("deltaE", &deltaE);
+        t.Branch("exC12", &exC12);
         t.Branch("FI", &fi, "FI[3]/I");
         t.Branch("BI", &bi, "BI[3]/I");
         t.Branch("FT", &ft, "FT[3]/I");
@@ -850,16 +857,15 @@ void merge(int num, char *path[]) {
         t.Branch("FE", &fe, "FE[3]/D");
         t.Branch("BE", &be, "BE[3]/D");
         t.Branch("id", &id, "id[3]/I");
+        t.Branch("px", &px, "px[3]/D");
+        t.Branch("py", &py, "py[3]/D");
+        t.Branch("pz", &pz, "pz[3]/D");
         t.Branch("E_cm", &E_cm, "E_cm[3]/D");
         t.Branch("E_lab", &E_lab, "E_lab[3]/D");
         t.Branch("theta_cm", &theta_cm, "theta_cm[3]/D");
         t.Branch("phi_cm", &phi_cm, "phi_cm[3]/D");
         t.Branch("theta_lab", &theta_lab, "theta_lab[3]/D");
         t.Branch("phi_lab", &phi_lab, "phi_lab[3]/D");
-        t.Branch("pt", &pt, "pt/D");
-        t.Branch("deltaE", &deltaE, "deltaE/D");
-        t.Branch("mul", &mul, "mul/I");
-        t.Branch("exC12", &exC12, "exC12/D");
 
         // loop over every event in the analyzed tree ta
         for (double i = 0; i < ta->GetEntries(); i++) {
@@ -903,29 +909,26 @@ void save(data_container* data, string destination) {
     TTree t("tree", "data from calibrate");
 
     // define the storage variables for the fill loop
-    Double_t pT, deltaE, exC12; 
-    Double_t eCM[3], eLab[3], thetaLab[3], phiLab[3], dt[3];
-    Int_t mul;
-    Int_t id[3];
-
-    // can be removed; not necessary for any figures. also remember to remove it down in the for loop
-    Double_t ft[3], bt[3];
-    t.Branch("FT", &ft, "FT[3]/D");
-    t.Branch("BT", &bt, "FT[3]/D");
-    vector<double>& FT = *data->get_double("FT");
-    vector<double>& BT = *data->get_double("BT");
+    double pt, deltaE, exC12, px[3], py[3], pz[3], eCM[3], eLab[3], thetaLab[3], phiLab[3], dt[3];
+    // double thetaCM[3], phiCM[3];
+    int mul, id[3];
 
     // define the branches in the new tree
-    t.Branch("DT", &dt, "DT[3]/D");
-    t.Branch("p_tot", &pT, "p_tot/D");
-    t.Branch("deltaE", &deltaE, "deltaE/D");
+    t.Branch("mul", &mul);
+    t.Branch("exC12", &exC12);
+    t.Branch("p_tot", &pt);
+    t.Branch("deltaE", &deltaE); 
+    t.Branch("DT", &dt, "dt[3]/D");
+    t.Branch("px", &px, "px[3]/D");
+    t.Branch("py", &py, "py[3]/D");
+    t.Branch("pz", &pz, "pz[3]/D");
     t.Branch("E_cm", &eCM, "E_cm[3]/D");
     t.Branch("E_lab", &eLab, "E_lab[3]/D");
-    t.Branch("mul", &mul, "mul/I");
     t.Branch("theta_lab", &thetaLab, "theta_lab[3]/D");
     t.Branch("phi_lab", &phiLab, "phi_lab[3]/D");
-    t.Branch("ID", &id, "ID[3]/I");
-    t.Branch("exC12", &exC12, "exC12/D");
+    // t.Branch("theta_cm", &thetaCM, "theta_cm[3]/D");
+    // t.Branch("phi_cm", &phiCM, "phi_cm[3]/D");
+    t.Branch("ID", &id, "ID[3]/i");
 
     // acquire pointers to the actual data in the data_container
     data->add_dt(); // ensure dt exists
@@ -933,9 +936,14 @@ void save(data_container* data, string destination) {
     vector<double> &ECM = *data->get_double("E_cm");
     vector<double> &ELAB = *data->get_double("E_lab");
     vector<double> &PT = *data->get_double("p_tot");
+    vector<double> &PX = *data->get_double("px");
+    vector<double> &PY = *data->get_double("py");
+    vector<double> &PZ = *data->get_double("pz");
     vector<double> &DELTAE = *data->get_double("deltaE");
     vector<double> &THETALAB = *data->get_double("theta_lab");
     vector<double> &PHILAB = *data->get_double("phi_lab");
+    // vector<double> &THETACM = *data->get_double("theta_cm");
+    // vector<double> &PHICM = *data->get_double("phi_cm");
     vector<double> &EXC12 = *data->get_double("exC12");
     vector<int> &MUL = *data->get_int("mul");
     vector<int> &ID = *data->get_int("ID");
@@ -949,20 +957,22 @@ void save(data_container* data, string destination) {
 
         // single-valued columns
         mul = MUL[i1];
-        pT = PT[i1];
+        pt = PT[i1];
         deltaE = DELTAE[i1];
         exC12 = EXC12[i1];
 
         // vector columns. consider making a simple lambda function which enters all three values to avoid mistakes
         dt[0] = DT[i1]; dt[1] = DT[i2]; dt[2] = DT[i3];
+        px[0] = PX[i1]; px[1] = PX[i2]; px[2] = PX[i3];
+        py[0] = PY[i1]; py[1] = PY[i2]; py[2] = PY[i3];
+        pz[0] = PZ[i1]; pz[1] = PZ[i2]; pz[2] = PZ[i3];
         eCM[0] = ECM[i1]; eCM[1] = ECM[i2]; eCM[2] = ECM[i3];
         eLab[0] = ELAB[i1]; eLab[1] = ELAB[i2]; eLab[2] = ELAB[i3];
         thetaLab[0] = THETALAB[i1]; thetaLab[1] = THETALAB[i2]; thetaLab[2] = THETALAB[i3];
         phiLab[0] = PHILAB[i1]; phiLab[1] = PHILAB[i2]; phiLab[2] = PHILAB[i3];
+        // thetaCM[0] = THETACM[i1]; thetaCM[1] = THETACM[i2]; thetaCM[2] = THETACM[i3];
+        // phiCM[0] = PHICM[i1]; phiCM[1] = PHICM[i2]; phiCM[2] = PHICM[i3];
         id[0] = ID[i1]; id[1] = ID[i2]; id[2] = ID[i3];
-
-        ft[0] = FT[i1]; ft[1] = FT[i2]; ft[2] = FT[i3];
-        bt[0] = BT[i1]; bt[1] = BT[i2]; bt[2] = BT[i3];
 
         t.Fill();
     }
@@ -997,6 +1007,7 @@ vector<string> check_files(int argc, char *argv[]) {
 // flatten the data and extract the necessary branches
 // note also the rough filter imposed on it
 void prepare_data(int argc, char *argv[], data_container* container, string filter) {
+    print_title("*** PREPARING INPUT ***");
     // check if all the merged files exists, and create them if not
     vector<string> paths = check_files(argc, argv);
 
@@ -1011,7 +1022,12 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
                     *E_cm = new vector<double>(),
                     *E_lab = new vector<double>(),
                     *theta_lab = new vector<double>(),
-                    *phi_lab = new vector<double>();
+                    *phi_lab = new vector<double>(),
+                    // *theta_cm = new vector<double>(),
+                    // *phi_cm = new vector<double>(),
+                    *px = new vector<double>(),
+                    *py = new vector<double>(),
+                    *pz = new vector<double>();
     vector<int> *FI = new vector<int>(), 
                 *BI = new vector<int>(), 
                 *ID = new vector<int>(); 
@@ -1031,15 +1047,19 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
         append(FE, df_data.Define("x", (format("FE[%1%]") % i).str()).Take<double>("x").GetValue());
         append(BE, df_data.Define("x", (format("BE[%1%]") % i).str()).Take<double>("x").GetValue());
         append(E_cm, df_data.Define("x", (format("E_cm[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(px, df_data.Define("x", (format("pz[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(py, df_data.Define("x", (format("py[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(pz, df_data.Define("x", (format("pz[%1%]") % i).str()).Take<double>("x").GetValue());
         append(E_lab, df_data.Define("x", (format("E_lab[%1%]") % i).str()).Take<double>("x").GetValue());
         append(theta_lab, df_data.Define("x", (format("theta_lab[%1%]") % i).str()).Take<double>("x").GetValue());
         append(phi_lab, df_data.Define("x", (format("phi_lab[%1%]") % i).str()).Take<double>("x").GetValue());
+        // append(theta_cm, df_data.Define("x", (format("theta_cm[%1%]") % i).str()).Take<double>("x").GetValue());
+        // append(phi_cm, df_data.Define("x", (format("phi_cm[%1%]") % i).str()).Take<double>("x").GetValue());
         append(FI, df_data.Define("x", (format("FI[%1%]") % i).str()).Take<int>("x").GetValue());
         append(BI, df_data.Define("x", (format("BI[%1%]") % i).str()).Take<int>("x").GetValue());
         append(ID, df_data.Define("x", (format("id[%1%]") % i).str()).Take<int>("x").GetValue());
-        // extract single-column data (we simply stack the same vector on top of itself)
-        // not strictly necessary, but otherwise it won't have the same length as the others, and specialized functions would need to be written for it
-        // append(deltaE, df_data.Take<double>("deltaE").GetValue());
+        // if you need any single-column data, you need to stack it on top of itself thrice which can be done pretty easily in this loop here
+        // note that this is only if you need it during this tdc calibration - if you only need it afterwards, simply add it to the dataframe as done below
     }
     
     // add everything to the data container
@@ -1053,9 +1073,14 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
     data.add_data("FE", *FE);
     data.add_data("BE", *BE);
     data.add_data("E_cm", *E_cm);
+    data.add_data("px", *px);
+    data.add_data("py", *py);
+    data.add_data("pz", *pz);
     data.add_data("E_lab", *E_lab);
     data.add_data("theta_lab", *theta_lab);
     data.add_data("phi_lab", *phi_lab);
+    // data.add_data("theta_cm", *theta_cm);
+    // data.add_data("phi_cm", *phi_cm);
     data.add_data("deltaE", df_data.Take<double>("deltaE").GetValue());
     data.add_data("mul", df_data.Take<int>("mul").GetValue());
     data.add_data("p_tot", df_data.Take<double>("pt").GetValue());

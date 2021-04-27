@@ -74,6 +74,7 @@
         "variant": "cpp",
         "tdcmerger.C": "cpp",
         "merger.C": "cpp",
-        "test.C": "cpp"
+        "test.C": "cpp",
+        "test_0+.C": "cpp"
     }
 }

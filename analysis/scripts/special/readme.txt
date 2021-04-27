@@ -26,6 +26,9 @@ theta
 plots a Dalitz plot, but with its contents replaced by the angle theta which each point corresponds to. It also produces a plot showing how the angle
 depends on the y coordinate. 
 
+interference_merger
+needed for sim3a simulations with interference to work, since they do not work out of the box. Made by Morten (like sim3a_i itself).
+
 #######################
 ### ARTICLE FIGURES ###
 #######################
