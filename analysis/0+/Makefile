@@ -172,7 +172,7 @@ analysis/build/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
 # if the output is based on a simulation with sim3a_i, we need to perform a special merge operation on it as well
 output/%.root : id/%mi.root sim/configs/%.balamuth_i $(event_analysis)
 	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
-	echo sim/raw/$*.root output/$*.root | root -l ../scripts/special/merger.C
+	echo sim/raw/$*.root output/$*.root | root -l ../scripts/special/interference_merger.C
 
 # otherwise we just run the standard analyzer on it and do nothing else
 output/%.root : match/%m.root id/%mi.root $(event_analysis)
@@ -218,6 +218,11 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 # compiles a given "special" figure program
 ../scripts/special/build/%: ../scripts/special/%.cpp ../scripts/utility.cpp
 	make -C ../scripts/special/build/ $*
+
+# generates the figures for a sim3a_i simulation (due to the way they are generated, the standard figures does not work for them)
+fig/%_i: ../scripts/special/build/sim_i_compare output/%_i.root output/true_events.root
+	@ mkdir -p figures/$*_i
+	$< $(shell pwd)/figures/$*_i/ output/$*_i.root output/true_events.root
 
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
 Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
@@ -276,7 +281,7 @@ ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output outpu
 # same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
 # should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
 ang_cor_fit/%: ../scripts/special/build/ang_cor_fit sim/temp/output output/%.root
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output

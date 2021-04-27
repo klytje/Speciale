@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     TH1D hist = df.Define("x", "sqrt(pow(X,2)+pow(Y,2))")
                   .Histo1D({"h1", "rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
 
-    hist.GetXaxis()->SetTitle("$\\rho$");
+    hist.GetXaxis()->SetTitle("\\rho");
     hist.GetYaxis()->SetTitle("Count");
     hist.Draw("colz");
 

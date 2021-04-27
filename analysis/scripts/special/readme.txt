@@ -29,6 +29,9 @@ depends on the y coordinate.
 interference_merger
 needed for sim3a simulations with interference to work, since they do not work out of the box. Made by Morten (like sim3a_i itself).
 
+sim_i_compare
+the main script for all sim3a_i simulations. it makes a Dalitz plot and compares some projections of it with the data.
+
 #######################
 ### ARTICLE FIGURES ###
 #######################

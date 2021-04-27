@@ -75,6 +75,7 @@
         "tdcmerger.C": "cpp",
         "merger.C": "cpp",
         "test.C": "cpp",
-        "test_0+.C": "cpp"
+        "test_0+.C": "cpp",
+        "interference_merger.C": "cpp"
     }
 }

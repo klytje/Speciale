@@ -5,7 +5,7 @@ configs: contains the basic descriptions of the simulations we want to perform. 
 	.balamuth: The standard sim3a based on the balamuth equation will be used.
 	.balamuth_i: (UNSTABLE!) The sim3a modified by a previous student to support interference will be used. 
 
-Once a configuration has been saved into the configs folder, "make fig/X" will perform all of the necessary operations and output a set of figures in ../figures/. Note that makefile is not smart enough to figure out which simulator to use if multiple configurations have the same name (eg. 0+.simX, 0+.balamuth, 0+.balamuth_i), so I recommend using some kind of prefix or postfix notation for them (eg. 0+.simX, 0+_3a.balamuth, 0+_3a_i.balamuth_i). 
+Once a configuration has been saved into the configs folder, "make fig/X" will perform all of the necessary operations and output a set of figures in ../figures/. Note that makefile is not smart enough to figure out which simulator to use if multiple configurations have the same name (eg. 0+.simX, 0+.balamuth, 0+.balamuth_i), so a suffix is required. I've decided to use no prefix for sim3a, _simX for simX, and _i for sim3a_i, which are used in the makefile logic.
 
 data: contains the simulated data from simX.
 
