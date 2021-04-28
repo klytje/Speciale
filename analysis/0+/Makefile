@@ -220,38 +220,34 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 	make -C ../scripts/special/build/ $*
 
 # generates the figures for a sim3a_i simulation (due to the way they are generated, the standard figures does not work for them)
-fig/%_i: ../scripts/special/build/sim_i_compare output/%_i.root output/true_events.root
+fig/%_i: 
 	@ mkdir -p figures/$*_i
-	$< $(shell pwd)/figures/$*_i/ output/$*_i.root output/true_events.root
+	$(MAKE) sim_compare/$*_i
 
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
 Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	@ echo "Creating interactive 3D Dalitz plot..."
 	../scripts/special/build/Dalitz_3D $<
 
-# creates two histograms, one for % and another for output/all_events.
-# it then binwise divides each histogram to give the output histogram, showing the deviations
-figures/%/sim_compare_raw.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
-	@ echo "Building "$@"..."
-	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/
-
-# same as above, but now with a cut on bin values to enhance smaller details and fix the z axis
-figures/%/sim_compare_cut.pdf: output/%.root output/all_events.root ../scripts/special/build/sim_compare
-	@ echo "Building "$@"..."
-	../scripts/special/build/sim_compare output/all_events.root $< $(shell pwd)/figures/$*/ 3
-
-# this is just for easy access to the two commands above. simply use "make sim_compare/X" to create both sim_compare plots for output/X.root
-sim_compare/%: figures/%/sim_compare_raw.pdf figures/%/sim_compare_cut.pdf;
+# compare a simulation with the data. Generates a variety of projection plot for easy comparison
+sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_events.root
+	$< $(shell pwd)/figures/$*/ output/$*.root output/true_events.root
 
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))
 	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
 	$< $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
 
-# illustrates how the peaks depend on the multiplicity
-mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
-	@ echo "Creating figures/article/mul_compare.pdf"
+# illustrates how the peaks depends on the multiplicity
+depend_mul: ../scripts/special/build/depend_mul $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
+	@ echo "Creating figures/article/depend_mul.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
+
+# illustrates how the peaks depends on the energy
+depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data))))
+	@ echo "Creating figures/article/depend_E.pdf"
+	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
+#	$< match/2455_000m.root match/2455_001m.root match/2455_002m.root $(shell pwd)/figures/article/
 
 # shows how theta' changes throughout the dalitz plot
 theta: ../scripts/special/build/theta
@@ -259,7 +255,7 @@ theta: ../scripts/special/build/theta
 
 # calculates theta based on the data
 theta/%: ../scripts/special/build/theta_data output/%.root
-	$< $(shell pwd)/figures/article/ output/$*.root
+	$< $(shell pwd)/figures/$*/ output/$*.root
 
 # shows a bunch of different correlation functions. This was mainly to verify that they were correctly normalized
 corr_funcs: ../scripts/special/build/corr_funcs
@@ -271,7 +267,7 @@ state := 0+
 l := 2
 
 # compare multiple Dalitz plots from simX and sim3a with equivalent widths
-width_compare: ../scripts/special/build/width_compare sim/temp/output
+depend_width: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 # compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 

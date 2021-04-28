@@ -29,9 +29,6 @@ depends on the y coordinate.
 interference_merger
 needed for sim3a simulations with interference to work, since they do not work out of the box. Made by Morten (like sim3a_i itself).
 
-sim_i_compare
-the main script for all sim3a_i simulations. it makes a Dalitz plot and compares some projections of it with the data.
-
 #######################
 ### ARTICLE FIGURES ###
 #######################
@@ -40,8 +37,11 @@ These scripts have been made specifically for my thesis, and are probably not re
 tdc_plot <output/X1.root> ... <output/XN.root> <output folder> 
 compares the TDC values for the four detectors. Note that the locations of the peaks are taken from ../calibrate/plots.cpp (FT & BT), but they can be overwritten locally in any .cpp file.
 
-mul_compare <match/X1.root> ... <match/XN.root> <output folder> 
+depend_mul <match/X1.root> ... <match/XN.root> <output folder> 
 illustrates how each peak depends on "mul". 
+
+depend_width <match/X1.root> ... <match/XN.root> <output folder>
+illustrates how the peaks of the SD detector (only one with problems) depends on the energy. 
 
 ang_cor_fit <output path> <nuclear state> <l> <output/X.root>
 plots a whole bunch of correlation functions along with the histogram extracted from the data. The idea is to reveal which one fits best. I've also

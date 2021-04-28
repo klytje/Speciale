@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         hist->Add(&htemp);
     }
 
-    hist->GetXaxis()->SetTitle("$\\rho$");
+    hist->GetXaxis()->SetTitle("E_{cm}");
     hist->GetYaxis()->SetTitle("Count");
     hist->Draw("colz");
 

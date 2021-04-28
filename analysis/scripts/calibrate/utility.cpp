@@ -1089,25 +1089,40 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
     std::cout << format("Dataframe was flattened from %1% to %2% entries.") % df_data.Count().GetValue() % FT->size() << endl;
 }
 
-void prepare_match(int argc, char *argv[], data_container* container) {
+void prepare_match(int argc, char *argv[], data_container* container, string filter) {
     data_container &data = *container;
     TChain chain("a101");
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc-1; i++) {
         chain.Add(argv[i]);
     }
     ROOT::RDataFrame df(chain);
-    auto df_data = df.Filter("mul > 0");
-    vector<double> FT = df_data.Define("x", "FT[0]*1e-3").Take<double>("x").GetValue();
-    vector<double> BT = df_data.Define("x", "BT[0]*1e-3").Take<double>("x").GetValue();
-    vector<double> FE = df_data.Define("x", "FE[0]").Take<double>("x").GetValue();
-    vector<double> BE = df_data.Define("x", "BE[0]").Take<double>("x").GetValue();
-    auto tmp = df_data.Define("x", "id[0]").Take<uint>("x").GetValue();
-    vector<int> ID(tmp.begin(), tmp.end());
+    vector<double> *FT = new vector<double>(), 
+                    *BT = new vector<double>(), 
+                    *FE = new vector<double>(), 
+                    *BE = new vector<double>(), 
+                    *deltaE = new vector<double>();
+    vector<int> *FI = new vector<int>(), 
+                *BI = new vector<int>(), 
+                *ID = new vector<int>(); 
+    
+    auto df_data = df.Filter(filter);
+    for (int i = 0; i < 3; i++) {
+        // extract multi-column data 
+        append(FT, df_data.Define("x", (format("FT[%1%]*1e-3") % i).str()).Take<double>("x").GetValue());
+        append(BT, df_data.Define("x", (format("BT[%1%]*1e-3") % i).str()).Take<double>("x").GetValue());
+        append(FE, df_data.Define("x", (format("FE[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(BE, df_data.Define("x", (format("BE[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(FI, df_data.Define("x", (format("int(FI[%1%])") % i).str()).Take<int>("x").GetValue());
+        append(BI, df_data.Define("x", (format("int(BI[%1%])") % i).str()).Take<int>("x").GetValue());
+        append(ID, df_data.Define("x", (format("int(id[%1%])") % i).str()).Take<int>("x").GetValue());
+    }
     
     // add everything to the data container
-    data.add_data("FT", FT);
-    data.add_data("BT", BT);
-    data.add_data("ID", ID);
-    data.add_data("FE", FE);
-    data.add_data("BE", BE); 
+    data.add_data("FT", *FT);
+    data.add_data("BT", *BT);
+    data.add_data("FE", *FE);
+    data.add_data("BE", *BE);
+    data.add_data("FI", *FI);
+    data.add_data("BI", *BI);
+    data.add_data("ID", *ID);
 }

@@ -131,7 +131,7 @@ int main(int argc, char const *argv[]) {
             hsim->DrawClone("col");
         }
 
-        string path = string(argv[1]) + (format("width_compare_%1%.pdf") % no).str();
+        string path = string(argv[1]) + (format("depend_width_%1%.pdf") % no).str();
         c->SetLogz();
         c->SaveAs(path.c_str());
     };

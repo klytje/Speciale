@@ -9,6 +9,19 @@
 using namespace std;
 using boost::format;
 
+const static map<string, function<double(double)>> correlation_functions = {
+    {"0+ 2", [] (double theta) {return 2.25*pow(cos(theta), 4) - 1.5*pow(cos(theta), 2) + 0.25;}},
+    {"1- 1", [] (double theta) {return 0.75*pow(cos(theta), 2) + 0.25;}},
+    {"1+ 2", [] (double theta) {return -4*pow(cos(theta), 4) + 4*pow(cos(theta), 2);}},
+    {"1- 3", [] (double theta) {return 1.25*pow(cos(theta), 4) - 0.5*pow(cos(theta), 2) + 0.25;}},
+    {"2- 1", [] (double theta) {return 1 - pow(cos(theta), 2);}},
+    {"2+ 2", [] (double theta) {return 2.25*pow(cos(theta), 4) - 2.25*pow(cos(theta), 2) + 1;}},
+    {"2- 3", [] (double theta) {return -3.529*pow(cos(theta), 4) + 3.294*pow(cos(theta), 2) + 0.235;}},
+    {"3- 1", [] (double theta) {return 1./3*pow(cos(theta), 2) + 2./3;}},
+    {"3+ 2", [] (double theta) {return -0.6*pow(cos(theta), 4) - 0.4*pow(cos(theta), 2) + 1.0;}},
+    {"3- 3", [] (double theta) {return 2.368*pow(cos(theta), 4) - 2.526*pow(cos(theta), 2) + 1;}}
+};
+
 // returns the correlation function as a lambda for a given state and l
 tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angular_correlation_function(string state, string l) { 
     // these two values are determined by eye for all possibilities
@@ -27,8 +40,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-
-            double corr = 2.25*pow(cos(theta), 4) - 1.5*pow(cos(theta), 2) + 0.25; // the correlation function
+            double corr = correlation_functions.at("0+ 2")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "1-" && l == "1") {
@@ -41,7 +53,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = 0.75*pow(cos(theta), 2) + 0.25;
+            double corr = correlation_functions.at("1- 1")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "1+" && l == "2") {
@@ -54,7 +66,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = -4*pow(cos(theta), 4) + 4*pow(cos(theta), 2);
+            double corr = correlation_functions.at("1+ 2")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "1-" && l == "3") {
@@ -67,7 +79,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = 1.25*pow(cos(theta), 4) - 0.5*pow(cos(theta), 2) + 0.25;
+            double corr = correlation_functions.at("1- 3")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "2-" && l == "1") {
@@ -79,7 +91,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = 1 - pow(cos(theta), 2);
+            double corr = correlation_functions.at("2- 1")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "2+" && l == "2") {
@@ -92,7 +104,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = 2.25*pow(cos(theta), 4) - 2.25*pow(cos(theta), 2) + 1;
+            double corr = correlation_functions.at("2+ 2")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "2-" && l == "3") {
@@ -105,7 +117,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = -3.529*pow(cos(theta), 4) + 3.294*pow(cos(theta), 2) + 0.235;
+            double corr = correlation_functions.at("2- 3")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "3-" && l == "1") {
@@ -117,8 +129,20 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-
-            double corr = 1./3*pow(cos(theta), 2) + 2./3;
+            double corr = correlation_functions.at("3- 1")(beta); // get the correlation function
+            return maxval*corr;
+        };
+    } else if (state == "3+" && l == "2") {
+        std::cout << "\033[1;31m" << "WARNING: Specified state is not configured. Set bounds and interference_point in ../scripts/utility.cpp" << "\033[0m" << endl;
+        bounds = {0, 0};
+        interference_point = 0;
+        ang_corr = [] (Double_t* x, Double_t* par) {
+            double maxval = par[0];
+            double y = par[1];
+            
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta; // beta = 180 - theta
+            double corr = correlation_functions.at("3+ 2")(beta); // get the correlation function
             return maxval*corr;
         };
     } else if (state == "3-" && l == "3") {
@@ -131,7 +155,7 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
             
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta; // beta = 180 - theta
-            double corr = 2.368*pow(cos(theta), 4) - 2.526*pow(cos(theta), 2) + 1;
+            double corr = correlation_functions.at("3- 3")(beta); // get the correlation function
             return maxval*corr;
         };
     } else {

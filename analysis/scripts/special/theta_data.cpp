@@ -46,6 +46,19 @@ int main(int argc, char const *argv[]) {
     }
     TH1D h = df.Define("theta", theta, {"px0", "py0", "pz0", "px1", "py1", "pz1", "px2", "py2", "pz2"}).Histo1D({"h", "h", 100, 0, 3.1415}, "theta").GetValue();
 
-    h.Draw();
+    h.SetLineColor(kBlack);
+    h.SetLineWidth(2);
+
+    auto func = [] (double* x, double* par) {
+        double scale = par[0];
+        double c1 = 0.368245, c3 = 0.630681;
+        double beta = M_PI - x[0];
+        return scale*(c1*correlation_functions.at("2- 1")(beta) + c3*correlation_functions.at("2- 3")(beta));
+    };
+    TF1* prediction = new TF1("mix", func, 0, 3.14, 1);
+    prediction->SetParameter(0, h.GetMaximum());
+
+    h.Draw("HIST L");
+    // prediction->Draw("same");
     c->SaveAs(path.c_str());
 }

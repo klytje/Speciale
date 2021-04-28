@@ -1,17 +1,12 @@
 // ROOT stuff
 #include <ROOT/RDataFrame.hxx>
 #include <ROOT/RDFHelpers.hxx>
-#include <TStyle.h>
-#include <TROOT.h>
 #include <TCanvas.h>
-#include <TLine.h>
 #include <TF1.h>
 #include <TLegend.h>
 
 // other stuff
 #include <boost/format.hpp>
-#include <iostream>
-#include <math.h>
 
 // my stuff
 #include "../plot_style.cpp"
@@ -20,10 +15,9 @@
 using namespace std;
 using boost::format;
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     setup_style();
-    TCanvas* c2 = new TCanvas("c2", "c2", 900, 600);
+    TCanvas* c = new TCanvas("c", "c", 900, 600);
     double y = 0;
     double maxval = 1;
     vector<double> x_bounds = {-sqrt(1-pow(y, 2)), sqrt(1-pow(y, 2))};
@@ -44,9 +38,9 @@ int main(int argc, char const *argv[])
     dummy->Draw();
 
     // plot multiple correlation functions
-    vector<string> states = {"0+", "1-", "1-", "2-", "2-", "3-", "3-"}; // parity doesn't actually matter
-    vector<string> ls =     {"2" , "1" , "3" , "1" , "3" , "1" , "3"};
-    vector<int> color = {1, 2, 3, 4, 5, 6, 7};
+    vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3+", "3-"}; // parity doesn't actually matter
+    vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "2" , "3"};
+    vector<int> color = {kBlack, kPink-8, kOrange+1, kYellow-7, kSpring-1, kTeal+3, kCyan+1, kAzure+1, kBlue-9, kViolet+1};
     function<double(Double_t*, Double_t*)> ang_corr;
 
     auto legend = new TLegend(0.1, 0.77, 0.9, 0.9);
@@ -66,5 +60,5 @@ int main(int argc, char const *argv[])
     legend->Draw();
     
     string path = string(argv[1]) + "corr_funcs.pdf";
-    c2->SaveAs(path.c_str());
+    c->SaveAs(path.c_str());
 }

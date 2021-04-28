@@ -137,9 +137,10 @@ int main(int argc, char const *argv[]) {
             double c1 = par[1];
             double c3 = par[2];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
-            return c1*(1 - pow(cos(theta), 2)) + c3*(-3.529*pow(cos(theta), 4) + 3.294*pow(cos(theta), 2) + 0.235);
+            double beta = M_PI - theta;
+            return c1*correlation_functions.at("2- 1")(beta) + c3*correlation_functions.at("2- 3")(beta);
         };
-        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 3);
+        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 4);
         mix->FixParameter(0, y);
         mix->SetParameter(1, maxval/3);
         mix->SetParameter(2, maxval);
