@@ -31,14 +31,14 @@ namespace AUSA {
         private:
             std::unique_ptr<TTree> tree;
             ScalerOutput scaler;
-            int d[3], mi[3], N, mul;
+            int mi[3], mul, N;
             double prob[3],
                 E_cm[3], E_lab[3], E_dep[3], dE,
                 vzl[3], vz[3], 
                 theta_cm[3], theta_lab[3], 
                 phi_cm[3], phi_lab[3],
                 exBe8[3], exC12,
-                px, py, pz, ptot,
+                px[3], py[3], pz[3], ptot,
                 zangle, sumAng, devAng;
         };
     }

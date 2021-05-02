@@ -148,7 +148,7 @@ setup/%.cal: ../scripts/special/calibrate_setup.py setup/setup.json
 calibrate: setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal;
 
 ### matching ###
-match/%m.root : data/%.root matcher.json setup/setup.json calibrate
+match/%m.root : matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 # this target allows us to use simulated data from this point on
@@ -248,6 +248,10 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 	@ echo "Creating figures/article/mul_compare.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
+# calculates theta based on the data
+theta/%: ../scripts/special/build/theta_data output/%.root
+	$< $(shell pwd)/figures/$*/ output/$*.root
+
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets
 state := 3-
@@ -260,6 +264,11 @@ width_compare: ../scripts/special/build/width_compare sim/temp/output
 # compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
 ang_compare_single: ../scripts/special/build/ang_compare_single sim/temp/output
 	$< $(shell pwd)/figures/article/ $(state) $(l) output/0+_0.5289.root
+
+# same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
+# should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
+ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root
+	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output

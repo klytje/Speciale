@@ -47,8 +47,8 @@ void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
 
     // I've disabled a few since I don't use them, and so they only waste space. They are fully functional however, and should work if you uncomment them.
     tree->Branch("px", px, "px[3]/D"); // momenta of the alphas in the cm frame
-    tree->Branch("py", py, "px[3]/D");
-    tree->Branch("pz", pz, "px[3]/D");
+    tree->Branch("py", py, "py[3]/D");
+    tree->Branch("pz", pz, "pz[3]/D");
 //    tree->Branch("z_angle", &zangle);
 //    tree->Branch("vZ", vZ, "vZ[3]/F"); 
 //    tree->Branch("vZL", vZL, "vZL[3]/F");

@@ -103,6 +103,7 @@ clean/build:
 calibrate_rec := analysis/build/tdc_calibration_reconstructed
 calibrate_true := analysis/build/tdc_calibration_true
 
+# this target generates a whole bunch of figures in analysis/figures/, which you should check for errors. As long as none of the plots are empty, it should be ok.
 tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
 	$(calibrate_true) $(addprefix output/,$(shell ls data))	
 	$(calibrate_rec) $(addprefix output/,$(shell ls data))
@@ -271,12 +272,12 @@ depend_width: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 # compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
-ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+ang_compare/%: ../scripts/special/build/ang_compare_single output/%.root
+	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
 # should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
-ang_cor_fit/%: ../scripts/special/build/ang_cor_fit sim/temp/output output/%.root
+ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root
 	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare

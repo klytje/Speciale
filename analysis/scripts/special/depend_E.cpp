@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         h2[i].SetTickLength(0, "X");
         h2[i].SetLabelSize(0, "Y");
         h2[i].SetTickLength(0, "Y");
-        h2[i].GetXaxis()->SetTitle(to_string(e1[i]).c_str());
+        h2[i].GetXaxis()->SetTitle(to_string(e2[i]).c_str());
         h2[i].GetXaxis()->SetTitleSize(0.1);
         h2[i].GetXaxis()->SetTitleOffset(0.3);
         h2[i].GetXaxis()->CenterTitle();

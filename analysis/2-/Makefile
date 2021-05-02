@@ -252,18 +252,23 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 width_compare: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
+# calculates theta based on the data
+theta/%: ../scripts/special/build/theta_data output/%.root
+	$< $(shell pwd)/figures/$*/ output/$*.root
+
+
 # extra information for the next couple of targets
 state := 2-
 l := 1
 
 # compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
-ang_compare/%: ../scripts/special/build/ang_compare_single sim/temp/output output/%.root
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+ang_compare/%: ../scripts/special/build/ang_compare_single output/%.root
+	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
 # should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
 ang_cor_fit/%: ../scripts/special/build/ang_cor_fit sim/temp/output output/%.root
-	$< $(shell pwd)/figures/article/ $(state) $(l) output/$*.root
+	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output

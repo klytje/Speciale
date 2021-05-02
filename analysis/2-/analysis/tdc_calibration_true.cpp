@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
     // save(&data, "true_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 14000, 14150}; // the area where we expect the peak to be. this is to help the fitting algorithm
-    vector<double> bt_peak = {100, 13930, 14020};
+    vector<double> ft_peak = {100, double(ft_peaks[0][0]), double(ft_peaks[0][1])}; // the area where we expect the peak to be. this is to help the fitting algorithm
+    vector<double> bt_peak = {100, double(bt_peaks[0][0]), double(bt_peaks[0][1])};
     gauss_filter(&data, 5, ft_peak, bt_peak);
 
     // perform a tdc calibration on the data

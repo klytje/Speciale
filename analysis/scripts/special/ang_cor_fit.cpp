@@ -41,7 +41,9 @@ int main(int argc, char const *argv[]) {
         if (state == "0+") {
             y_bounds = {0.40, 0.54};
         } else if (state == "2-") {
-            y_bounds = {0.35, 0.49};
+            y_bounds = {0.30, 0.52};
+        } else if (state == "3-") {
+            y_bounds = {0.25, 0.4};
         }
     }
 
@@ -124,6 +126,45 @@ int main(int argc, char const *argv[]) {
     path = string(argv[1]) + "ang_cor_fit.pdf";
     c2->SaveAs(path.c_str());
 
+    //*** PLOT ONLY RELEVANT FUNCTIONS ***//
+    TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
+    h1->Draw();
+    auto legend3 = new TLegend(0.1, 0.75, 0.2, 0.9);
+    int i = 0;
+    for (auto const& [key, val] : correlation_functions) {
+        string Jp = state.substr(0, 1) + "+";
+        string Jm = state.substr(0, 1) + "-";
+        string s = "";
+
+        bool plot = false;
+        if (key.find(Jp) != string::npos) {
+            plot = true;
+            s = Jp;
+        } else if (key.find(Jm) != string::npos) {
+            plot = true;
+            s = Jm;
+        }
+        if (plot) {
+            i++;
+            string ll = key.substr(3);
+            tie(ang_corr, std::ignore, std::ignore) = get_angular_correlation_function(s, ll);
+
+            string label = (format("%1% %2%") % s % ll).str();
+            TF1 *corr = new TF1(label.c_str(), ang_corr, x_bounds[0], x_bounds[1], 2);
+            corr->SetParameter(0, maxval);
+            corr->SetParameter(1, y);
+            corr->SetLineColor(color[i]);
+            corr->DrawClone("same");
+
+            legend3->AddEntry(label.c_str(), label.c_str(), "l");
+        }
+    }
+    legend3->Draw();
+    path = string(argv[1]) + "ang_cor_relevant_funcs.pdf";
+    cout << path << endl;
+    c3->SaveAs(path.c_str());
+
+
     if (!real_data) {
         exit(0);
     }
@@ -131,24 +172,33 @@ int main(int argc, char const *argv[]) {
     //*** FIT ***//
     // attempt to fit the data (very specific to my thesis)
     if (state == "0+" || state == "2-") {
-        TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
+        double guess = 0; // guess value for c
+        if (state == "0+") {
+            guess = 1./3;
+        } else if (state == "2-") {
+            guess = 0;
+        }
+
+        TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
+        h1->Scale(1./h1->GetMaximum());
         auto func = [] (double* x, double* par) {
             double y = par[0];
-            double c1 = par[1];
-            double c3 = par[2];
+            double c = par[1];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta;
-            return c1*correlation_functions.at("2- 1")(beta) + c3*correlation_functions.at("2- 3")(beta);
+            return c*correlation_functions.at("2- 1")(beta) + (1-c)*correlation_functions.at("2- 3")(beta);
         };
-        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 4);
+        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 2);
         mix->FixParameter(0, y);
-        mix->SetParameter(1, maxval/3);
-        mix->SetParameter(2, maxval);
+        mix->SetParameter(1, guess);
         h1->Fit(mix, "QR");
-        cout << format("Fitted values: c1 = %1%, c3 = %2%") % (mix->GetParameter(1)/maxval) % (mix->GetParameter(2)/maxval) << endl;
+        double c_fit = mix->GetParameter(1);
+        cout << format("Fitted values: c1 = %1%, c3 = %2%") % c_fit % (1-c_fit) << endl;
 
-        h1->Draw();
+        h1->Draw("HIST L");
+        mix->Draw("SAME");
         path = string(argv[1]) + "ang_cor_fitted.pdf";
-        c3->SaveAs(path.c_str());
-    }
+        cout << path << endl;
+        c4->SaveAs(path.c_str());
+    } 
 }
