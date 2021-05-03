@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
         cout << "File name contains \"events\", assuming real data..." << endl;
         real_data = true;
         if (state == "0+") {
-            y_bounds = {0.40, 0.54};
+            y_bounds = {0.38, 0.54};
         } else if (state == "2-") {
             y_bounds = {0.30, 0.52};
         } else if (state == "3-") {

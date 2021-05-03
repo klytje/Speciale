@@ -225,6 +225,10 @@ fig/%_i:
 	@ mkdir -p figures/$*_i
 	$(MAKE) sim_compare/$*_i
 
+# generates a figure showing the experimental setup
+draw_setup: 
+	~/tools/drawer/build/DrawSetup -c 1 setup/setup.json
+
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
 Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	@ echo "Creating interactive 3D Dalitz plot..."
@@ -261,6 +265,10 @@ theta/%: ../scripts/special/build/theta_data output/%.root
 # shows a bunch of different correlation functions. This was mainly to verify that they were correctly normalized
 corr_funcs: ../scripts/special/build/corr_funcs
 	$< $(shell pwd)/figures/article/
+
+# creates a mix of 2- and 0+ data, and compares it with the real data
+multiple_components: ../scripts/special/build/multiple_components output/true_events.root output/0+.root output/0+_i.root
+	$< $(shell pwd)/figures/article/ output/0+.root output/0+_i.root output/true_events.root
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets

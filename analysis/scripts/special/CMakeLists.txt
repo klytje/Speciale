@@ -12,6 +12,11 @@ SET (CMAKE_CXX_COMPILER "/usr/bin/clang++")
 # Variable for holding dependant libraries
 set(LIBRARIES "")
 
+# Include AUSAlib. Look in cmake/FindAUSALIB.cmake for how the specify location
+find_package(AUSALIB REQUIRED)
+include_directories(${AUSALIB_INCLUDES})
+list(APPEND LIBRARIES ${AUSALIB_LIBRARIES})
+
 # Include ROOT
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
@@ -33,3 +38,5 @@ add_executable(theta theta.cpp)
 add_executable(ang_cor_fit ang_cor_fit.cpp)
 add_executable(corr_funcs corr_funcs.cpp)
 add_executable(theta_data theta_data.cpp)
+add_executable(multiple_components multiple_components.cpp)
+add_executable(draw_setup draw_setup.cpp)

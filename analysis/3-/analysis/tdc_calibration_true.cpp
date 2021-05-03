@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
     setup();
 
     // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{14060, 14120}};
-    vector<vector<int>> bt_peaks = {{13950, 14050}, {14050, 14130}};
+    vector<vector<int>> ft_peaks = {{14070, 14120}};
+    vector<vector<int>> bt_peaks = {{13950, 14050}, {14060, 14120}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 

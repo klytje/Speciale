@@ -23,6 +23,20 @@
 \def\CPP{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
 \DeclareMathSymbol{\shortminus}{\mathbin}{AMSa}{"39}
 
+% various stylistic choices for names
+\newcommand{\ROOT}{\texttt{ROOT}}
+\newcommand{\AUSAlib}{\texttt{AUSAlib}}
+\newcommand{\ucesb}{\texttt{ucesb}}
+\newcommand{\Unpacker}{\texttt{Unpacker}}
+\newcommand{\Calibrator}{\texttt{Calibrator}}
+\newcommand{\Sorter}{\texttt{Sorter}}
+\newcommand{\Identifier}{\texttt{Identifier}}
+\newcommand{\simX}{\texttt{simX}}
+\newcommand{\EventBuilder}{\texttt{EventBuilder}}
+\newcommand{\TDC}{\texttt{TDC}}
+\newcommand{\FT}{\texttt{FT}}
+\newcommand{\BT}{\texttt{BT}}
+
 \title{The 17.76MeV 0+ state of \ce{^12C}}
 \author{Kristian Lytje}
 
@@ -30,7 +44,17 @@
 \input{frontpage.tex}
 
 \newpage
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\newpage
 \input{theory.tex}
+
+\newpage
+\input{experiment.tex}
+
+\newpage
+\input{data reduction.tex}
 
 \newpage
 \input{analysis.tex}

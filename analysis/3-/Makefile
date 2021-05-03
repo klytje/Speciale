@@ -148,7 +148,7 @@ setup/%.cal: ../scripts/special/calibrate_setup.py setup/setup.json
 calibrate: setup/SU.cal setup/SD.cal setup/Det1.cal setup/Det2.cal;
 
 ### matching ###
-match/%m.root : matcher.json setup/setup.json calibrate
+match/%m.root : data/%.root matcher.json setup/setup.json calibrate
 	$(sorter) $< -m matcher.json
 
 # this target allows us to use simulated data from this point on

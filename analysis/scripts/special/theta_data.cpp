@@ -158,6 +158,6 @@ int main(int argc, char const *argv[]) {
     prediction->SetParameter(0, h.GetMaximum());
 
     // prediction->Draw("same");
-    string path = string(argv[1]) + "angular_projection.pdf";
+    string path = string(argv[1]) + "breakup_angle_data.pdf";
     c->SaveAs(path.c_str());
 }
