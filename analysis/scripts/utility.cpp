@@ -165,6 +165,29 @@ tuple<function<double(Double_t*, Double_t*)>, vector<double>, double> get_angula
     return make_tuple(ang_corr, bounds, interference_point);
 }
 
+// define sorting methods
+const auto emax = [] (double e1, double e2, double e3) {return std::max({e1, e2, e3});};
+const auto emin = [] (double e1, double e2, double e3) {return std::min({e1, e2, e3});};
+const auto emid = [] (double e1, double e2, double e3) {
+    if (e1 > e2) {
+        if (e2 > e3) {
+            return e2;
+        } else if (e1 > e3) {
+            return e3;
+        } else {
+            return e1;
+        }
+    } else {
+        if (e1 > e3) {
+            return e1;
+        } else if (e2 > e3) {
+            return e3;
+        } else {
+            return e2;
+        }
+    }
+};
+
 // I ended up needing this in a whole lot of different files, so I moved it here to a common #include file instead
 TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
     // set the axes
@@ -178,37 +201,14 @@ TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
         y_axis = {double(bins), -1, 1};
     }
 
-    // define sorting methods
-    auto max = [] (double e1, double e2, double e3) {return std::max({e1, e2, e3});};
-    auto min = [] (double e1, double e2, double e3) {return std::min({e1, e2, e3});};
-    auto mid = [] (double e1, double e2, double e3) {
-        if (e1 > e2) {
-            if (e2 > e3) {
-                return e2;
-            } else if (e1 > e3) {
-                return e3;
-            } else {
-                return e1;
-            }
-        } else {
-            if (e1 > e3) {
-                return e1;
-            } else if (e2 > e3) {
-                return e3;
-            } else {
-                return e2;
-            }
-        }
-    };
-
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
     df = df.Define("E_tot","E_cm[0] + E_cm[1] + E_cm[2]")
             .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
             .Define("e_cm_2", "E_cm[1]/E_tot")
             .Define("e_cm_3", "E_cm[2]/E_tot")
-            .Define("e_1", max, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
-            .Define("e_2", mid, {"e_cm_1", "e_cm_2", "e_cm_3"})
-            .Define("e_3", min, {"e_cm_1", "e_cm_2", "e_cm_3"})
+            .Define("e_1", emax, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
+            .Define("e_2", emid, {"e_cm_1", "e_cm_2", "e_cm_3"})
+            .Define("e_3", emin, {"e_cm_1", "e_cm_2", "e_cm_3"})
             .Define("x","sqrt(3)*(e_2 - e_3)")
             .Define("y","3*e_1 - 1")
             .Filter("pow(x,2) + pow(y,2) < 1.0")
@@ -227,5 +227,35 @@ TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
                     .Histo2D({"h1", "temp", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x_temp", "y_temp").GetValue();
         hist->Add(&htemp);
     } while (std::next_permutation(perms, perms+3)); // repeat for each of the 3! = 6 permutations of {1, 2, 3}
+    return hist;
+}
+
+TH2D dalitz_slice(const char* file, int bins = 100, bool filter = true) {
+    // set the axes
+    vector<double> x_axis;
+    vector<double> y_axis;
+
+    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
+    df = df.Define("E_tot","E_cm[0] + E_cm[1] + E_cm[2]")
+            .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
+            .Define("e_cm_2", "E_cm[1]/E_tot")
+            .Define("e_cm_3", "E_cm[2]/E_tot")
+            .Define("e_1", emax, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
+            .Define("e_2", emid, {"e_cm_1", "e_cm_2", "e_cm_3"})
+            .Define("e_3", emin, {"e_cm_1", "e_cm_2", "e_cm_3"})
+            .Define("x","sqrt(3)*(e_2 - e_3)")
+            .Define("y","3*e_1 - 1");
+
+    if (filter) {
+        x_axis = {double(bins), 0, 1};
+        y_axis = {double(bins), 0, 1};
+        df = df.Filter("pow(x,2) + pow(y,2) < 1.0")
+                .Filter("y < 0.93");
+    } else {
+        x_axis = {double(bins), 0, 1.3};
+        y_axis = {double(bins), 0, 1.3};
+    }
+
+    TH2D hist = df.Histo2D({"h2", "Dalitz slice", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
     return hist;
 }

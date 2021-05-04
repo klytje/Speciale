@@ -92,6 +92,21 @@ int main(int argc, char const *argv[]) {
         }
     };
 
+    auto min = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_t> y, ROOT::VecOps::RVec<Double_t> z) {
+        TVector3 p1 = {x[0], y[0], z[0]};
+        TVector3 p2 = {x[1], y[1], z[1]};
+        TVector3 p3 = {x[2], y[2], z[2]};
+        vector<double> m = {p1.Mag(), p2.Mag(), p3.Mag()};
+        double minv = std::min({m[0], m[1], m[2]});
+        if (minv == m[0]) {
+            return 0;
+        } else if (minv == m[1]) {
+            return 1;
+        } else {
+            return 2;
+        }
+    };    
+
     auto mid = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_t> y, ROOT::VecOps::RVec<Double_t> z) {
         TVector3 p1 = {x[0], y[0], z[0]};
         TVector3 p2 = {x[1], y[1], z[1]};
@@ -118,8 +133,8 @@ int main(int argc, char const *argv[]) {
 
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", argv[2]);
     df = df.Define("i_max", max, {"px", "py", "pz"})
-            .Define("i_mid", mid, {"px", "py", "pz"})
-            .Define("i_min", "3 - i_max - i_mid") // i_min + i_mid + i_max = 3
+            .Define("i_min", min, {"px", "py", "pz"})
+            .Define("i_mid", "3 - i_max - i_min") // i_min + i_mid + i_max = 3
             .Define("px1", "px[i_max]")
             .Define("py1", "py[i_max]")
             .Define("pz1", "pz[i_max]")
@@ -130,8 +145,18 @@ int main(int argc, char const *argv[]) {
             .Define("py3", "py[i_min]")
             .Define("pz3", "pz[i_min]");
 
+    auto theta2 = [] (double r1x, double r1y, double r1z, double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
+        TVector3 p1 = {r1x, r1y, r1z};
+        TVector3 p2 = {r2x, r2y, r2z};
+        TVector3 p3 = {r3x, r3y, r3z};
+        TVector3 p23 = p2-p3;
+        auto num = p1.Dot(p23);
+        auto denom = p1.Mag()*(p23.Mag());
+        return num/denom;
+    };
+
     TCanvas* c = new TCanvas("c", "c", 600, 600);
-    TH1D h = df.Define("theta", theta, {"px1", "py1", "pz1", "px2", "py2", "pz2", "px3", "py3", "pz3"}).Histo1D({"h", "h", 100, 0, 1}, "theta").GetValue();
+    TH1D h = df.Define("theta", theta2, {"px1", "py1", "pz1", "px2", "py2", "pz2", "px3", "py3", "pz3"}).Histo1D({"h", "h", 100, 0, 1}, "theta").GetValue();
     h.SetLineColor(kBlack);
     h.SetLineWidth(2);
     h.Scale(1./h.GetMaximum());

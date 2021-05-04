@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
     setup_style();
     // double delta = 2*M_PI*0.59; // 0.11
-    double delta = 2*M_PI*0.11; //2*M_PI*0.11
+    double delta = 0; //2*M_PI*0.11
     double k = 0.630681; // ratio of 2- l = 1 & 2- l = 3 (from ang_cor_fit)
     double k_0 = 0.35; // ratio of 0+ to 2- (total)
     double k_2 = 1 - k_0;

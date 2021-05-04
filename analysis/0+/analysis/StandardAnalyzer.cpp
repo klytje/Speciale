@@ -109,8 +109,7 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
         // loop over the three alpha particles
         for (int i = 0; i < 3; i++) {
             TLorentzVector pi = p[i]; // copy the momentum so we can boost it
-            vz[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg(); // idk why we have two
-            vzl[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg();
+            vz[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg(); 
             E_lab[i] = pi.E() - Constants::ALPHA_MASS;
             theta_lab[i] = pi.Theta()*TMath::RadToDeg();
             phi_lab[i] = pi.Phi()*TMath::RadToDeg();
