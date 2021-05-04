@@ -18,6 +18,8 @@ The first module converts the raw data from the acquisition system to a \ROOT{} 
 \subsubsection{Calibrator}
 At this point, the energies and detection times are still stored in the form of channel numbers. Before they can be used in an analysis, they must be converted to a more meaningful form. The \Calibrator{} is designed to handle one of these issues by converting the \ADC{} channel number into an actual energy. To perform such a calibration, it is assumed that the channel numbers are linearly related to the energies, meaning that a measured spectrum may both be shifted and stretched. By then measuring a known source, its expected spectrum can be compared with the measured, thus uniquely determining the variables of the linear relationship. \\
 
+When supplied with some input calibration data, the tool uses a peak-finding algorithm to roughly identify where the peaks are located. To obtain better estimates for the peak locations, this is followed by a multi-Gaussian fit. The distribution of peaks can then be compared with the expected energies, thus obtaining a list of (channel, energy) pairs. The final calibration is then found by simply fitting all of these pairs. \\
+
 There is a further complication that must be taken care of, however. As mentioned in the previous section, all of the detectors have a small aluminum dead layer. All particles passing through thus loses some energy depending on the stopping power of the material. Furthermore, this energy loss is heavily dependent on the effective thickness of the dead layer $\Delta x_{eff}$, which again depends on the angle of incidence, $\theta$. A simple geometric exercise gives the relationship between the effective and actual thickness as $\Delta x_{eff} = \Delta x / \cos \theta$, such that the net effect can be described as
 \begin{align}
 E' = E - \frac{dE}{dx} \frac{\Delta x}{\cos \theta}
@@ -56,11 +58,10 @@ This final module is not officially part of \AUSAlib{}, but is rather a small to
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}
 	\caption{\note{Insert caption and redo figure in .pdf format.}}
 	\label{analysis: figure: AUSAlib pipeline}
-	
 \end{figure}
 
 \subsection{Data reduction}
-The first step of the reduction is to calibrate the data. As explained in its section above, this requires a separate measurement of a known source, ideally performed with the exact same experimental setup as the actual measurement. This was indeed performed, but, as we will see in the next section, due to some major issues with the data, it could not be used. It was instead decided to reuse an older calibration from a previous measurement of the $2-$ resonance, which uses the same setup. \\
+The first step of the reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
 
 \begin{wraptable}{r}{4.6cm}
 	\vspace{-0.5cm}
@@ -78,27 +79,16 @@ The first step of the reduction is to calibrate the data. As explained in its se
 	\label{analysis: table: calibration}
 \end{wraptable}
 
-For the calibration measurement, a composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were used. Their $\alpha$-energies are listed in table \ref{analysis: table: calibration}. This composite source was placed at the target position, and rotated to face each of the four detectors in turn, thus generating four sets of calibration data. They were then used as input for the \Calibrator{} tool to obtain the calibration files. \\
+A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{analysis: table: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
 
-The \Calibrator{} uses a peak-finding algorithm to roughly identify where the peaks are located. It then performs a simultaneous multi-Gaussian fit on them, thus obtaining a (channel, energy) pair. Finally a linear fit is made to all such pairs to obtain the final calibration. An example of the multi-Gaussian fits can be seen on figure \ref{fig: analysis: calibration}, while the final linear fit can be seen on figure \note{figure reference in appendix} in the appendix. 
+After the energy calibration, the events from the front and backside of each detector is matched with the \Sorter{} tool, effectively turning the list of detector hits into a list of detected particles. To identify which particles we are dealing with, the \Identifier{} is used. This tool will also correct for the energy loss due to passage through both the target and the dead layer of the detectors. After this, the data is finally passed to the \EventBuilder{}, which deals with individual events. \\
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{figures/calibration.png}
-	\caption{\note{Insert caption and redo figure in .pdf format.}}
-	\label{fig: analysis: calibration}
-\end{figure}
-
-\subsection{Preparation of data}
-Before the actual analysis can be performed, the raw data must be transformed to another, more easily analyzable, form. Most of the steps involved in this process were performed by the various tools provided by \AUSAlib{}, while a select few required more specialized code. \\
-
-The very first step is to convert the raw data to a format \ROOT{} recognizes. This is done by utilizing the \Unpacker{}, a wrapper around the \ucesb{} tool. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
-
-As can be seen on figure \ref{analysis: figure: AUSAlib pipeline}, the \Sorter{} is also where the simulated files from \simX{} can join the pipeline. Thus from this point on, they are subject to the same treatment as the ordinary data. \\
-
-The \Sorter{} applies the energy calibration, and performs event-matching for the frontside and backside of each detector. Following this, the data is passed to the \Identifier{}, which corrects for the energy loss due to passage through the target and the dead layer of the detectors. It also attempts to identify any participating particle based on the energy deposited in the detectors. Finally, the data is passed to the \EventBuilder{}. \note{mention disabled strips somewhere.}
-
-As mentioned in section \ref{section: analysis: tools}, the \EventBuilder{} is the step where each event is analyzed individually. Thus this is offers an excellent opportunity to not only impose cuts on the data, but also define new relevant properties for each event. \\
-
-Since the data is passed to various other scripts afterwards, it would be nice to transform it into a consistent format. As it is when it enters the \EventBuilder{}, each event corresponds to a measurement of any number of particles in a single decay, which is difficult to work with. Thus the first cut is to discard any event with less than two $\alpha$-particle detections, while also removing any detected protons. Thus after this step, each event consists of three $\alpha$-particle detections (the third particle can be reconstructed if only two were detected). \note{revise. mention the differences between mul = 2 and mul = 3 events. (3 = possible to do momentum / energy cuts)} \\
-
-As for new properties, it now becomes possible to define the 4-momenta of each particle, both in the laboratory frame and the center-mass frame. Likewise all existing properties can be boosted to their center-mass variants. After this step, the data is finally ready for the actual analysis. 
+The \EventBuilder{} is the first tool which requires us to write our own code. The idea with this tool is that we can now specify all of the basic properties of each event that we will need in the actual analysis. It is also an excellent opportunity to perform some filtering based on these properties. The most noteworthy definitions made here are
+\begin{itemize}
+	\item $\alpha$-multiplicity: Based on the identifications from the \Identifier{}, we can count how many $\alpha$-particles that were detected in each event. Since the experimental setup covers such a large solid angle, we can afford to be picky and only keep events where $2$ or $3$ $\alpha$-particles were detected. We can even afford to keep only multiplicity $3$ events, but for now we will also keep the others. 
+	
+	\item $\bm{p}_i$: The individual momentum vectors for each $\alpha$-particle is determined. We can use these to calculate all angles that may be relevant in the analysis. By also calculating and defining the total momentum $p_t$, we can then require that it not be too large. 
+	
+	\item $\Delta E$: We calculate the "departure" from energy conservation for each event by subtracting the total $\alpha$ energy from the beam energy. Ideally this value would be $0$ for all events, but since we are dealing with experimental data, the best we can do is require that it is at least close to $0$. 
+\end{itemize}
+Since we do not know the optimal cutoff values for the momentum and energy cuts, they cannot be performed here. That will instead be delegated to the first step of the analysis, which we are finally ready for. 

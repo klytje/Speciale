@@ -1,17 +1,25 @@
 \section{Analysis}
 \note{Remember to generate all figures with the full dataset to replace the placeholders.} \\
 
-\subsection{Analysis}
-After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. However, during a cursory check of the contents, we discovered a major issue with the \TDC{} values. 
+After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. This is necessary as, although we only have multiplicity $3$ events, there is no guarantee that the three particles actually originate from the same decay. \\
 
-\subsubsection{The issue}
+In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. 
+
+\subsection{TDC cut}
+The general idea with this type of cut is that a given $\alpha$-particle should hit the front and backside of a detector within some small time interval. If this interval is too large, the two hits are probably not from the same particle, and the event should be discarded. \\
+
+It turns out that this cut is not that simple to perform, however. There are two issues with the \TDC{} values which must first be addressed. The first is a matter of alignment: the \TDC{} values for the different strips are not necessarily aligned with each other. The second is a major issue which was discovered with the data for only the $0+$ measurement. We must first deal with the latter. 
+
+\subsubsection{Repairing the data}
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/tdc_plot_before.pdf}
-	\caption{The issue with the \TDC{} values. The values on the y-axis are the \TDC{} values for the front side (\FT{}) and back side (\BT{}). The x-axis labels the four detectors used for the experiment. Note specifically the major difference between \BT{} and \FT{} for Det1 and Det2; the \FT{} peaks appear to be broken. }
+	\caption{The issue with the \TDC{} values. The values on the y-axis are the \TDC{} values for the front (\FT{}) and backside (\BT{}). The x-axis labels the four detectors used for the experiment. Note specifically the major difference between \BT{} and \FT{} for Det1 and Det2; the \FT{} peaks appear to be broken. }
 	\label{fig: analysis: tdc before}
 \end{figure}
 
-To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured TDC values by the detectors (x-axis), both for the front and back side (y-axis). Only the back side of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. The issue with this plot is that in half of the plots, some of the peaks appear to be broken in half. This looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between TDC values, we can choose to ignore the cause and simply fix the data. \\
+To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured \TDC{} values by the detectors (x-axis), both for the front and backside (y-axis). Only the backside of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. Two problems are clearly visible on this figure: one, we have too many peaks, and two, some of the peaks appear to be broken in half. We will focus on the latter problem first. \\
+
+Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between TDC values, we can choose to ignore the cause and simply fix the data. \\
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/tdc_plot_after.pdf}
@@ -27,12 +35,20 @@ Figure \ref{fig: analysis: tdc after} shows the data after it has been corrected
 	\label{fig: analysis: mul}
 \end{figure}
 
-This is not the only problem apparent on the two figures, however. There are clearly multiple significant peaks present, especially for the S3 detectors. To understand why this is the case, we need to discuss the inner workings of the detectors. \\
+With the second problem fixed, we now turn our attention to the first: we still have multiple significant peaks in essentially all our panels. The S3 detectors especially are problematic. To understand why this is the case, we must first discuss some of the finer details of the detectors. \\
 
 A detector $A$ can be activated in two ways. The first case is when $A$ itself detects a hit, after which it will immediately send a signal to the \TDC{} converter. The second case is when another detector $B$ is hit, and sends an activation signal to $A$. Due to the additional length of wiring the signal must pass through from $B$ to $A$, the second case will in general be delayed compared to the first. Since the length of wiring may be different for signals from each detector $\{B, C, D,...\}$, this may result in a unique peak for each. I will refer to these two cases as primary and secondary activations, respectively. \\
 
-These two types of activations is exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data, only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}. With the cause of the issue identified, we can now solve it by simply shifting all the peaks on top of each other. \\
+These two types of activations is exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. \note{maybe discuss why this makes sense - due to downscaling and position, we expect W1 to primary activate more than S3} \\
+
+This explains all but a single extra peak, which can be seen on the second top panel from the left. Some further investigation reveals that this extra peaks consists almost entirely of low-energy events, as can be seen on figure \ref{fig: appendix: multiple peaks energy} in the appendix. With the cause of the issue identified, we can now solve it by simply shifting all the peaks on top of each other. \\
+
+\subsubsection{Alignment}
 
 \note{section about how the data is transformed into analyzable data}
 
+\subsection{Energy \& momentum cuts}
+To help guide our choice of cutoff values, a 2D histogram of the energy and momentum can be seen in figure \note{ref}. 
 
+
+However, during a cursory check of the contents, we discovered a major issue with the \TDC{} values. 
