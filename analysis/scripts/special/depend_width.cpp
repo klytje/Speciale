@@ -1,13 +1,10 @@
 // ROOT stuff
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDFHelpers.hxx>
 #include <TStyle.h>
 #include <TROOT.h>
 #include <TCanvas.h>
 
 // other stuff
 #include <boost/format.hpp>
-#include <iostream>
 
 // my stuff
 #include "../plot_style.cpp"

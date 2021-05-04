@@ -1,16 +1,10 @@
 // ROOT stuff
 #include <TFile.h>
 #include <TTree.h>
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDFHelpers.hxx>
-#include <TStyle.h>
-#include <TROOT.h>
 #include <TCanvas.h>
 
 // other stuff
-#include <filesystem>
 #include <boost/format.hpp>
-#include <iostream>
 
 // my stuff
 #include "../plot_style.cpp"
@@ -37,6 +31,9 @@ int main(int argc, char *argv[]) {
     ROOT::RDF::RNode dsim0 = RDataFrame("tree", argv[2]);
     ROOT::RDF::RNode dsim2 = RDataFrame("tree", argv[3]);
     ROOT::RDF::RNode ddat = RDataFrame("tree", argv[4]);
+    filter(&dsim0);
+    filter(&dsim2);
+    filter(&ddat);
 
     //*** DALITZ PLOT ***//
     TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);

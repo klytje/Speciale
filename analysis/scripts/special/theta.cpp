@@ -1,6 +1,5 @@
 // ROOT stuff
 #include <TAxis.h>
-#include <TROOT.h>
 #include <TCanvas.h>
 #include <TF1.h>
 #include <TH2D.h>

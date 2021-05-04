@@ -1,8 +1,5 @@
 // ROOT stuff
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDFHelpers.hxx>
 #include <TCanvas.h>
-#include <TChain.h>
 #include <TLegend.h>
 #include <TF1.h>
 

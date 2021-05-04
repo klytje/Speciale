@@ -1,8 +1,4 @@
 // ROOT stuff
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDFHelpers.hxx>
-#include <TStyle.h>
-#include <TROOT.h>
 #include <TCanvas.h>
 #include <TLine.h>
 #include <TF1.h>
@@ -10,7 +6,6 @@
 
 // other stuff
 #include <boost/format.hpp>
-#include <iostream>
 #include <math.h>
 
 // my stuff

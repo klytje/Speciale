@@ -15,6 +15,7 @@
 // my stuff
 #include "plots.cpp"
 #include "../plot_style.cpp"
+#include "../utility.cpp"
 
 using namespace std;
 using boost::format;
@@ -1006,7 +1007,7 @@ vector<string> check_files(int argc, char *argv[]) {
 
 // flatten the data and extract the necessary branches
 // note also the rough filter imposed on it
-void prepare_data(int argc, char *argv[], data_container* container, string filter) {
+void prepare_data(int argc, char *argv[], data_container* container, string df_filter) {
     print_title("*** PREPARING INPUT ***");
     // check if all the merged files exists, and create them if not
     vector<string> paths = check_files(argc, argv);
@@ -1036,9 +1037,9 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
         chain.Add(paths[i].c_str());
     }
     ROOT::RDataFrame df(chain);
-    // auto df_data = df.Filter("mul == 3 && pt < 50e3 && abs(deltaE) < 500"); // energy and momentum conservation
+    // filter((ROOT::RDF::RNode*) &df); // energy and momentum filter
     
-    auto df_data = df.Filter(filter); // I think the concentration of data at dt = 0 skews the results here; can maybe be fixed by excluding those
+    auto df_data = df.Filter(df_filter); // I think the concentration of data at dt = 0 skews the results here; can maybe be fixed by excluding those
     // auto df_data = df;
     for (int i = 0; i < 3; i++) {
         // extract multi-column data 
@@ -1089,13 +1090,14 @@ void prepare_data(int argc, char *argv[], data_container* container, string filt
     std::cout << format("Dataframe was flattened from %1% to %2% entries.") % df_data.Count().GetValue() % FT->size() << endl;
 }
 
-void prepare_match(int argc, char *argv[], data_container* container, string filter) {
+void prepare_match(int argc, char *argv[], data_container* container, string df_filter) {
     data_container &data = *container;
     TChain chain("a101");
     for (int i = 1; i < argc-1; i++) {
         chain.Add(argv[i]);
     }
     ROOT::RDataFrame df(chain);
+    filter((ROOT::RDF::RNode*) &df); // energy and momentum filter
     vector<double> *FT = new vector<double>(), 
                     *BT = new vector<double>(), 
                     *FE = new vector<double>(), 
@@ -1105,7 +1107,7 @@ void prepare_match(int argc, char *argv[], data_container* container, string fil
                 *BI = new vector<int>(), 
                 *ID = new vector<int>(); 
     
-    auto df_data = df.Filter(filter);
+    auto df_data = df.Filter(df_filter);
     for (int i = 0; i < 3; i++) {
         // extract multi-column data 
         append(FT, df_data.Define("x", (format("FT[%1%]*1e-3") % i).str()).Take<double>("x").GetValue());

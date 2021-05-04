@@ -254,7 +254,10 @@ depend_mul: ../scripts/special/build/depend_mul $(addsuffix m.root, $(addprefix 
 depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) | figures/article
 	@ echo "Creating figures/article/depend_E.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
-#	$< match/2455_000m.root match/2455_001m.root match/2455_002m.root $(shell pwd)/figures/article/
+
+# shows the effect of the various cuts we can impose on the data
+cuts: ../scripts/special/build/cuts $(addprefix output/,$(shell ls data)) output/true_events.root | figures/article
+	$< output/true_events.root $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
 
 # shows how theta' changes throughout the dalitz plot
 theta: ../scripts/special/build/theta | figures/article

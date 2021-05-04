@@ -1,8 +1,4 @@
 // ROOT stuff
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDFHelpers.hxx>
-#include <TStyle.h>
-#include <TROOT.h>
 #include <TCanvas.h>
 #include <TLine.h>
 #include <TF1.h>
@@ -11,7 +7,6 @@
 
 // other stuff
 #include <boost/format.hpp>
-#include <iostream>
 #include <math.h>
 
 // my stuff
@@ -132,6 +127,7 @@ int main(int argc, char const *argv[]) {
     };
 
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", argv[2]);
+    filter(&df);
     df = df.Define("i_max", max, {"px", "py", "pz"})
             .Define("i_min", min, {"px", "py", "pz"})
             .Define("i_mid", "3 - i_max - i_min") // i_min + i_mid + i_max = 3

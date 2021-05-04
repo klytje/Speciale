@@ -1,20 +1,15 @@
 // ROOT stuff
-#include <TFile.h>
-#include <TTree.h>
 #include <TChain.h>
 #include <ROOT/RDataFrame.hxx>
 #include <ROOT/RDFHelpers.hxx>
-#include <TStyle.h>
-#include <TROOT.h>
 #include <TCanvas.h>
 
 // other stuff
-#include <filesystem>
 #include <boost/format.hpp>
-#include <iostream>
 
 // my stuff
 #include "../plot_style.cpp"
+#include "../utility.cpp"
 
 using namespace std;
 using namespace ROOT;
@@ -32,13 +27,12 @@ int main(int argc, char *argv[]) {
 
     // prepare the dataframe
     ROOT::RDF::RNode df = RDataFrame(chain);
+    filter(&df);
     df = df.Define("E_sum","E_cm[0]+E_cm[1]+E_cm[2]");
 
     // set the axes    
     double x_axis[] = {400, 0, 12000};
     double y_axis[] = {400, 0, 6500};
-
-    df = df.Filter("p_tot<50e3");
 
     //*** PLOT ***//
     setup_style();

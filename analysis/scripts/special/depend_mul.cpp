@@ -1,21 +1,23 @@
 // ROOT stuff
 #include <ROOT/RDataFrame.hxx>
-#include <TApplication.h>
 #include <TChain.h>
 #include <TText.h>
 #include <TPad.h>
 
 // my own stuff
+#include "../plot_style.cpp"
 #include "../calibrate/utility.cpp"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
+    setup_style();
     TChain chain("a101");
     for (int i = 1; i < argc-1; i++) {
         chain.Add(argv[i]);
     }
     ROOT::RDataFrame df(chain);
+    filter((ROOT::RDF::RNode*) &df);
 
     // change some settings
     gROOT->SetBatch(kTRUE); // no graphics display

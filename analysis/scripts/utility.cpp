@@ -188,12 +188,19 @@ const auto emid = [] (double e1, double e2, double e3) {
     }
 };
 
+// this filter is supposed to be applied before any figure is made. I've placed it here so it's easy to change later (or even remove completely)
+void filter(ROOT::RDF::RNode* df) {
+    *df = df->Filter("abs(deltaE) < 300")
+            .Filter("p_tot < 40e3");
+    return;
+}
+
 // I ended up needing this in a whole lot of different files, so I moved it here to a common #include file instead
-TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
+TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
     // set the axes
     vector<double> x_axis;
     vector<double> y_axis;
-    if (show_borders) {
+    if (bounded) {
         x_axis = {double(bins), -1.3, 1.3};
         y_axis = {double(bins), -1.3, 1.3};
     } else {
@@ -202,6 +209,7 @@ TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
     }
 
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
+    filter(&df);
     df = df.Define("E_tot","E_cm[0] + E_cm[1] + E_cm[2]")
             .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
             .Define("e_cm_2", "E_cm[1]/E_tot")
@@ -230,12 +238,13 @@ TH2D* dalitz(const char* file, int bins = 200, bool show_borders = false) {
     return hist;
 }
 
-TH2D dalitz_slice(const char* file, int bins = 100, bool filter = true) {
+TH2D dalitz_slice(const char* file, int bins = 100, bool bounded = true) {
     // set the axes
     vector<double> x_axis;
     vector<double> y_axis;
 
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
+    filter(&df);
     df = df.Define("E_tot","E_cm[0] + E_cm[1] + E_cm[2]")
             .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
             .Define("e_cm_2", "E_cm[1]/E_tot")
@@ -246,7 +255,7 @@ TH2D dalitz_slice(const char* file, int bins = 100, bool filter = true) {
             .Define("x","sqrt(3)*(e_2 - e_3)")
             .Define("y","3*e_1 - 1");
 
-    if (filter) {
+    if (bounded) {
         x_axis = {double(bins), 0, 1};
         y_axis = {double(bins), 0, 1};
         df = df.Filter("pow(x,2) + pow(y,2) < 1.0")
