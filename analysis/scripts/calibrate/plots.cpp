@@ -13,7 +13,7 @@ using namespace std;
 struct plot {
     static inline bool save = true; // note that only "enabled" figures are actually created and can be saved
     static inline string path = "analysis/figures/";
-    static const inline string format = ".png";
+    static const inline string format = ".pdf";
 
     // detector plot controllers. prioritized over any individual figure (mainly used for debugging)
     static const bool W = true;
@@ -103,6 +103,7 @@ void hist2D(const vector<double> *DT, const vector<int> *BI, const hist_info inf
     h->GetYaxis()->SetTitle(info.y_label.c_str());
     h->GetXaxis()->CenterTitle();
     h->GetYaxis()->CenterTitle();
+    h->GetXaxis()->SetNdivisions(205);
     h->Draw("colz");
     canvas->SetLogz();
     canvas->SetRightMargin(0.15);
@@ -126,7 +127,9 @@ void hist2D(const vector<double> *DT, const vector<int> *BI, double sigma, int s
     TH2D *h = new TH2D("2D Histogram", info.title.c_str(), int(info.x_axis[0]), info.x_axis[1], info.x_axis[2], int(info.y_axis[0]), info.y_axis[1], info.y_axis[2]);
     TLine *vline_l = new TLine(sigma_n*sigma, info.y_axis[1], sigma_n*sigma, info.y_axis[2]);
     TLine *vline_r = new TLine(-sigma_n*sigma, info.y_axis[1], -sigma_n*sigma, info.y_axis[2]);
+    vline_l->SetLineColor(kRed);
     vline_l->SetLineWidth(2);
+    vline_r->SetLineColor(kRed);
     vline_r->SetLineWidth(2);
     
     // fill the histogram
@@ -140,6 +143,7 @@ void hist2D(const vector<double> *DT, const vector<int> *BI, double sigma, int s
     h->GetYaxis()->SetTitle(info.y_label.c_str());
     h->GetXaxis()->CenterTitle();
     h->GetYaxis()->CenterTitle();
+    h->GetXaxis()->SetNdivisions(205);
     h->Draw("colz");
     vline_l->Draw();
     vline_r->Draw();
@@ -172,7 +176,9 @@ void hist1D(const vector<T> *input, double mean, int sigma, const hist_info info
 
     TLine *vline_l = new TLine(mean + sigma, 0, mean + sigma, 10000);
     TLine *vline_r = new TLine(mean - sigma, 0, mean - sigma, 10000);
+    vline_l->SetLineColor(kRed);
     vline_l->SetLineWidth(2);
+    vline_r->SetLineColor(kRed);
     vline_r->SetLineWidth(2);
 
     // set up the figure

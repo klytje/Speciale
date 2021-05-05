@@ -41,11 +41,67 @@ A detector $A$ can be activated in two ways. The first case is when $A$ itself d
 
 These two types of activations is exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. \note{maybe discuss why this makes sense - due to downscaling and position, we expect W1 to primary activate more than S3} \\
 
-This explains all but a single extra peak, which can be seen on the second top panel from the left. Some further investigation reveals that this extra peaks consists almost entirely of low-energy events, as can be seen on figure \ref{fig: appendix: multiple peaks energy} in the appendix. With the cause of the issue identified, we can now solve it by simply shifting all the peaks on top of each other. \\
+This explains all but a single extra peak, which can be seen on the second top panel from the left. Some further investigation reveals that this extra peaks consists almost entirely of low-energy events, as can be seen on figure \ref{fig: appendix: multiple peaks energy} in the appendix. With the cause of every peak identified, we can now solve the problem by simply shifting all of them on top of each other, as can be seen for the \BT{} peaks on figure \ref{fig: analysis: TDC: BT peaks shifted}. 
+
+\begin{figure}[bt]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/align_peaks_BT_simultaneous.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/align_peaks_BT_aligned.pdf}
+	\end{minipage}
+	\caption{Shifting the multiple \BT{} peaks on top of each other. The left panel shows the multi-Gaussian fit, which allows us to obtain the mean $\mu_i$ and standard deviation $\sigma_i$ for each peak. The $i$'th peak is then moved by shifting all bins within $3\sigma_i$ by $\mu_i-\mu_0$, thus stacking it on top of the first peak. The result of this process can be seen on the right panel.}
+	\label{fig: analysis: TDC: BT peaks shifted}
+\end{figure}
 
 \subsubsection{Alignment}
+Now that we have fixed the issue with multiple peaks, it is time to look at the other problem of aligning the \TDC{} values. For the remainder of this section, we are only interested in the \textit{difference} in \FT{} and \BT{} values, which is problematic for the two S3 detectors since they only measure the latter. We can get around this problem by looking only at multi-detector events, i.e. cases where the decay products were detected by at least two different detectors. As long as one of these two detectors are a W1, we can simply use its \FT{} value for the S3 as well. We can do this since this should simply be a constant offset from whatever the S3 would have measured by itself. \\
 
-\note{section about how the data is transformed into analyzable data}
+Now, to convince ourselves that it is actually necessary to align the \TDC{} values, take a look at the two left panels of figure \ref{fig: analysis: TDC}, which shows the difference in \FT{} and \BT{} values for the two detectors Det1 (top) and SU (bottom). As it is right now, it is impossible to fit the 1D projection with a Gaussian; hence the need for this alignment. \\
+
+\begin{figure}[bt]
+	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/tdc_calibration_raw_Det1.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/tdc_calibration_centered_Det1.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/gauss_cut_before_Det1.pdf}
+	\end{minipage}
+
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/tdc_calibration_raw_SU.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/tdc_calibration_centered_SU.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/gauss_cut_before_SU.pdf}
+	\end{minipage}
+	\caption{The three main steps of the \TDC{} calibration. The top row shows the process for Det1, while the bottom row is for the SU. The left panels shows the raw data, neatly illustrating why it must be aligned. The middle panels shows the same data after each strip has been centered. The right panels shows the outcome of the minimization procedure, and also the results of the Gaussian fits. All events within the $3\sigma$ red lines will be kept.}
+	\label{fig: analysis: TDC}
+\end{figure}
+
+Before we start modifying the data, we need to discuss what we are actually allowed to do. When a strip sends a signal to the \TDC{}, it must first travel through some length of wire, which takes some time $t$. Ideally these wires would all be the same length, or the \TDC{} would be calibrated to account for the differences, which would automatically solve this alignment problem. Since this is not the case, our goal is to determine the difference in wire length, $\Delta t$. We do this by minimizing the equation
+\begin{align} \label{analysis: tdc: minimize}
+	\sum_{hits} |(t_i + \Delta_i) - (t_j + \Delta_j)|
+\end{align}
+where $\{i, j\}$ run over the number of strips. We use the absolute difference instead of least squares since we expect outliers from random coincidences. \\
+
+The first step is to extract the mean $dt$ for each strip, and use this to center them around $0$ - this operation amounts to applying an offset to each $\Delta t$. As can be seen on the middle panels of figure \ref{fig: analysis: TDC}, this already dramatically improves the alignment, but we can still do better. By now performing the minimization from (\ref{analysis: tdc: minimize}), we arrive at the two right panels of the same figure. We can finally perform a Gaussian fit to this and only keep events within $3\sigma$, which corresponds to the area enclosed by the red lines also shown on the two right panels. \\
+
+With this cut applied, we are finally ready to move on to the energy and momentum cuts.
 
 \subsection{Energy \& momentum cuts}
 To help guide our choice of cutoff values, a 2D histogram of the energy and momentum can be seen in figure \note{ref}. 

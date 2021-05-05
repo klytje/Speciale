@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
 
     gROOT->SetBatch(kTRUE); // no graphics display. if kFALSE, you must click on each figure as it appears to continue the script. 
     plot::path += "true/";
+    plot::x_axes::standard = {200, -360, -200};
 
     // start a ROOT application window such that the plots can actually be shown (probably not necessary in batch mode)
     TApplication *app = new TApplication("ROOT window", 0, 0);
