@@ -196,4 +196,38 @@ int main(int argc, char const *argv[]) {
         cout << path << endl;
         c4->SaveAs(path.c_str());
     } 
+
+    // adds a possible 0+ state to the mix. does not appear to work, so commented out
+    // if (state == "0+" || state == "2-") {
+    //     double guess = 0; // guess value for c
+    //     if (state == "0+") {
+    //         guess = 1./3;
+    //     } else if (state == "2-") {
+    //         guess = 0;
+    //     }
+
+    //     TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
+    //     h1->Scale(1./h1->GetMaximum());
+    //     auto func = [] (double* x, double* par) {
+    //         double y = par[0];
+    //         double c = par[1];
+    //         double c0 = par[2];
+    //         double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+    //         double beta = M_PI - theta;
+    //         return c*correlation_functions.at("2- 1")(beta) + (1-c)*correlation_functions.at("2- 3")(beta) + c0*correlation_functions.at("0+ 2")(beta);
+    //     };
+    //     TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 3);
+    //     mix->FixParameter(0, y);
+    //     mix->SetParameter(1, guess);
+    //     mix->SetParameter(2, 0.2);
+    //     h1->Fit(mix, "QR");
+    //     double c_fit = mix->GetParameter(1);
+    //     cout << format("Fitted values: c1 = %1%, c3 = %2%, c0 = %3%") % c_fit % (1-c_fit) % mix->GetParameter(2) << endl;
+
+    //     h1->Draw("HIST L");
+    //     mix->Draw("SAME");
+    //     path = string(argv[1]) + "ang_cor_fitted.pdf";
+    //     cout << path << endl;
+    //     c4->SaveAs(path.c_str());
+    // } 
 }

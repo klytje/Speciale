@@ -29,6 +29,10 @@ int main(int argc, char *argv[]) {
     
     hist->GetXaxis()->SetTitle("x");
     hist->GetYaxis()->SetTitle("y");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetYaxis()->CenterTitle();
+    hist->GetXaxis()->SetNdivisions(2);
+    hist->GetYaxis()->SetNdivisions(2);
     hist->Draw("colz");
 
     string path = string(argv[2]) + "dalitz.pdf"; 

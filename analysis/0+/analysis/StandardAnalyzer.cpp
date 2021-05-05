@@ -37,14 +37,14 @@ void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
     tree->Branch("N", &N);
     tree->Branch("mi", &mi, "mi[3]/i"); // ids of the alphas in mul
     tree->Branch("exBe8", &exBe8, "exBe8[3]/D");
-    tree->Branch("E_cm", E_cm, "E_cm[3]/D");
-    tree->Branch("E_dep", E_dep, "E_dep[3]/D");
-    tree->Branch("E_lab", E_lab, "E_lab[3]/D");
-    tree->Branch("theta_lab", theta_lab, "theta_lab[3]/D");
-    tree->Branch("phi_lab", phi_lab, "phi_lab[3]/D");
-    tree->Branch("px", px, "px[3]/D"); // momenta of the alphas in the cm frame
-    tree->Branch("py", py, "py[3]/D");
-    tree->Branch("pz", pz, "pz[3]/D");
+    tree->Branch("E_cm", &E_cm, "E_cm[3]/D");
+    tree->Branch("E_dep", &E_dep, "E_dep[3]/D");
+    tree->Branch("E_lab", &E_lab, "E_lab[3]/D");
+    tree->Branch("theta_lab", &theta_lab, "theta_lab[3]/D");
+    tree->Branch("phi_lab", &phi_lab, "phi_lab[3]/D");
+    tree->Branch("px", &px, "px[3]/D"); // momenta of the alphas in the cm frame
+    tree->Branch("py", &py, "py[3]/D");
+    tree->Branch("pz", &pz, "pz[3]/D");
 
     // I've disabled a few since I don't use them, and so they only waste space. They are fully functional however, and should work if you uncomment them.
     // tree->Branch("theta_cm", theta_cm, "theta_cm[3]/D");
@@ -105,7 +105,7 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
         dE = p_beam.E() - p_tot.E(); // energy difference between beam and alphas
         exC12 = p_tot_cm.E() - C12_MASS; // excitation energy of C12
         ptot = p_tot_cm.P(); 
-        
+
         // loop over the three alpha particles
         for (int i = 0; i < 3; i++) {
             TLorentzVector pi = p[i]; // copy the momentum so we can boost it

@@ -71,7 +71,6 @@ int main(int argc, char *argv[]) {
     hist.GetYaxis()->SetNdivisions(1);
     hist.Draw("colz");
     a1->Draw("only same");
-    a2->Draw("only same");
     l1->Draw("same");
 
     c2->SetLogz();

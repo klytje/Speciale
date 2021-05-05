@@ -3,7 +3,7 @@
 
 After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. This is necessary as, although we only have multiplicity $3$ events, there is no guarantee that the three particles actually originate from the same decay. \\
 
-In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. 
+In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. Unless stated otherwise, all figures from this section are made with only multiplicity $3$ data.
 
 \subsection{TDC cut}
 The general idea with this type of cut is that a given $\alpha$-particle should hit the front and backside of a detector within some small time interval. If this interval is too large, the two hits are probably not from the same particle, and the event should be discarded. \\
@@ -19,7 +19,7 @@ It turns out that this cut is not that simple to perform, however. There are two
 
 To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured \TDC{} values by the detectors (x-axis), both for the front and backside (y-axis). Only the backside of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. Two problems are clearly visible on this figure: one, we have too many peaks, and two, some of the peaks appear to be broken in half. We will focus on the latter problem first. \\
 
-Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between TDC values, we can choose to ignore the cause and simply fix the data. \\
+Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between \TDC{} values, we can choose to ignore the cause and simply fix the data. \\
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/tdc_plot_after.pdf}
@@ -104,7 +104,59 @@ The first step is to extract the mean $dt$ for each strip, and use this to cente
 With this cut applied, we are finally ready to move on to the energy and momentum cuts.
 
 \subsection{Energy \& momentum cuts}
-To help guide our choice of cutoff values, a 2D histogram of the energy and momentum can be seen in figure \note{ref}. 
+To help guide our choice of cutoff values, an obvious first step would be to plot the energy against the momentum in a 2D histogram. This can be seen in figure \ref{fig: analysis: energy momentum cuts}, which shows the raw data in three cases: before any cuts (left), after the \TDC{} cut (middle), and the energy/momentum cut (right). The cutoff values for energy and momentum were manually selected to preserve the central events around $E_{tot} = \SI{17.76}{MeV}$. \\
 
+\begin{figure}[bt]
+	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/cuts_raw.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/cuts_tdc.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/cuts_Ep.pdf}
+	\end{minipage}
+	\caption{The effects of the three cuts. The left panel shows the raw data, without any cuts. The middle panel shows the same data after the \TDC{} cut has been applied. The right panel is a zoomed-in version of the middle panel, where the  vertical and horizontal lines illustrates the energy and momentum cut, respectively. Note the different column scale in each panel. }
+	\label{fig: analysis: energy momentum cuts}
+\end{figure}
 
-However, during a cursory check of the contents, we discovered a major issue with the \TDC{} values. 
+With all our cuts imposed on the data, we can finally continue with the data analysis. 
+
+\subsection{Dalitz plots}
+The purpose of this thesis is to test the validity of the currently established models for the $0+$ state. Thus a nice opener to the analysis is to make a Dalitz plot of the data. This can be seen on the left panel of figure \ref{fig: analysis: dalitz: slice}, which reveals that another cut is necessary. The figure shows that a large concentration of events are located in a band near $y \simeq 1$, where almost the entire energy of the first decay is given to the $\alpha$-particle. These events thus corresponds to decays through the ground state of \ce{^8Be}. \note{more}. The right panel of the figure is only there to more clearly illustrate the structure in the remaining areas. \\
+
+\begin{figure}[]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_slice.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_slice_cut.pdf}
+	\end{minipage}
+	\caption{}
+	\label{fig: analysis: dalitz: slice}
+\end{figure}
+
+Although all of the kinematic information is already stored in this slice, it is somewhat easier to see the structure in a standard Dalitz plot. We can reconstruct it by repeatedly mirroring the slice along one of its edges. By doing this, we obtain figure \ref{fig: analysis: dalitz: full}. The left panel shows the multiplicity three data, while the right panel shows the multiplicity two data. Although there are some minor deviations between the two panels, they both clearly show an equilateral triangle. \\
+
+\begin{figure}[]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_true.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_reconstructed.pdf}
+	\end{minipage}
+	\caption{}
+	\label{fig: analysis: dalitz: full}
+\end{figure}
+
+Our next goal is to figure out what we expected to see. Since Zemach's analysis does not impose any constraints upon the $0+$ resonance at all, we are left with performing simulations. 
