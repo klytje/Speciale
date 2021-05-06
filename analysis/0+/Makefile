@@ -185,6 +185,9 @@ output/%.root : match/%m.root id/%mi.root $(event_analysis)
 # the following line allows us to use automatic variables for prerequisites from this point on
 .SECONDEXPANSION:
 
+# data file to compare against
+data = output/all_events.root
+
 # from here on I'll make heavy use of a few somewhat exotic automatic variables.
 # example: pattern: figures/%.pdf, matched by figures/abc/xyz.pdf
 # @D --> figures/abc
@@ -237,8 +240,8 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	../scripts/special/build/Dalitz_3D $<
 
 # compare a simulation with the data. Generates a variety of projection plot for easy comparison
-sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_events.root | figures/%
-	$< $(shell pwd)/figures/$*/ output/$*.root output/true_events.root
+sim_compare/%: ../scripts/special/build/sim_compare output/%.root $(data) | figures/%
+	$< $(shell pwd)/figures/$*/ output/$*.root $(data)
 
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data)) | figures/article
@@ -256,8 +259,8 @@ depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix matc
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
 # shows the effect of the various cuts we can impose on the data
-cuts: ../scripts/special/build/cuts $(addprefix output/,$(shell ls data)) output/true_events.root | figures/article
-	$< output/true_events.root $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
+cuts: ../scripts/special/build/cuts $(addprefix output/,$(shell ls data)) $(data) | figures/article
+	$< $(data) $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
 
 # shows how theta' changes throughout the dalitz plot
 theta: ../scripts/special/build/theta | figures/article
@@ -272,8 +275,8 @@ corr_funcs: ../scripts/special/build/corr_funcs | figures/article
 	$< $(shell pwd)/figures/article/
 
 # creates a mix of 2- and 0+ data, and compares it with the real data
-multiple_components: ../scripts/special/build/multiple_components output/true_events.root output/0+.root output/0+_i.root | figures/article
-	$< $(shell pwd)/figures/article/ output/0+.root output/0+_i.root output/true_events.root
+multiple_components: ../scripts/special/build/multiple_components $(data) output/0+.root output/0+_i.root | figures/article
+	$< $(shell pwd)/figures/article/ output/3-.root output/0+_i.root $(data)
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets

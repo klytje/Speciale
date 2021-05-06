@@ -139,7 +139,7 @@ The purpose of this thesis is to test the validity of the currently established 
 		\centering
 		\includegraphics[width=\linewidth]{figures/dalitz_slice_cut.pdf}
 	\end{minipage}
-	\caption{}
+	\caption{The cuts on the Dalitz plot. The left panel shows the data before the cut, with the red lines signifying the cutoffs. The right panel shows the same data after the cut, to more clearly show its structure. }
 	\label{fig: analysis: dalitz: slice}
 \end{figure}
 
@@ -155,8 +155,66 @@ Although all of the kinematic information is already stored in this slice, it is
 		\centering
 		\includegraphics[width=\linewidth]{figures/dalitz_reconstructed.pdf}
 	\end{minipage}
-	\caption{}
+	\caption{The Dalitz plots for the data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data. Note the large difference in the column scale. }
 	\label{fig: analysis: dalitz: full}
 \end{figure}
 
-Our next goal is to figure out what we expected to see. Since Zemach's analysis does not impose any constraints upon the $0+$ resonance at all, we are left with performing simulations. 
+Our next goal is to figure out what we expected to see. Since Zemach's analysis does not impose any constraints upon the $0+$ resonance at all, we are left with performing simulations. As mentioned in section \ref{section: data reduction}, we have two options for these: \simX{} and \simta{}. Only the latter accounts for interference, and is thus our preferred choice. \\
+
+The Monte-Carlo simulations are performed with \simta{}, after which they are put through \simX{}, which simulates interactions with the experimental setup. Then they are put through the entire \AUSAlib{} pipeline, after which we can make a Dalitz plot of them, like we did for the actual data. This results in the left panel of figure \ref{fig: analysis: dalitz: sim}. Something is clearly very wrong here: it does not at all look like our data. As a check, the same simulations were performed solely with \simX{}, which results in the right panel of the same figure. While this is somewhat better, it is still very different from our data.
+
+\begin{figure}[]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_sim3a.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/dalitz_simX.pdf}
+	\end{minipage}
+	\caption{The Dalitz plots for the $0+$ simulations. The left panel shows the results of the \simta{} simulation, while the right shows it for the \simX{} simulation. For a discussion on the difference between the two tools, see section \note{ref}.}
+	\label{fig: analysis: dalitz: sim}
+\end{figure}
+
+\subsubsection{Checking the simulation tools}
+Since the simulations are so different from what we see in our data, it is worthwhile to verify that they actually work as expected. Thus for this small section, we will work with data from the $2-$ resonance instead. Using specifically the \simta{} tool on this resonance was a major part of M. Kuhlwein's thesis \cite{Kuhlwein}, a previous student at the same faculty. Replicating his best fit of the resonance with ${k = 0.186}$ and ${\delta = 0.69\cdot2\pi}$, we get figure \ref{fig: analysis: dalitz: 2-}. We can already by eye tell that this is a much better match. \\
+
+\begin{figure}[]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/dalitz.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/dalitz_sim3a.pdf}
+	\end{minipage}
+	\caption{The Dalitz plots for the $2-$ resonance. The left panel shows both the multiplicity two and three data, while the right shows the \simta{} simulation with $k=0.186$ and $\delta=0.69\cdot2\pi$. \note{normalize both? fix axes}}
+	\label{fig: analysis: dalitz: 2-}
+\end{figure}
+
+Since it is somewhat hard to compare 2D histograms, it is common to look at their projections instead. A popular choice are the polar projections, along with the center-mass energies. If we plot these, we get the three panels shown on figure \ref{fig: analysis: dalitz: 2- projections}. Here the black lines represents the data, while the orange represents the simulation. Although there are some deviations, especially for the radial projection $\rho$, this is overall a great fit to the data. With an assurance that the simulations are not wrong, we are instead left wondering what else could be the problem. 
+
+\begin{figure}[bt]
+	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/E_cm.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/rho.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/phi.pdf}
+	\end{minipage}
+	\caption{The projections of the simulated $2-$ Dalitz plot with ${k=0.186}$ and ${\delta = 0.69\cdot2\pi}$. The black lines represents the data, while the orange lines are the simulations. The simulations nicely matches the data in all three projections, in line with the conclusion reached by Kuhlwein \cite{Kuhlwein}. }
+	\label{fig: analysis: dalitz: 2- projections}
+\end{figure}
+
+\subsubsection{Checking the reduced width amplitude}
+
+\subsubsection{Checking the angular correlations}
+As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. 

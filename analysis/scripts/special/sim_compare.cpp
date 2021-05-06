@@ -19,9 +19,6 @@ int main(int argc, char *argv[]) {
     }
 
     setup_style();
-    // double delta = 2*M_PI*0.59; // 0.11
-    double delta = 2*M_PI*0.11;
-    double k = 0.630681;
     int bins = 200;
 
     ROOT::RDF::RNode dsim = RDataFrame("tree", argv[2]);
@@ -79,7 +76,20 @@ int main(int argc, char *argv[]) {
 
     // check if we are dealing with sim3a_i data
     if (string(argv[2]).find("_i") != string::npos) {
-        cout << "File name contains \"_i\", assuming sim3a_i data..." << endl;
+        double delta; // phase difference, essentially controls the amount of interference between the two terms
+        double k; // ratio of l = 1 : l = 3
+        if (string(argv[2]).find("0+") != string::npos) {
+            delta = 2*M_PI*0.11; // 0.59 is also good
+            k = 0.630681;
+            cout << "File name contains \"0+\" and \"_i\", assuming 0+ sim3a_i data..." << endl;
+        } else if (string(argv[2]).find("2-") != string::npos) {
+            delta = 2*M_PI*0.691;
+            k = 0.186;
+            cout << "File name contains \"2-\" and \"_i\", assuming 2- sim3a_i data..." << endl;
+        } else {
+            cout << "\033[1;31m" << "File name contains \"_i\", but not a recognized state. Correct this in ../scripts/special/sim_compare.cpp" << "\033[0m" << endl;
+            exit(1);
+        }
         auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { // weights defined by eq 42 in Morten's thesis
             return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
         };
@@ -106,9 +116,11 @@ int main(int argc, char *argv[]) {
     hsim->Scale(1/hsim->GetMaximum());
 
     hsim->GetXaxis()->SetTitle("x");
-    hsim->GetXaxis()->CenterTitle();
     hsim->GetYaxis()->SetTitle("y");
+    hsim->GetXaxis()->CenterTitle();
     hsim->GetYaxis()->CenterTitle();
+    hsim->GetXaxis()->SetNdivisions(2);
+    hsim->GetYaxis()->SetNdivisions(2);
     hsim->Draw("colz");
 
     string path = string(argv[1]) + "dalitz.pdf";
@@ -128,9 +140,11 @@ int main(int argc, char *argv[]) {
     dat_rho.Scale(1/dat_rho.GetMaximum());
 
     dat_rho.GetXaxis()->SetTitle("\\rho");
-    dat_rho.GetXaxis()->CenterTitle();
     dat_rho.GetYaxis()->SetTitle("Arbitrary units");
+    dat_rho.GetXaxis()->CenterTitle();
     dat_rho.GetYaxis()->CenterTitle();
+    dat_rho.GetXaxis()->SetNdivisions(205);
+    dat_rho.GetYaxis()->SetNdivisions(203);
     
     sim_rho.SetLineColor(kOrange+1);
     dat_rho.SetLineColor(kBlack);
@@ -154,10 +168,12 @@ int main(int argc, char *argv[]) {
     sim_ang.Scale(1/sim_ang.GetMaximum());
     dat_ang.Scale(1/dat_ang.GetMaximum());
 
-    dat_ang.GetXaxis()->SetTitle("\\phi");
-    dat_ang.GetXaxis()->CenterTitle();
+    dat_ang.GetXaxis()->SetTitle("\\varphi");
     dat_ang.GetYaxis()->SetTitle("Arbitrary units");
+    dat_ang.GetXaxis()->CenterTitle();
     dat_ang.GetYaxis()->CenterTitle();
+    dat_ang.GetXaxis()->SetNdivisions(206);
+    dat_ang.GetYaxis()->SetNdivisions(203);
     
     sim_ang.SetLineColor(kOrange+1);
     dat_ang.SetLineColor(kBlack);
@@ -188,9 +204,11 @@ int main(int argc, char *argv[]) {
     dat_E->Scale(1/dat_E->GetMaximum());
 
     dat_E->GetXaxis()->SetTitle("E_{cm}");
-    dat_E->GetXaxis()->CenterTitle();
     dat_E->GetYaxis()->SetTitle("Arbitrary units");
+    dat_E->GetXaxis()->CenterTitle();
     dat_E->GetYaxis()->CenterTitle();
+    dat_E->GetXaxis()->SetNdivisions(205);
+    dat_E->GetYaxis()->SetNdivisions(203);
     
     sim_E->SetLineColor(kOrange+1);
     dat_E->SetLineColor(kBlack);

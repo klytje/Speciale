@@ -51,5 +51,6 @@ int main(int argc, char *argv[]) {
 
     canvas->SetLogz();
     canvas->SetRightMargin(0.15);
+    canvas->SetLeftMargin(0.15);
     canvas->SaveAs(dest.c_str());
 }
