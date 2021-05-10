@@ -4,7 +4,7 @@ This section will introduce all of the relevant theory for this thesis.
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
 
-Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, which is based on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually lead to the development of the R-matrix theory. 
+Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, which is based on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
 
 \subsection{R-matrix theory}
 This whole section on R-matrix theory follows the general steps used in the lecture notes by D. Baye \cite{Baye lecture notes}. \\ 
@@ -14,7 +14,7 @@ Consider the potential scattering of some arbitrary partial wave. A core assumpt
 	V(r) \xrightarrow[r \rightarrow \infty]{} V_C(r) = \frac{Z_1 Z_2 e^2}{4\pi\epsilon_0 r}
 \end{align*}
 
-The central idea of the theory is that beyond some specific radius $r = a$, the short-range term can be neglected. Thus this interaction radius $a$ effectively divides space into two regions: an internal region, where the nuclear interactions must be accounted for, and an external region, where only the Coulomb interaction matters. The internal region is treated as a confined system, allowing the total wave function to be expanded into a finite set of eigenstates. In the external region, the wave function can be approximated by its asymptotic value, leaving only an unknown phase shift. By matching the two wave functions at the boundary, this phase shift can be identified.
+The central idea of the theory is that beyond some specific radius $r = a$, the short-range term can be neglected. Thus this interaction radius $a$ effectively divides space into two regions: an internal region, where the nuclear interactions must be accounted for, and an external region, where only the Coulomb interaction matters. The internal region is treated as a confined system, allowing the total wave function to be expanded into a finite set of eigenstates. In the external region, the wave function can be approximated by its asymptotic value, leaving only an unknown phase shift. By matching the two wave functions at the boundary, this phase shift can be identified. 
 
 \subsubsection{The internal and external wave functions}
 Assume that we have two particles with the reduced mass $\mu$, which interacts through the central potential $V$ with some positive energy 
@@ -111,7 +111,7 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. In this simple single-channel case, the matrix is just a number; generally it will be a matrix of dimension equal to the number of channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix of dimensions equal to the number of input/output channels \note{Is this really necessary?}. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
 	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
@@ -211,6 +211,11 @@ These two equations are useful when we want to relate the reduced width $\gamma^
 	a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx 1.4fm
 \end{align*}
 
+\subsubsection{Three-body decays}
+So far, the R-matrix theory can only describe two-body decays. To extend this model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
+
+By using these extensions, one can derive similar equations as for the two-body model, which will not be discussed here. This three-body model is used internally in some of the simulation tools which will be introduced later. 
+
 \subsection{Kinematics}
 We will later have need of some basic kinematic results for a sequential decay, which will be introduced in this section. A useful way of visualizing three-body decays will also be introduced. 
 
@@ -234,9 +239,9 @@ A popular choice in nuclear and particle physics is the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by R. H. Dalitz back in 1953 \cite{Dalitz}. An illustration of this type of plot can be seen in figure \ref{fig: theory: dalitz: dalitz}. Conservation of energy restricts the energies to an equilateral triangle, while conservation of momentum further restricts them to the inscribed circle, due to their identical masses. \\
+devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are then represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \note{https://arxiv.org/pdf/hep-ph/0507058.pdf}, such that any structure that may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen in figure \ref{fig: theory: dalitz: dalitz}. \\
 
-Since we are dealing with three identical bosons, we can freely order the energies however we want. If we define the order to be $E_1 \geq E_2 \geq E_3$, then all events will fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}, thus introducing a six-fold symmetry to the plot. \\
+The Dalitz plots presented in this work are special since they show a six-fold symmetry. This symmetry arises since we are dealing with three identical bosons, meaning we can order their energies however we want. By defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$, we can make all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Thus a single such slice contains all the information of the decay, but since it is easier to see structure on the full plot, we will mainly be using those. \\
 
 \begin{figure}[t]
 	\centering
@@ -245,11 +250,13 @@ Since we are dealing with three identical bosons, we can freely order the energi
 	\label{fig: theory: dalitz: dalitz}
 \end{figure}
 
+Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on the nature of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \note{make fig}. \\
+
 The angle between the primary and secondary particles $\theta$ is given in the $\{ e_1, e_2, e_3 \}$ coordinate system through (\ref{theory: kinematics: theta}). Since we will be dealing exclusively with the Dalitz coordinates, it is useful to convert this to an equation of $\{x, y\}$ instead. A simple exercise gives the solution as
 \begin{align} \label{theory: dalitz: theta}
 	\cos\theta = \frac{x}{\sqrt{y^2 - 1}}
 \end{align}
-Since they depend on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$.
+Since they depend on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$. \\
 
 \begin{figure}[!htb]
 	\centering
@@ -264,6 +271,8 @@ Since they depend on neither $Q_1$ nor $Q_2$, the angular distribution of the pa
 	\caption{The angle $\theta$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$.}
 	\label{fig: theory: dalitz: theta}
 \end{figure}
+
+\note{SOMETHING ABOUT ALLOWED REGIONS, MAYBE ALSO FEYNMANN GOLDEN RULE --> BANDS}
 
 \subsection{Angular correlations}
 \note{introduce the effect when you understand it} \\
