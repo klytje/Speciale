@@ -910,7 +910,7 @@ void save(data_container* data, string destination) {
     TTree t("tree", "data from calibrate");
 
     // define the storage variables for the fill loop
-    double pt, deltaE, exC12, px[3], py[3], pz[3], eCM[3], eLab[3], thetaLab[3], phiLab[3], dt[3];
+    double pt, deltaE, exC12, px[3], py[3], pz[3], eCM[3], eLab[3], thetaLab[3], phiLab[3], dt[3], bt[3];
     // double thetaCM[3], phiCM[3];
     int mul, id[3];
 
@@ -919,7 +919,8 @@ void save(data_container* data, string destination) {
     t.Branch("exC12", &exC12);
     t.Branch("p_tot", &pt);
     t.Branch("deltaE", &deltaE); 
-    t.Branch("DT", &dt, "dt[3]/D");
+    t.Branch("BT", &bt, "BT[3]/D");
+    // t.Branch("DT", &dt, "DT[3]/D");
     t.Branch("px", &px, "px[3]/D");
     t.Branch("py", &py, "py[3]/D");
     t.Branch("pz", &pz, "pz[3]/D");
@@ -933,7 +934,8 @@ void save(data_container* data, string destination) {
 
     // acquire pointers to the actual data in the data_container
     data->add_dt(); // ensure dt exists
-    vector<double> &DT = *data->get_double("dt");
+    vector<double> &BT = *data->get_double("BT");
+    // vector<double> &DT = *data->get_double("dt");
     vector<double> &ECM = *data->get_double("E_cm");
     vector<double> &ELAB = *data->get_double("E_lab");
     vector<double> &PT = *data->get_double("p_tot");
@@ -963,7 +965,8 @@ void save(data_container* data, string destination) {
         exC12 = EXC12[i1];
 
         // vector columns. consider making a simple lambda function which enters all three values to avoid mistakes
-        dt[0] = DT[i1]; dt[1] = DT[i2]; dt[2] = DT[i3];
+        bt[0] = BT[i1]; bt[1] = BT[i2]; bt[2] = BT[i3];
+        // dt[0] = DT[i1]; dt[1] = DT[i2]; dt[2] = DT[i3];
         px[0] = PX[i1]; px[1] = PX[i2]; px[2] = PX[i3];
         py[0] = PY[i1]; py[1] = PY[i2]; py[2] = PY[i3];
         pz[0] = PZ[i1]; pz[1] = PZ[i2]; pz[2] = PZ[i3];

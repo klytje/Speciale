@@ -17,7 +17,7 @@ It turns out that this cut is not that simple to perform, however. There are two
 	\label{fig: analysis: tdc before}
 \end{figure}
 
-To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured \TDC{} values by the detectors (x-axis), both for the front and backside (y-axis). Only the backside of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. Two problems are clearly visible on this figure: one, we have too many peaks, and two, some of the peaks appear to be broken in half. We will focus on the latter problem first. \\
+To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured \TDC{} values by the detectors (x-axis), both for the front and backside (y-axis). Only the backside of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. Two problems are clearly visible in this figure: one, we have too many peaks, and two, some of the peaks appear to be broken in half. We will focus on the latter problem first. \\
 
 Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between \TDC{} values, we can choose to ignore the cause and simply fix the data. \\
 
@@ -39,7 +39,7 @@ With the second problem fixed, we now turn our attention to the first: we still 
 
 A detector $A$ can be activated in two ways. The first case is when $A$ itself detects a hit, after which it will immediately send a signal to the \TDC{} converter. The second case is when another detector $B$ is hit, and sends an activation signal to $A$. Due to the additional length of wiring the signal must pass through from $B$ to $A$, the second case will in general be delayed compared to the first. Since the length of wiring may be different for signals from each detector $\{B, C, D,...\}$, this may result in a unique peak for each. I will refer to these two cases as primary and secondary activations, respectively. \\
 
-These two types of activations is exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. \note{maybe discuss why this makes sense - due to downscaling and position, we expect W1 to primary activate more than S3} \\
+These two types of activations are exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. \note{maybe discuss why this makes sense - due to downscaling and position, we expect W1 to primary activate more than S3} \\
 
 This explains all but a single extra peak, which can be seen on the second top panel from the left. Some further investigation reveals that this extra peaks consists almost entirely of low-energy events, as can be seen on figure \ref{fig: appendix: multiple peaks energy} in the appendix. With the cause of every peak identified, we can now solve the problem by simply shifting all of them on top of each other, as can be seen for the \BT{} peaks on figure \ref{fig: analysis: TDC: BT peaks shifted}. 
 
@@ -215,6 +215,52 @@ Since it is somewhat hard to compare 2D histograms, it is common to look at thei
 \end{figure}
 
 \subsubsection{Checking the reduced width amplitude}
+A solution could be that the reduced width amplitude used for the excited state \ce{^8Be*} is wrong. The value used for the previous simulation is $\gamma = \SI{32.787}{\sqrt{keV}}$ \note{where from?}. We can simultaneously use this as an additional check on our simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. Thus a conversion tool based on eq (\ref{theory: r-matrix: Gamma gamma}) was made to convert between $\gamma$ and $\Gamma$, allowing us to compare the two simulation tools. \\
+
+As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. We also derived the correlation function $W(\beta)$ (eq (\ref{theory: angular correlations: W}) for an arbitrary state. This is an excellent method of comparing our simulations with the theory, which we have used on figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, and on figure \ref{fig: analysis: ang compare simX 0} for \simX{}. The x-labels for the \simta{} panels are the reduced width amplitude $\gamma$, while they are the corresponding $\Gamma$ on the \simX{} panels. The horizontal red band on the top panels shows the area projected down onto the x-axis in the bottom panels. On the bottom panels, the red line shows the correlation function $W(\beta)$, where $\theta = \beta + \pi$ is the angle from eq (\ref{theory: dalitz: theta}). The agreement between theory and simulation for \simta{} is generally quite good, except at the point of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. The reason they do not appear to converge may be because we need even smaller $\gamma$, which are not possible with these tools due to instabilities. For larger comparison values of $\gamma$, see figure \ref{fig: appendix: ang compare all} in the appendix. \\
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{figures/ang_compare_0_sim3a.pdf}
+	\caption{}
+	\label{fig: analysis: ang compare sim3a 0}
+	
+	\includegraphics[width=\linewidth]{figures/ang_compare_0_simX.pdf}
+	\caption{}
+	\label{fig: analysis: ang compare simX 0}
+\end{figure}
+
+From figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, we see that both simulation and theory predicts that the bands vanish near the points of interference. Yet this is not what we see in our data on figure \ref{fig: analysis: dalitz: full}. One explanation for this is that our data is dominated by interference from other nearby states. To check this, we can try determining which correlation functions \textit{do} describe our data. 
 
 \subsubsection{Checking the angular correlations}
-As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. 
+As a first step, we can try overlaying all correlation functions up to and including the $J = 3$ states on top of the distribution from the data. This results in the rather messy figure \ref{fig: analysis: ang cor fit}. 
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/ang_cor_fit_true.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/ang_cor_fit_reconstructed.pdf}
+	\end{minipage}
+	\caption{}
+	\label{fig: analysis: ang cor fit}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/ang_cor_fitted_true.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/ang_cor_fitted_reconstructed.pdf}
+	\end{minipage}
+	\caption{}
+	\label{fig: analysis: ang cor fitted}
+\end{figure}
+
+\subsection{Some title}
+\subsubsection{Verifying the branching ratio}

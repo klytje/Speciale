@@ -31,7 +31,7 @@ namespace AUSA {
         private:
             std::unique_ptr<TTree> tree;
             ScalerOutput scaler;
-            int mi[3], mul, N, k;
+            int mi[3], mul, N;
             double prob[3], 
                 E_cm[3], E_lab[3], E_dep[3], dE,
                 vzl[3], vz[3], 

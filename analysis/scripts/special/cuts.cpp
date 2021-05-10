@@ -4,6 +4,7 @@
 #include <ROOT/RDFHelpers.hxx>
 #include <TCanvas.h>
 #include <TLine.h>
+#include <TF1.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -24,14 +25,14 @@ int main(int argc, char *argv[]) {
     }    
 
     // prepare the dataframe
-    ROOT::RDF::RNode raw = RDataFrame(chain).Define("mp", "p_tot/1000").Define("mexC12", "exC12/1000"); // scale p to MeV
+    ROOT::RDF::RNode raw = RDataFrame(chain).Define("mp", "pt/1000").Define("mexC12", "exC12/1000"); // scale p to MeV
     ROOT::RDF::RNode tdc = RDataFrame("tree", argv[1]).Define("mp", "p_tot/1000").Define("mexC12", "exC12/1000");
 
     // set the axes
     double x_axis[] = {400, 8, 20};
     double y_axis[] = {400, 0, 250};
 
-    //*** RAW PLOT ***//
+//*** RAW PLOT ***//
     TCanvas* c1 = new TCanvas("raw", "", 600, 600);
     TH2D hraw = raw.Histo2D({"hraw", "", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "mexC12", "mp").GetValue();
     hraw.GetXaxis()->SetTitle("E_{tot} [MeV]");
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
     string path = string(argv[argc-1]) + "cuts_raw.pdf";
     c1->SaveAs(path.c_str());
 
-    //*** TDC CALIBRATED PLOT ***//
+//*** TDC CALIBRATED PLOT ***//
     TCanvas* c2 = new TCanvas("tdc", "", 600, 600);
     TH2D htdc = tdc.Histo2D({"htdc", "", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "mexC12", "mp").GetValue();
     htdc.GetXaxis()->SetTitle("E_{tot} [MeV]");
@@ -65,13 +66,47 @@ int main(int argc, char *argv[]) {
     path = string(argv[argc-1]) + "cuts_tdc.pdf";
     c2->SaveAs(path.c_str());
 
-    //*** ENERGY & MOMENTUM CUT ***//
+//*** TIME OF ARRIVAL CUT ***//
+    // find the largest time interval given three arrival times
+    auto dt = [] (double t1, double t2, double t3, int mul) {
+        if (mul == -1) { // for the reconstructed data, t3 = 0
+            return t1-t2;
+        }
+
+        double dt1 = t1 - t3;
+        double dt2 = t2 - t1;
+        double dt3 = t3 - t2;
+        if (abs(dt1) > abs(dt2) && abs(dt1) > abs(dt3)) {
+            return dt1;
+        } else if (abs(dt2) > abs(dt1) && abs(dt2) > abs(dt3)) {
+            return dt2;
+        } else {
+            return dt3;
+        }
+    };
+
+    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
+    TH1D hist = tdc.Define("BT0", "BT[0]")
+                    .Define("BT1", "BT[1]")
+                    .Define("BT2", "BT[2]")
+                    .Define("dt", dt, {"BT0", "BT1", "BT2", "mul"})
+                    .Histo1D("dt").GetValue();
+    TF1* gauss = new TF1("gauss", "gaus", -50, 50);
+    hist.Fit(gauss, "LQR");
+
+    hist.Draw();
+    gauss->Draw("same");
+    path = string(argv[argc-1]) + "time_of_arrival_peak.pdf";
+    c3->SaveAs(path.c_str());
+
+
+//*** ENERGY & MOMENTUM CUT ***//
     double pmax = 100;
     double p_cut = 40;
     double deltaE_cut = 0.3;
     double resonance_E = 17.76;
     x_axis[1] = 14; x_axis[2] = 20;
-    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
+    TCanvas* c4 = new TCanvas("c4", "", 600, 600);
     htdc = tdc.Histo2D({"htdc", "", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), 0, pmax}, "mexC12", "mp").GetValue();
     htdc.GetXaxis()->SetTitle("E_{tot} [MeV]");
     htdc.GetXaxis()->CenterTitle();
@@ -96,9 +131,9 @@ int main(int argc, char *argv[]) {
     l3->SetLineWidth(3);
     l3->Draw("same");
 
-    c3->SetLogz();
-    c3->SetLeftMargin(0.12);
-    c3->SetRightMargin(0.15);
+    c4->SetLogz();
+    c4->SetLeftMargin(0.12);
+    c4->SetRightMargin(0.15);
     path = string(argv[argc-1]) + "cuts_Ep.pdf";
-    c3->SaveAs(path.c_str());
+    c4->SaveAs(path.c_str());
 }

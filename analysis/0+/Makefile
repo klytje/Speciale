@@ -259,8 +259,8 @@ depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix matc
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
 # shows the effect of the various cuts we can impose on the data
-cuts: ../scripts/special/build/cuts $(addprefix output/,$(shell ls data)) $(data) | figures/article
-	$< $(data) $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
+cuts: ../scripts/special/build/cuts $(addprefix merged/,$(shell ls data)) $(data) | figures/article
+	$< $(data) $(addprefix merged/,$(shell ls data)) $(shell pwd)/figures/article/
 
 # shows how theta' changes throughout the dalitz plot
 theta: ../scripts/special/build/theta | figures/article

@@ -45,7 +45,6 @@ void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
     tree->Branch("px", &px, "px[3]/D"); // momenta of the alphas in the cm frame
     tree->Branch("py", &py, "py[3]/D");
     tree->Branch("pz", &pz, "pz[3]/D");
-    k = 0;
 
     // I've disabled a few since I don't use them, and so they only waste space. They are fully functional however, and should work if you uncomment them.
     // tree->Branch("theta_cm", theta_cm, "theta_cm[3]/D");
@@ -74,8 +73,12 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
         mul = 0; // number of alpha particles identified
         TLorentzVector p[3]; // momenta of the alphas
         TLorentzVector p_tot; // total momentum of the alphas
+        if (m > 3) {
+            cout << "\033[1;31m" << "Multiplicity > 3 event encountered, need to redo StandardAnalyzer.cpp to support this" << "\033[0m" << endl;
+            exit(1);
+        }
         for (int i = 0; i < m; i++) {
-            if (mul == 2) {k++; break;} // stop when we've found all three
+            if (mul == 3) break; // stop when we've found all three
             
             auto ion = event.getIon(i); 
             if (*ion != ALPHA) {
@@ -137,7 +140,6 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
 
 void StandardAnalyzer::terminate() {
     gDirectory->WriteTObject(tree.release());
-    cout << "\033[1;31m" << "Found " << k << " non-alpha events." << "\033[0m" << endl;
 }
 
 void StandardAnalyzer::saveToRootFile(TFileWrapper &file) {}

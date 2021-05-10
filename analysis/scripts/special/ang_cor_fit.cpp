@@ -76,10 +76,18 @@ int main(int argc, char const *argv[]) {
         if (y_bounds[1] < i && biny2 == 0) biny2 = b;
     }
     TH1D* h1 = hist->ProjectionX("px", biny1, biny2);
-    h1->Draw();
+    h1->GetXaxis()->SetNdivisions(3);
+    h1->GetXaxis()->SetTitle("x");
+    h1->GetXaxis()->CenterTitle();
+    h1->GetYaxis()->SetNdivisions(2);
+    h1->GetYaxis()->SetTitle("Angular correlation");
+    h1->GetYaxis()->CenterTitle();
+    h1->SetLineColor(kBlack);
+    h1->SetLineWidth(3);
+    h1->Draw("HIST L");
 
     // we need to determine the max value of the histogram, but it cannot be at the interference point (about 0.6)
-    int maxval = 0;
+    double maxval = 0;
     double location = 0;
     double width = 0.1;
     double bad_area[4] = {-(interference_point+width), -(interference_point-width), interference_point-width, interference_point+width};
@@ -98,12 +106,16 @@ int main(int argc, char const *argv[]) {
     vector<double> x_bounds = {-sqrt(1-pow(y, 2))+0.0001, sqrt(1-pow(y, 2))-0.0001};
 
     // plot multiple correlation functions
-    vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3-"}; // parity doesn't actually matter
-    vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "3"};
-    vector<int> color =     {1   , 2   , 3   , 4   , 5   , 6   , 7   , 28  , 9};
+    vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3+", "3-"}; // parity doesn't actually matter
+    vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "2" , "3"};
+    vector<int> color = {kBlack, kPink-8, kOrange+1, kYellow-7, kSpring-1, kTeal+3, kCyan+1, kAzure+1, kBlue-9, kViolet+1};
     function<double(Double_t*, Double_t*)> ang_corr;
 
-    auto legend = new TLegend(0.1, 0.75, 0.2, 0.9);
+    maxval = 1./h1->GetMaximum()*maxval;
+    h1->Scale(1./h1->GetMaximum());
+    h1->SetMaximum(1.2); // make space for the legend
+    auto legend = new TLegend(0.1, 0.77, 0.9, 0.9);
+    legend->SetNColumns(7);
     for (int i = 0; i < states.size(); i++) {
         tie(ang_corr, std::ignore, std::ignore) = get_angular_correlation_function(states[i], ls[i]);
 
@@ -123,7 +135,7 @@ int main(int argc, char const *argv[]) {
 
     //*** PLOT ONLY RELEVANT FUNCTIONS ***//
     TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
-    h1->Draw();
+    h1->Draw("HIST L");
     auto legend3 = new TLegend(0.1, 0.75, 0.2, 0.9);
     int i = 0;
     for (auto const& [key, val] : correlation_functions) {
@@ -175,7 +187,7 @@ int main(int argc, char const *argv[]) {
         }
 
         TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
-        h1->Scale(1./h1->GetMaximum());
+        h1->SetMaximum(1);
         auto func = [] (double* x, double* par) {
             double y = par[0];
             double c = par[1];
@@ -186,7 +198,8 @@ int main(int argc, char const *argv[]) {
         TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 2);
         mix->FixParameter(0, y);
         mix->SetParameter(1, guess);
-        h1->Fit(mix, "QR");
+        mix->SetParLimits(1, 0, 1);
+        h1->Fit(mix, "QRL");
         double c_fit = mix->GetParameter(1);
         cout << format("Fitted values: c1 = %1%, c3 = %2%") % c_fit % (1-c_fit) << endl;
 
