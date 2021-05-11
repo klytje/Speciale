@@ -1,0 +1,207 @@
+{
+    "name": "Na23",
+    "detectors": [
+        {
+            "name": "SU",
+            "file": "AUS3_322_00.json",
+            "calibration": "SU_DL584.cal",
+            "position": {
+                "x": "-0.48729mm",
+                "y": "0.68156mm",
+                "z": "-41.99120mm"
+            },
+            "normal": {
+                "x": "0.0mm",
+                "y": "0.0mm",
+                "z": "1.0mm"
+            },
+            "orientation": {
+                "r": "1.0mm",
+                "theta": "90.0deg",
+                "phi": "0.0deg"
+            },
+            "frontMapping": {
+                "prefix": "SU_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "SU_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "SD",
+            "file": "AUS3_1000_00.json",
+            "calibration": "SD_sanchit1010.cal",
+            "position": {
+                "x": "-0.74670mm",
+                "y": "3.60074mm",
+                "z": "43.35976mm"
+            },
+            "normal": {
+                "x": "0mm",
+                "y": "0mm",
+                "z": "-1mm"
+            },
+            "orientation": {
+                "r": "1.0mm",
+                "theta": "90.0deg",
+                "phi": "180.0deg"
+            },
+            "frontMapping": {
+                "prefix": "SD_S",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "-DEAD-"
+            },
+            "backMapping": {
+                "prefix": "SD_R",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "Det1",
+            "file": "AUW1_60_00.json",
+            "calibration": "Det1New.cal",
+            "position": {
+                "x": "32.22156mm",
+                "y": "3.78485mm",
+                "z": "-2.46806mm"
+            },
+            "normal": {
+                "x": "-0.999mm",
+                "y": "0.0mm",
+                "z": "0.0345mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "frontMapping": {
+                "tdc": "_T",
+                "multiplicity": "",
+                "prefix": "DET1F",
+                "segment": "I",
+                "adc": "_E"
+            },
+            "backMapping": {
+                "tdc": "_T",
+                "multiplicity": "",
+                "prefix": "DET1B",
+                "segment": "I",
+                "adc": "_E"
+            }
+        },
+        {
+            "name": "Det2",
+            "file": "AUW1_60_00.json",
+            "calibration": "Det2New.cal",
+            "position": {
+                "x": "-31.29308mm",
+                "y": "7.54852mm",
+                "z": "3.12109mm"
+            },
+            "normal": {
+                "x": "0.9986mm",
+                "y": "0.0mm",
+                "z": "-0.0523mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "frontMapping": {
+                "tdc": "_T",
+                "multiplicity": "",
+                "prefix": "DET2F",
+                "segment": "I",
+                "adc": "_E"
+            },
+            "backMapping": {
+                "tdc": "_T",
+                "multiplicity": "",
+                "prefix": "DET2B",
+                "segment": "I",
+                "adc": "_E"
+            }
+        },
+        {
+            "name": "Pad1",
+            "file": "MD0002.json",
+            "calibration": "Pad1.cal",
+            "position": {
+                "x": "39.2972126475mm",
+                "y": "1.0mm",
+                "z": "1.73645812178mm"
+            },
+            "normal": {
+                "x": "-0.999mm",
+                "y": "0.0mm",
+                "z": "0.0345mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "mapping": {
+                "tdc": "PAD1T",
+                "adc": "PAD1E"
+            }
+        },
+        {
+            "name": "Pad2",
+            "file": "MD0002.json",
+            "calibration": "Pad2.cal",
+            "position": {
+                "x": "-33.2258939976mm",
+                "y": "4.5mm",
+                "z": "-1.21309507703mm"
+            },
+            "normal": {
+                "x": "0.9986mm",
+                "y": "0.0mm",
+                "z": "-0.0523mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "mapping": {
+                "tdc": "PAD2T",
+                "adc": "PAD2E"
+            }
+        }
+    ],
+    "telescopes": [
+        {
+            "front": "Det1",
+            "dn": "3mm",
+            "back": "Pad1"
+        },
+        {
+            "front": "Det2",
+            "dn": "3mm",
+            "back": "Pad2"
+        }
+    ],
+    "signals": [
+        "CLOCK",
+        "CHARGE",
+        "ACCEPTED",
+        "TOTAL"
+    ]
+}

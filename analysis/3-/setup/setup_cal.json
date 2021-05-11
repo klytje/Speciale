@@ -74,9 +74,9 @@
             "file": "Det1.json",
             "calibration": "Det1_131017.qccal",
             "position": {
-                "x": "36.4939mm",
-                "y": "0.96mm",
-                "z": "-1.53686mm"
+"x": "29.2558mm",
+"y": "3.44718mm",
+"z": "1.35043mm"
             },
             "normal": {
                 "x": "-0.9994mm",

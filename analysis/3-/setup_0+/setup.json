@@ -4,21 +4,21 @@
         {
             "name": "SU",
             "file": "AUS3_322_00.json",
-            "calibration": "SU_131017.qccal",
+            "calibration": "SU.cal",
             "position": {
-                "x": "-0.396789mm",
-                "y": "-1.96mm",
-                "z": "-42.2112mm"
-            },
-            "normal": {
                 "x": "0mm",
                 "y": "0mm",
-                "z": "1mm"
+                "z": "-36mm"
+            },
+            "normal": {
+                "x": "0.0mm",
+                "y": "0.0mm",
+                "z": "1.0mm"
             },
             "orientation": {
-                "x": "1mm",
-                "y": "0mm",
-                "z": "0mm"
+                "x": "1.0mm",
+                "y": "0.0mm",
+                "z": "0.0mm"
             },
             "frontMapping": {
                 "prefix": "SU_S",
@@ -37,12 +37,12 @@
         },
         {
             "name": "SD",
-            "file": "SD.json",
-            "calibration": "SD_131017.qccal",
+            "file": "AUS3_1000_00.json",
+            "calibration": "SD.cal",
             "position": {
-                "x": "0.388767mm",
-                "y": "-0.75mm",
-                "z": "41.7828mm"
+                "x": "0mm",
+                "y": "0mm",
+                "z": "36mm"
             },
             "normal": {
                 "x": "0mm",
@@ -50,9 +50,9 @@
                 "z": "-1mm"
             },
             "orientation": {
-                "x": "-1mm",
-                "y": "0mm",
-                "z": "0mm"
+                "x": "-1.0mm",
+                "y": "0.0mm",
+                "z": "0.0mm"
             },
             "frontMapping": {
                 "prefix": "SD_S",
@@ -71,22 +71,22 @@
         },
         {
             "name": "Det1",
-            "file": "Det1.json",
-            "calibration": "Det1_131017.qccal",
+            "file": "AUW1_60_00.json",
+            "calibration": "Det1.cal",
             "position": {
-                "x": "36.4939mm",
-                "y": "0.96mm",
-                "z": "-1.53686mm"
+                "x": "40mm",
+                "y": "0mm",
+                "z": "0mm"
             },
             "normal": {
-                "x": "-0.9994mm",
-                "y": "0.0000mm",
-                "z": "0.0349mm"
+                "r": "1mm",
+                "theta": "90deg",
+                "phi": "180.0deg"
             },
             "orientation": {
-                "x": "0.000mm",
-                "y": "1.000mm",
-                "z": "0.000mm"
+                "x": "0 mm",
+                "y": "-1 mm",
+                "z": "0 mm"
             },
             "frontMapping": {
                 "tdc": "_T",
@@ -105,22 +105,22 @@
         },
         {
             "name": "Det2",
-            "file": "Det2.json",
-            "calibration": "Det2_131017.qccal",
+            "file": "AUW1_60_00.json",
+            "calibration": "Det2.cal",
             "position": {
-                "x": "-34.9322mm",
-                "y": "1.48mm",
-                "z": "3.47045mm"
+                "x": "-40mm",
+                "y": "0mm",
+                "z": "0mm"
             },
             "normal": {
-                "x": "0.9986mm",
-                "y": "0.0000mm",
-                "z": "-0.0523mm"
+                "r": "1mm",
+                "theta": "90deg",
+                "phi": "0.0deg"
             },
             "orientation": {
-                "x": "0.000mm",
-                "y": "1.000mm",
-                "z": "0.000mm"
+                "x": "0 mm",
+                "y": "-1 mm",
+                "z": "0 mm"
             },
             "frontMapping": {
                 "tdc": "_T",
@@ -138,8 +138,9 @@
             }
         }
     ],
+    "telescopes": [],
     "signals": [
         "CLOCK",
-        "CHARGE"
+        "VCHARGE"
     ]
 }

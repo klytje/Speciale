@@ -4,6 +4,7 @@
 #include <TF1.h>
 #include <TLegend.h>
 #include <TVector3.h>
+#include <TText.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -16,8 +17,9 @@
 using namespace std;
 using boost::format;
 
-const double m_alpha = 3.72737*1e3;
-const double mu23 = 1./2; // should be m_alpha/2, but that's just a constant away
+const double m_alpha = 3.72737*1e6;
+const double mu23 = m_alpha/2; 
+const double mu1_23 = m_alpha*2./3;
 const int n_sigma = 3; // number of sigmas to include in the peak fits
 
 // from email correspondence with Oliver: 
@@ -30,7 +32,6 @@ int main(int argc, char const *argv[]) {
         cout << "Usage: ./theta_proj <output path> <input>" << endl;
         exit(1);
     }
-
     setup_style();
     // auto max = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_t> y, ROOT::VecOps::RVec<Double_t> z) {
     //     TVector3 p1 = {x[0], y[0], z[0]};
@@ -82,6 +83,17 @@ int main(int argc, char const *argv[]) {
     // };
 
     auto theta = [] (double r1x, double r1y, double r1z, double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
+        TVector3 p1 = {r1x, r1y, r1z};
+        TVector3 p2 = {r2x, r2y, r2z};
+        TVector3 p3 = {r3x, r3y, r3z};
+        TVector3 p23 = 1./2*(p2-p3);
+        TVector3 p1_23 = 2./3*p1 - 2./3*(p2+p3);
+        auto num = p1_23.Dot(p23);
+        auto denom = p1_23.Mag()*p23.Mag();
+        return num/denom;
+    };
+
+    auto theta2 = [] (double r1x, double r1y, double r1z, double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
         TVector3 p1 = {r1x, r1y, r1z};
         TVector3 p2 = {r2x, r2y, r2z};
         TVector3 p3 = {r3x, r3y, r3z};
@@ -146,8 +158,10 @@ int main(int argc, char const *argv[]) {
     };
 
     auto E23 = [] (double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
-        TVector3 p23 = {r2x-r3x, r2y-r3y, r2z-r3z};
-        return p23.Mag()/(2*mu23);
+        TVector3 p2 = {r2x, r2y, r2z};
+        TVector3 p3 = {r3x, r3y, r3z};
+        TVector3 p23 = p2-p3;
+        return 1./(4*m_alpha)*p23.Mag2();
     };
 
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", argv[2]);
@@ -242,48 +256,128 @@ int main(int argc, char const *argv[]) {
     c1->SaveAs(path.c_str());
 
 //*** E_23 PLOT ***//
+    double pleft[] = {0, 200};
+    double pright[] = {1500, 4500};
     df = df.Define("E_23", E23, {"px2", "py2", "pz2", "px3", "py3", "pz3"});
-    TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
-    TH1D h2 = df.Histo1D({"h2", "h", 200, 0, 250000}, "E_23").GetValue();
-    h2.SetLineColor(kBlack);
-    h2.SetLineWidth(2);
-    h2.Scale(1./h2.GetMaximum());
 
-    double midpoint = 90000;
+    TCanvas *c2 = new TCanvas("c2", "c2", 900, 600);
+    TH1D h2 = df.Histo1D({"h2", "h", 200, pleft[0], pright[1]}, "E_23").GetValue();
     double pars[6];
-    TF1* p1 = new TF1("p1", "gaus", 0, midpoint);
-    TF1* p2 = new TF1("p2", "gaus", midpoint, 250000);
-    h2.Fit(p1, "LQR");
-    h2.Fit(p2, "LQR+");
-    p1->GetParameters(&pars[0]);
-    p2->GetParameters(&pars[3]);
+    TF1* tf_gs = new TF1("tf_gs", "gaus", pleft[0], pleft[1]);
+    TF1* tf_ex = new TF1("tf_ex", "gaus", pright[0], pright[1]);
+    h2.Fit(tf_gs, "LQR");
+    h2.Fit(tf_ex, "LQR+");
+    tf_gs->GetParameters(&pars[0]);
+    tf_ex->GetParameters(&pars[3]);
 
-    TF1* pcomb = new TF1("p3", "gaus(0) + gaus(3)", 0, 250000);
-    pcomb->SetParameters(pars);
-    h2.Fit(pcomb, "QR");
+    TF1* tf_both = new TF1("tf_both", "gaus(0) + gaus(3)", 0, 250000);
+    tf_both->SetParameters(pars);
+    h2.Fit(tf_both, "QR");
 
-    double mu_gs = pcomb->GetParameter(1), mu_ex = pcomb->GetParameter(4);
-    double sigma_gs = pcomb->GetParameter(2), sigma_ex = pcomb->GetParameter(5);
+    double mu_gs = tf_both->GetParameter(1), mu_ex = tf_both->GetParameter(4);
+    double sigma_gs = tf_both->GetParameter(2), sigma_ex = tf_both->GetParameter(5);
     vector<vector<double>> peaks = {{mu_gs - n_sigma*sigma_gs, mu_gs + n_sigma*sigma_gs}, {mu_ex - n_sigma*sigma_ex, mu_ex + n_sigma*sigma_ex}};
-    TLine* l1 = new TLine(peaks[0][0], 0, peaks[0][0], 1);
-    TLine* l2 = new TLine(peaks[0][1], 0, peaks[0][1], 1);
-    TLine* l3 = new TLine(peaks[1][0], 0, peaks[1][0], 1);
-    TLine* l4 = new TLine(peaks[1][1], 0, peaks[1][1], 1);
-
+    TLine* l1 = new TLine(peaks[0][0], 0, peaks[0][0], h2.GetMaximum());
+    TLine* l2 = new TLine(peaks[0][1], 0, peaks[0][1], h2.GetMaximum());
+    TLine* l3 = new TLine(peaks[1][0], 0, peaks[1][0], h2.GetMaximum());
+    TLine* l4 = new TLine(peaks[1][1], 0, peaks[1][1], h2.GetMaximum());
+    h2.GetXaxis()->SetTitle("Energy [keV]");
+    h2.GetXaxis()->CenterTitle();
+    h2.GetYaxis()->SetTitle("Count");
+    h2.GetYaxis()->CenterTitle();
     h2.Draw("HIST L");
-    pcomb->Draw("same");
+    tf_both->Draw("same");
     l1->Draw("same");
     l2->Draw("same");
     l3->Draw("same");
     l4->Draw("same");
 
-    path = string(argv[1]) + "E23.pdf";
+    path = string(argv[1]) + "E23_raw.pdf";
     c2->SaveAs(path.c_str());
+
+//*** PRETTY E23 ***//
+    TCanvas *c3 = new TCanvas("c3", "c3", 900, 600);
+    TPad *p1 = new TPad("p1", "p1", 0.1, 0.1, 0.5, 0.9);
+    p1->SetRightMargin(0.);            
+    p1->SetBorderMode(0);
+    p1->Draw();
+
+    TPad *p2 = new TPad("p2", "p2", 0.5, 0.1, 0.9, 0.9); 
+    p2->SetLeftMargin(0.);   
+    p2->SetBorderMode(0);
+    p2->Draw();
+
+    int scale = 5; // relates the bin count in one panel to the other. needed for consistent y counts
+    TH1D hleft = df.Histo1D({"hleft", "h", int(pleft[1]-pleft[0])/4, pleft[0], pleft[1]}, "E_23").GetValue();
+    hleft.SetLineColor(kBlack);
+    hleft.SetLineWidth(2);
+
+    TH1D hright = df.Histo1D({"hright", "h", int(pright[1]-pright[0])/(4*scale), pright[0], pright[1]}, "E_23").GetValue();
+    hright.SetLineColor(kBlack);
+    hright.SetLineWidth(2);
+
+    // scale each bin of the right panel for consistent counts
+    for (int i = 0; i < hright.GetNbinsX(); i++) {
+        hright.SetBinContent(i, hright.GetBinContent(i)/scale);
+    }
+
+    TText* x = new TText(0.5, 0.09, "Energy [keV]");
+    x->SetNDC();
+    x->SetTextSize(0.04);
+    x->SetTextAlign(22);
+    x->Draw();
+
+    TText* yl = new TText(0.07, 0.5, "Count");
+    yl->SetNDC();
+    yl->SetTextAngle(90);
+    yl->SetTextSize(0.04);
+    yl->SetTextAlign(22);
+    yl->Draw();
+
+    TText* yr = new TText(0.93, 0.5, "Count");
+    yr->SetNDC();
+    yr->SetTextAngle(270);
+    yr->SetTextSize(0.04);
+    yr->SetTextAlign(22);
+    yr->Draw();
+
+    p1->cd();
+    hleft.SetNdivisions(205, "X");
+    hleft.SetNdivisions(205, "Y");
+    hleft.Draw("HIST L");
+    
+    p2->cd();
+    hright.SetNdivisions(205, "X");
+    hright.SetNdivisions(205, "Y");
+    hright.Draw("HIST L Y+");
+
+    // pad to cover the line separating the two panels
+    c3->cd();
+    TPad *b = new TPad("b" , "b", 0.48, 0.1, 0.52, 0.813);
+    b->SetBorderMode(0);
+    b->Draw();
+    b->cd();
+
+    // extension of the axes
+    TLine *lleft = new TLine(0, 0.111, 0.4, 0.111);
+    lleft->Draw();
+    TLine *lright = new TLine(0.5860092, 0.111, 1, 0.111);
+    lright->Draw();
+
+    // vertical break lines
+    TLine *lvright = new TLine(0.5143349, 0.076639, 0.6863532, 0.1524797);
+    lvright->Draw();
+    TLine *lvleft = new TLine(0.3423165, 0.076639, 0.5143349, 0.1524797);
+    lvleft->Draw();
+
+    path = string(argv[1]) + "E23.pdf";
+    c3->SaveAs(path.c_str());
 
 //*** DALITZ PLOT OF EACH PEAK ***//
     // calculate and print the ratio of gs vs ex events
     double c_gs = df.Filter("y > 0.93").Count().GetValue();
     double c_ex = df.Count().GetValue() - c_gs;
+    cout << "c_gs: " << c_gs << ", c_ex: " << c_ex << endl;
     cout << "\nRATIO BASED ON DALITZ Y=0.93 CUT:" << endl;
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
@@ -315,13 +409,13 @@ int main(int argc, char const *argv[]) {
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
 
-    TCanvas* c3 = new TCanvas("c3", "c", 600, 600);
+    TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
     hgs->Draw("colz");
     path = string(argv[1]) + "gs.pdf";
-    c3->SaveAs(path.c_str());
+    c4->SaveAs(path.c_str());
 
-    TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
+    TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
     hex->Draw("colz");
     path = string(argv[1]) + "ex.pdf";
-    c4->SaveAs(path.c_str());
+    c5->SaveAs(path.c_str());
 }

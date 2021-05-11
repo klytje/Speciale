@@ -1,0 +1,238 @@
+{
+    "name": "CMAM2008",
+    "detectors": [
+        {
+            "name": "Det1",
+            "file": "w1.json",
+            "calibration": "Det1.cal",
+            "position": {
+                "r": "40mm",
+                "theta": "45deg",
+                "phi": "0deg"
+            },
+            "normal": {
+                "r": "40.0mm",
+                "phi": "180.0deg",
+                "theta": "135.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "DET1_F",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            },
+            "backMapping": {
+                "prefix": "DET1_B",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "Pad1",
+            "file": "M0002.json",
+            "calibration": "Pad1.cal",
+            "position": {
+                "r": "42mm",
+                "theta": "45deg",
+                "phi": "0deg"
+            },
+            "normal": {
+                "r": "42.0mm",
+                "phi": "180.0deg",
+                "theta": "135.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "mapping": {
+                "adc": "PAD1_E",
+                "tdc": "PAD1_T"
+            }
+        },
+        {
+            "name": "Det2",
+            "file": "w1.json",
+            "calibration": "",
+            "position": {
+                "r": "40mm",
+                "theta": "45deg",
+                "phi": "180deg"
+            },
+            "normal": {
+                "r": "40.0mm",
+                "phi": "0.0deg",
+                "theta": "135.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "DET2F",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            },
+            "backMapping": {
+                "prefix": "DET2B",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "Pad2",
+            "file": "M0002.json",
+            "calibration": "Pad2.cal",
+            "position": {
+                "r": "42mm",
+                "theta": "45deg",
+                "phi": "180deg"
+            },
+            "normal": {
+                "r": "42.0mm",
+                "phi": "0.0deg",
+                "theta": "135.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "mapping": {
+                "adc": "PAD2E",
+                "tdc": "PAD2T"
+            }
+        },
+        {
+            "name": "Det3",
+            "file": "w1.json",
+            "calibration": "",
+            "position": {
+                "r": "40mm",
+                "theta": "120deg",
+                "phi": "180deg"
+            },
+            "normal": {
+                "r": "40.0mm",
+                "phi": "0.0deg",
+                "theta": "60.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "DET3F",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            },
+            "backMapping": {
+                "prefix": "DET3B",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "Pad3",
+            "file": "M0002.json",
+            "calibration": "",
+            "position": {
+                "r": "42mm",
+                "theta": "120deg",
+                "phi": "180deg"
+            },
+            "normal": {
+                "r": "42.0mm",
+                "phi": "0.0deg",
+                "theta": "60.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "mapping": {
+                "adc": "PAD3E",
+                "tdc": "PAD3T"
+            }
+        },
+        {
+            "name": "Det4",
+            "file": "w1.json",
+            "calibration": "",
+            "position": {
+                "r": "40mm",
+                "theta": "120deg",
+                "phi": "0deg"
+            },
+            "normal": {
+                "r": "40.0mm",
+                "phi": "180.0deg",
+                "theta": "60.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "frontMapping": {
+                "prefix": "DET4F",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            },
+            "backMapping": {
+                "prefix": "DET4B",
+                "multiplicity": "",
+                "segment": "I",
+                "adc": "_E",
+                "tdc": "_T"
+            }
+        },
+        {
+            "name": "Pad4",
+            "file": "M0002.json",
+            "calibration": "",
+            "position": {
+                "r": "42mm",
+                "theta": "120deg",
+                "phi": "0deg"
+            },
+            "normal": {
+                "r": "42.0mm",
+                "phi": "180.0deg",
+                "theta": "60.0deg"
+            },
+            "orientation": {
+                "x": "0mm",
+                "y": "1mm",
+                "z": "0mm"
+            },
+            "mapping": {
+                "adc": "PAD4E",
+                "tdc": "PAD4T"
+            }
+        }
+    ],
+    "telescopes": []
+}

@@ -188,23 +188,40 @@ int main(int argc, char const *argv[]) {
 
         TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
         h1->SetMaximum(1);
-        auto func = [] (double* x, double* par) {
+        auto f13 = [] (double* x, double* par) {
             double y = par[0];
             double c = par[1];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta;
             return c*correlation_functions.at("2- 1")(beta) + (1-c)*correlation_functions.at("2- 3")(beta);
         };
-        TF1* mix = new TF1("mix", func, x_bounds[0], x_bounds[1], 2);
-        mix->FixParameter(0, y);
-        mix->SetParameter(1, guess);
-        mix->SetParLimits(1, 0, 1);
-        h1->Fit(mix, "QRL");
-        double c_fit = mix->GetParameter(1);
-        cout << format("Fitted values: c1 = %1%, c3 = %2%") % c_fit % (1-c_fit) << endl;
+        TF1* tf13 = new TF1("mix", f13, x_bounds[0], x_bounds[1], 2);
+        tf13->FixParameter(0, y);
+        tf13->SetParameter(1, guess);
+        tf13->SetParLimits(1, 0, 1);
+        h1->Fit(tf13, "QRL");
+        double c13 = tf13->GetParameter(1);
+        cout << format("Fitted values: c1 = %1%, c3 = %2%") % c13 % (1-c13) << endl;
+
+        auto f0 = [] (double* x, double* par) {
+            double y = par[0];
+            double c13 = par[1];
+            double c = par[2];
+            double theta = acos(x[0]/sqrt(1-pow(y, 2)));
+            double beta = M_PI - theta;
+            return (1-c)*c13*correlation_functions.at("2- 1")(beta) + (1-c)*(1-c13)*correlation_functions.at("2- 3")(beta) + c*correlation_functions.at("0+ 2")(beta);
+        };
+        TF1* tf0 = new TF1("mix", f0, x_bounds[0], x_bounds[1], 3);
+        tf0->FixParameter(0, y);
+        tf0->FixParameter(1, c13);
+        tf0->SetParameter(2, 1);
+        tf0->SetParLimits(2, 0, 1);
+        h1->Fit(tf0, "QRL");
+        double c0 = tf0->GetParameter(2);
+        cout << format("Fitted values: c0 = %1%, c1 = %2%, c3 = %3%") % c0 % ((1-c0)*c13) % ((1-c0)*(1-c13)) << endl;
 
         h1->Draw("HIST L");
-        mix->Draw("SAME");
+        tf0->Draw("SAME");
         path = string(argv[1]) + "ang_cor_fitted.pdf";
         cout << path << endl;
         c4->SaveAs(path.c_str());

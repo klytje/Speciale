@@ -6,7 +6,7 @@
             "file": "AUS3_322_00.json",
             "calibration": "SU_131017.qccal",
             "position": {
-                "x": "-0.396789mm",
+                "x": "4.603211mm",
                 "y": "-1.96mm",
                 "z": "-42.2112mm"
             },

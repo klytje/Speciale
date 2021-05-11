@@ -125,7 +125,6 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
             px[i] = pi.X();
             py[i] = pi.Y();
             pz[i] = pi.Z();
-
             E_cm[i] = pi.E() - Constants::ALPHA_MASS;
             theta_cm[i] = pi.Theta()*TMath::RadToDeg();
             phi_cm[i] = pi.Phi()*TMath::RadToDeg();

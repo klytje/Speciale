@@ -7,7 +7,7 @@
             "calibration": "SU_131017.qccal",
             "position": {
                 "x": "-0.396789mm",
-                "y": "-1.96mm",
+                "y": "2.33876mm",
                 "z": "-42.2112mm"
             },
             "normal": {
@@ -37,11 +37,11 @@
         },
         {
             "name": "SD",
-            "file": "SD.json",
+            "file": "AUS3_1000_00.json",
             "calibration": "SD_131017.qccal",
             "position": {
                 "x": "0.388767mm",
-                "y": "-0.75mm",
+                "y": "3.54623mm",
                 "z": "41.7828mm"
             },
             "normal": {
@@ -71,11 +71,11 @@
         },
         {
             "name": "Det1",
-            "file": "Det1.json",
+            "file": "AUW1_60_00.json",
             "calibration": "Det1_131017.qccal",
             "position": {
                 "x": "36.4939mm",
-                "y": "0.96mm",
+                "y": "5.26187mm",
                 "z": "-1.53686mm"
             },
             "normal": {
@@ -105,11 +105,11 @@
         },
         {
             "name": "Det2",
-            "file": "Det2.json",
+            "file": "AUW1_60_00.json",
             "calibration": "Det2_131017.qccal",
             "position": {
                 "x": "-34.9322mm",
-                "y": "1.48mm",
+                "y": "5.77876mm",
                 "z": "3.47045mm"
             },
             "normal": {

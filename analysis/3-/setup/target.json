@@ -1,12 +1,12 @@
 {
-  "center" : {"x":"0mm", "y":"0mm", "z":"0mm"},
+  "active_center" : {"x":"0mm", "y":"0mm", "z":"-0.75mm"},
   "orientation" : {"x":"0mm", "y":"1mm", "z":"0mm"},
   "normal" : {"x":"1mm", "y":"0mm", "z":"-1mm"},
-  "transverseLength" : "10mm",
-  "upLength" : "10mm",
+  "transverseLength" : "20mm",
+  "upLength" : "20mm",
 
   "layers" : [
-    {"material" : "Boron", "thickness" : "40ug/cm2", "active":true},
+    {"material" : "Boron", "thickness" : "20ug/cm2", "active":true},
     {"material" : "Carbon", "thickness" : "4ug/cm2"}
   ]
 }

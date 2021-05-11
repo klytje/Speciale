@@ -1,0 +1,355 @@
+# AUSAlib version: 16.6-633-g2b462c9
+# Sorter version: 16.3-59-g6a4cd98
+# Sorter arguments: Sorter -q -c 3 -m matcher_quality-check.json -s setup/setup.json -o match/mul3/
+# Input files: 
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_000.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_001.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_002.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_003.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_004.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_005.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_006.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_007.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_008.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_009.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_010.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_011.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_012.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_013.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_014.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_015.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_016.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_017.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_018.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_019.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_020.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_021.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_022.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_023.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_024.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_025.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_026.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_027.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_028.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_029.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_030.root
+#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_031.root
+# Calibration of Det1
+# Performed @ 2017-10-12 15:52
+# Performed by oliskir on squamish
+# Front
+-653.692 4.12207
+-630.565 4.08948
+-548.128 4.07408
+-620.142 4.19162
+-559.165 4.08704
+-543.634 4.14935
+-706.068 4.12857
+-646.74 4.094
+-722.482 4.06928
+-605.596 4.10637
+-678.314 4.21457
+-565.993 4.10479
+-592.613 4.1383
+-637.483 4.11738
+-613.447 4.16144
+-587.005 4.17362
+# Back
+-517.716 3.74819
+-500.063 3.69456
+-573.257 3.65281
+-467.959 3.59821
+-590.55 3.63921
+-410.816 3.59705
+-618.829 3.68986
+-606.73 3.66698
+-560.808 3.67447
+-628.573 3.6605
+-507.805 3.72013
+-566.347 3.67096
+-623.415 3.70251
+-551.74 3.62039
+-538.601 3.63321
+-483.794 3.72556
+########################################################
+##              OLD CALIBRATION START                 ##
+########################################################
+###	# AUSAlib version: 16.6-633-g2b462c9
+###	# Sorter version: 16.3-59-g6a4cd98
+###	# Sorter arguments: Sorter -q -c 3 -m matcher_quality-check.json -s setup/setup.json -o match/mul3/
+###	# Input files: 
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_000.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_001.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_002.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_003.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_004.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_005.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_006.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_007.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_008.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_009.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_010.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_011.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_012.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_013.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_014.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_015.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_016.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_017.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_018.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_019.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_020.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_021.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_022.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_023.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_024.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_025.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_026.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_027.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_028.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_029.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_030.root
+###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_031.root
+###	# Calibration of Det1
+###	# Performed @ 2017-10-12 15:49
+###	# Performed by oliskir on squamish
+###	# Front
+###	-654.148 4.12245
+###	-631.012 4.08985
+###	-548.566 4.07445
+###	-620.56 4.19198
+###	-559.605 4.08741
+###	-544.074 4.14973
+###	-706.524 4.12895
+###	-647.155 4.09435
+###	-722.937 4.06965
+###	-606.068 4.10676
+###	-678.719 4.21492
+###	-566.434 4.10517
+###	-593.056 4.13868
+###	-637.915 4.11775
+###	-613.885 4.16182
+###	-587.441 4.174
+###	# Back
+###	-517.903 3.74825
+###	-500.243 3.69462
+###	-573.47 3.65289
+###	-468.145 3.59828
+###	-590.722 3.63926
+###	-410.98 3.5971
+###	-619.009 3.68992
+###	-606.926 3.66704
+###	-561.019 3.67455
+###	-628.783 3.66057
+###	-507.987 3.72019
+###	-566.53 3.67103
+###	-623.594 3.70257
+###	-551.929 3.62045
+###	-538.788 3.63327
+###	-483.989 3.72563
+###	########################################################
+###	##              OLD CALIBRATION START                 ##
+###	########################################################
+###	###	# AUSAlib version: 16.6-633-g2b462c9
+###	###	# Sorter version: 16.3-59-g6a4cd98
+###	###	# Sorter arguments: Sorter -q -c 3 -m matcher_quality-check.json -s setup/setup.json -o match/mul3/
+###	###	# Input files: 
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_000.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_001.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_002.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_003.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_004.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_005.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_006.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_007.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_008.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_009.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_010.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_011.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_012.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_013.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_014.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_015.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_016.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_017.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_018.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_019.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_020.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_021.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_022.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_023.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_024.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_025.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_026.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_027.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_028.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_029.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_030.root
+###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_031.root
+###	###	# Calibration of Det1
+###	###	# Performed @ 2017-10-12 15:46
+###	###	# Performed by oliskir on squamish
+###	###	# Front
+###	###	-654.575 4.12281
+###	###	-631.455 4.09022
+###	###	-549.024 4.07483
+###	###	-620.981 4.19234
+###	###	-560.005 4.08776
+###	###	-544.521 4.15011
+###	###	-706.959 4.12931
+###	###	-647.589 4.09471
+###	###	-723.386 4.07002
+###	###	-606.498 4.10712
+###	###	-679.155 4.2153
+###	###	-566.863 4.10553
+###	###	-593.511 4.13907
+###	###	-638.36 4.11812
+###	###	-614.319 4.16219
+###	###	-587.86 4.17437
+###	###	# Back
+###	###	-517.869 3.74806
+###	###	-500.199 3.69442
+###	###	-573.391 3.65267
+###	###	-468.061 3.59805
+###	###	-590.677 3.63907
+###	###	-410.948 3.59691
+###	###	-618.959 3.68973
+###	###	-606.894 3.66686
+###	###	-560.969 3.67435
+###	###	-628.71 3.66036
+###	###	-507.952 3.72
+###	###	-566.466 3.67082
+###	###	-623.476 3.70232
+###	###	-551.802 3.6202
+###	###	-538.714 3.63306
+###	###	-483.917 3.72541
+###	###	########################################################
+###	###	##              OLD CALIBRATION START                 ##
+###	###	########################################################
+###	###	###	# AUSAlib version: 16.6-633-g2b462c9
+###	###	###	# Sorter version: 16.3-59-g6a4cd98
+###	###	###	# Sorter arguments: Sorter -q -c 3 -m matcher_quality-check.json -s setup/setup.json -o match/mul3/
+###	###	###	# Input files: 
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_000.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_001.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_002.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_003.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_004.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_005.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_006.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_007.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_008.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_009.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_010.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_011.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_012.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_013.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_014.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_015.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_016.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_017.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_018.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_019.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_020.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_021.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_022.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_023.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_024.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_025.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_026.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_027.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_028.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_029.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_030.root
+###	###	###	#	unpacked_data/p11B_GV2256_B2894_Trig-FB-AND_1817_031.root
+###	###	###	# Calibration of Det1
+###	###	###	# Performed @ 2017-10-12 15:43
+###	###	###	# Performed by oliskir on squamish
+###	###	###	# Front
+###	###	###	-654.72 4.12294
+###	###	###	-631.778 4.09049
+###	###	###	-549.308 4.0751
+###	###	###	-621.262 4.1926
+###	###	###	-560.305 4.08805
+###	###	###	-544.948 4.15049
+###	###	###	-707.435 4.12969
+###	###	###	-648.085 4.09511
+###	###	###	-723.856 4.07039
+###	###	###	-607.012 4.10754
+###	###	###	-679.674 4.21574
+###	###	###	-567.445 4.10602
+###	###	###	-594.002 4.13949
+###	###	###	-639.038 4.11865
+###	###	###	-614.779 4.16259
+###	###	###	-588.513 4.17489
+###	###	###	# Back
+###	###	###	-517.463 3.7474
+###	###	###	-499.688 3.69368
+###	###	###	-572.965 3.65202
+###	###	###	-467.664 3.59743
+###	###	###	-590.441 3.63854
+###	###	###	-410.561 3.59628
+###	###	###	-618.184 3.68884
+###	###	###	-606.323 3.66612
+###	###	###	-560.312 3.67354
+###	###	###	-628.013 3.65955
+###	###	###	-507.262 3.71915
+###	###	###	-565.918 3.67009
+###	###	###	-622.838 3.70155
+###	###	###	-550.969 3.61931
+###	###	###	-538.098 3.63229
+###	###	###	-483.443 3.7247
+###	###	###	########################################################
+###	###	###	##              OLD CALIBRATION START                 ##
+###	###	###	########################################################
+###	###	###	###	# AUSAlib version: 16.6-136-g967247d
+###	###	###	###	# Calibrator version: 16.6-44-g273cc5e
+###	###	###	###	# Calibrator arguments: -d Det1 50 -w 50 -k -s --eloss --gui
+###	###	###	###	# Calibration of Det1
+###	###	###	###	# Performed @ 2016-10-04 15:04
+###	###	###	###	# Front
+###	###	###	###	-648.766 4.11963
+###	###	###	###	-630.014 4.09003
+###	###	###	###	-548.627 4.07603
+###	###	###	###	-615.232 4.18986
+###	###	###	###	-558.958 4.08857
+###	###	###	###	-543.796 4.15038
+###	###	###	###	-707.791 4.12992
+###	###	###	###	-649.14 4.0951
+###	###	###	###	-726.354 4.07098
+###	###	###	###	-609.556 4.10828
+###	###	###	###	-682.741 4.21736
+###	###	###	###	-570.708 4.10788
+###	###	###	###	-596.249 4.14032
+###	###	###	###	-642.504 4.1198
+###	###	###	###	-618.673 4.165
+###	###	###	###	-595.55 4.18005
+###	###	###	###	# Back
+###	###	###	###	-517.791 3.74615
+###	###	###	###	-500.537 3.6926
+###	###	###	###	-574.92 3.65159
+###	###	###	###	-469.124 3.5971
+###	###	###	###	-590.82 3.63676
+###	###	###	###	-409.924 3.59449
+###	###	###	###	-617.436 3.68682
+###	###	###	###	-605.056 3.66447
+###	###	###	###	-560.116 3.67222
+###	###	###	###	-626.138 3.65844
+###	###	###	###	-506.079 3.71816
+###	###	###	###	-565.37 3.67013
+###	###	###	###	-616.803 3.69833
+###	###	###	###	-546.749 3.61672
+###	###	###	###	-533.981 3.62939
+###	###	###	###	-480.293 3.72172
+###	###	###	########################################################
+###	###	###	##              OLD CALIBRATION END                   ##
+###	###	###	########################################################
+###	###	########################################################
+###	###	##              OLD CALIBRATION END                   ##
+###	###	########################################################
+###	########################################################
+###	##              OLD CALIBRATION END                   ##
+###	########################################################
+########################################################
+##              OLD CALIBRATION END                   ##
+########################################################

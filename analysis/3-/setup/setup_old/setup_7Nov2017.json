@@ -7,7 +7,7 @@
             "calibration": "SU_131017.qccal",
             "position": {
                 "x": "-0.396789mm",
-                "y": "-1.96mm",
+                "y": "2.33876mm",
                 "z": "-42.2112mm"
             },
             "normal": {
@@ -37,11 +37,11 @@
         },
         {
             "name": "SD",
-            "file": "SD.json",
+            "file": "AUS3_1000_00.json",
             "calibration": "SD_131017.qccal",
             "position": {
                 "x": "0.388767mm",
-                "y": "-0.75mm",
+                "y": "3.54623mm",
                 "z": "41.7828mm"
             },
             "normal": {
@@ -71,12 +71,12 @@
         },
         {
             "name": "Det1",
-            "file": "Det1.json",
+            "file": "AUW1_60_00.json",
             "calibration": "Det1_131017.qccal",
             "position": {
-                "x": "36.4939mm",
-                "y": "0.96mm",
-                "z": "-1.53686mm"
+                "x": "37.7554mm",
+                "y": "6.41313mm",
+                "z": "-2.08705mm"
             },
             "normal": {
                 "x": "-0.9994mm",
@@ -105,12 +105,12 @@
         },
         {
             "name": "Det2",
-            "file": "Det2.json",
+            "file": "AUW1_60_00.json",
             "calibration": "Det2_131017.qccal",
             "position": {
-                "x": "-34.9322mm",
-                "y": "1.48mm",
-                "z": "3.47045mm"
+                "x": "-34.7008mm",
+                "y": "5.00344mm",
+                "z": "3.02331mm"
             },
             "normal": {
                 "x": "0.9986mm",
@@ -136,6 +136,66 @@
                 "segment": "I",
                 "adc": "_E"
             }
+        },
+        {
+            "name": "Pad1",
+            "file": "MD0002.json",
+            "calibration": "Pad1.cal",
+            "position": {
+                "x": "45.2972126475mm",
+                "y": "1.0mm",
+                "z": "1.73645812178mm"
+            },
+            "normal": {
+                "x": "-0.999mm",
+                "y": "0.0mm",
+                "z": "0.0345mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "mapping": {
+                "tdc": "PAD1T",
+                "adc": "PAD1E"
+            }
+        },
+        {
+            "name": "Pad2",
+            "file": "MD0002.json",
+            "calibration": "Pad2.cal",
+            "position": {
+                "x": "-45.2258939976mm",
+                "y": "4.5mm",
+                "z": "-1.21309507703mm"
+            },
+            "normal": {
+                "x": "0.9986mm",
+                "y": "0.0mm",
+                "z": "-0.0523mm"
+            },
+            "orientation": {
+                "y": "1 mm",
+                "x": "0 mm",
+                "z": "0 mm"
+            },
+            "mapping": {
+                "tdc": "PAD2T",
+                "adc": "PAD2E"
+            }
+        }
+    ],
+    "telescopes": [
+        {
+            "front": "Det1",
+            "dn": "3mm",
+            "back": "Pad1"
+        },
+        {
+            "front": "Det2",
+            "dn": "3mm",
+            "back": "Pad2"
         }
     ],
     "signals": [

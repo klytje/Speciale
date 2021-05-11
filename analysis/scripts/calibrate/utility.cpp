@@ -1051,7 +1051,7 @@ void prepare_data(int argc, char *argv[], data_container* container, string df_f
         append(FE, df_data.Define("x", (format("FE[%1%]") % i).str()).Take<double>("x").GetValue());
         append(BE, df_data.Define("x", (format("BE[%1%]") % i).str()).Take<double>("x").GetValue());
         append(E_cm, df_data.Define("x", (format("E_cm[%1%]") % i).str()).Take<double>("x").GetValue());
-        append(px, df_data.Define("x", (format("pz[%1%]") % i).str()).Take<double>("x").GetValue());
+        append(px, df_data.Define("x", (format("px[%1%]") % i).str()).Take<double>("x").GetValue());
         append(py, df_data.Define("x", (format("py[%1%]") % i).str()).Take<double>("x").GetValue());
         append(pz, df_data.Define("x", (format("pz[%1%]") % i).str()).Take<double>("x").GetValue());
         append(E_lab, df_data.Define("x", (format("E_lab[%1%]") % i).str()).Take<double>("x").GetValue());

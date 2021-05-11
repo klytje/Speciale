@@ -1,0 +1,12 @@
+{
+  "active_center" : {"x":"0mm", "y":"4.3mm", "z":"-0.75mm"},
+  "orientation" : {"x":"0mm", "y":"1mm", "z":"0mm"},
+  "normal" : {"x":"1mm", "y":"0mm", "z":"-1mm"},
+  "transverseLength" : "10mm",
+  "upLength" : "10mm",
+
+  "layers" : [
+    {"material" : "Boron", "thickness" : "24ug/cm2", "active":true},
+    {"material" : "Carbon", "thickness" : "4ug/cm2"}
+  ]
+}
