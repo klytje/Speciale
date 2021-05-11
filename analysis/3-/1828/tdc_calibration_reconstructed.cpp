@@ -21,16 +21,16 @@ int main(int argc, char *argv[]) {
 
     // set the x_axis for FT and BT plots
     plot::x_axes::standard = {100, -150, -50};
-    plot::x_axes::FT = {150, 14050, 14200};
-    plot::x_axes::BT = {400, 13900, 14300};
+    plot::x_axes::FT = {400, 14060, 14120};
+    plot::x_axes::BT = {400, 13950, 14150};
     plot::path += "reconstructed/";
 
     // ensures that the file path exists
     setup();
 
     // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{14050, 14150}};
-    vector<vector<int>> bt_peaks = {{13950, 14010}, {14010, 14090}, {14090, 14150}, {14150, 14230}};
+    vector<vector<int>> ft_peaks = {{14060, 14120}};
+    vector<vector<int>> bt_peaks = {{13950, 14050}, {14050, 14130}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
     // save(&data, "reconstructed_aligned_peaks.root");

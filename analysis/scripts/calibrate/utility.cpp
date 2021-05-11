@@ -8,6 +8,7 @@
 #include <ROOT/RDataFrame.hxx>
 
 // other stuff
+#include <sys/stat.h>
 #include <filesystem>
 #include <boost/format.hpp>
 #include <iostream>
@@ -765,7 +766,7 @@ map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axi
 
     // perform the actual fit
     TF1* gauss = new TF1("gauss", "gaus", x_axis[1], x_axis[2]);
-    h->Fit(gauss, "QR");
+    h->Fit(gauss, "LQR");
 
     // extract the fit parameters
     // TF1 *fit = h->GetFunction("gaus");
@@ -824,8 +825,8 @@ void merge(int num, char *path[]) {
         ta->SetBranchAddress("E_cm", &E_cm);
         ta->SetBranchAddress("E_lab", &E_lab);
         ta->SetBranchAddress("exC12", &exC12);
-        ta->SetBranchAddress("theta_cm", &theta_cm);
-        ta->SetBranchAddress("phi_cm", &phi_cm);
+        // ta->SetBranchAddress("theta_cm", &theta_cm);
+        // ta->SetBranchAddress("phi_cm", &phi_cm);
         ta->SetBranchAddress("theta_lab", &theta_lab);
         ta->SetBranchAddress("phi_lab", &phi_lab);
 
@@ -863,8 +864,8 @@ void merge(int num, char *path[]) {
         t.Branch("pz", &pz, "pz[3]/D");
         t.Branch("E_cm", &E_cm, "E_cm[3]/D");
         t.Branch("E_lab", &E_lab, "E_lab[3]/D");
-        t.Branch("theta_cm", &theta_cm, "theta_cm[3]/D");
-        t.Branch("phi_cm", &phi_cm, "phi_cm[3]/D");
+        // t.Branch("theta_cm", &theta_cm, "theta_cm[3]/D");
+        // t.Branch("phi_cm", &phi_cm, "phi_cm[3]/D");
         t.Branch("theta_lab", &theta_lab, "theta_lab[3]/D");
         t.Branch("phi_lab", &phi_lab, "phi_lab[3]/D");
 
@@ -993,9 +994,18 @@ vector<string> check_files(int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
         filesystem::path p(argv[i]);
         string file = "merged/" + p.filename().string();
-        if (!filesystem::exists(file)) {
+        if (!filesystem::exists(file)) { // check if merged/file.root exists
             mergeflag = true;
             std::cout << "\033[1;31m" << boost::format("Missing %1%") % file << "\033[0m" << endl; // red colour
+        } else { // check if output/file.root is newer than merged/file.root
+            struct stat prop_merge;
+            struct stat prop_output;
+            stat(file.c_str(), &prop_merge);
+            stat(p.c_str(), &prop_output);
+            if (prop_output.st_mtime > prop_merge.st_mtime) {
+                mergeflag = true;
+                std::cout << "\033[1;31m" << boost::format("%1% is older than %2% and must be recreated") % file % p << "\033[0m" << endl;
+            }
         }
         paths[i-1] = file; // loop starts at 1 while paths start at 0
     }

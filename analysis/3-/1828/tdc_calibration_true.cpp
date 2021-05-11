@@ -16,22 +16,23 @@ int main(int argc, char *argv[]) {
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
     // set the x_axis for FT and BT plots
+    mem_scaler = 4;
     plot::x_axes::standard = {100, -150, -50};
-    plot::x_axes::FT = {150, 14050, 14200};
-    plot::x_axes::BT = {400, 13900, 14300};
+    plot::x_axes::FT = {400, 14060, 14120};
+    plot::x_axes::BT = {400, 13950, 14150};
     plot::path += "true/";
 
     // ensures that the file path exists
     setup();
 
     // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{14050, 14150}};
-    vector<vector<int>> bt_peaks = {{13950, 14010}, {14010, 14090}, {14090, 14150}, {14150, 14230}};
+    vector<vector<int>> ft_peaks = {{14070, 14120}};
+    vector<vector<int>> bt_peaks = {{13950, 14050}, {14060, 14120}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 14050, 14150};
-    vector<double> bt_peak = {160, 13950, 14010};
+    vector<double> ft_peak = {100, 14060, 14120};
+    vector<double> bt_peak = {200, 13950, 14050};
     gauss_filter(&data, 3, ft_peak, bt_peak);
 
     // perform a tdc calibration on the data

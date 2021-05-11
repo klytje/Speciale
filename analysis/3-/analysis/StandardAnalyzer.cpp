@@ -1,6 +1,6 @@
 #include "StandardAnalyzer.h"
 #include "TFile.h"
-#include "Math/ProbFunc.h"
+#include "Math/ProbFunc.h" 
 
 #include <ausa/constants/Mass.h> 
 #include <iostream>
@@ -31,29 +31,28 @@ void StandardAnalyzer::setup(std::shared_ptr<Setup> setup) {
 
     // define the private variables as the leaf nodes
     tree->Branch("mul", &mul);
-    tree->Branch("mi", &mi, "mi[3]/I"); // ids of the alphas in mul
     tree->Branch("exC12", &exC12);
-    tree->Branch("exBe8", &exBe8, "exBe8[3]/D");
     tree->Branch("p_tot", &ptot);
-    tree->Branch("px", &px);
-    tree->Branch("py", &py);
-    tree->Branch("pz", &pz);
-//    tree->Branch("sV", &sumAng);
-//    tree->Branch("dV", &devAng);
     tree->Branch("deltaE", &dE);
-    tree->Branch("z_angle", &zangle);
     tree->Branch("N", &N);
-//    tree->Branch("d", d , "d[3]/I");
-    tree->Branch("E_cm", E_cm, "E_cm[3]/D");
-    tree->Branch("E_dep", E_dep, "E_dep[3]/D");
-    tree->Branch("E_lab", E_lab, "E_lab[3]/D");
-    tree->Branch("theta_cm", theta_cm, "theta_cm[3]/D");
-    tree->Branch("theta_lab", theta_lab, "theta_lab[3]/D");
-    tree->Branch("phi_cm", phi_cm, "phi_cm[3]/D");
-    tree->Branch("phi_lab", phi_lab, "phi_lab[3]/D");
-//    tree->Branch("vZ", vZ, "vZ[3]/D");
-//    tree->Branch("vZL", vZL, "vZL[3]/D");
-    tree->Branch("prob", prob, "prob/D");
+    tree->Branch("mi", &mi, "mi[3]/i"); // ids of the alphas in mul
+    tree->Branch("exBe8", &exBe8, "exBe8[3]/D");
+    tree->Branch("E_cm", &E_cm, "E_cm[3]/D");
+    tree->Branch("E_dep", &E_dep, "E_dep[3]/D");
+    tree->Branch("E_lab", &E_lab, "E_lab[3]/D");
+    tree->Branch("theta_lab", &theta_lab, "theta_lab[3]/D");
+    tree->Branch("phi_lab", &phi_lab, "phi_lab[3]/D");
+    tree->Branch("px", &px, "px[3]/D"); // momenta of the alphas in the cm frame
+    tree->Branch("py", &py, "py[3]/D");
+    tree->Branch("pz", &pz, "pz[3]/D");
+
+    // I've disabled a few since I don't use them, and so they only waste space. They are fully functional however, and should work if you uncomment them.
+    // tree->Branch("theta_cm", theta_cm, "theta_cm[3]/D");
+    // tree->Branch("phi_cm", phi_cm, "phi_cm[3]/D");
+//    tree->Branch("z_angle", &zangle);
+//    tree->Branch("vZ", vZ, "vZ[3]/F"); 
+//    tree->Branch("vZL", vZL, "vZL[3]/F");
+//    tree->Branch("prob", prob, "prob[3]/F");
 }
 
 void StandardAnalyzer::setScalers(const ScalerOutput &s) {
@@ -74,12 +73,18 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
         mul = 0; // number of alpha particles identified
         TLorentzVector p[3]; // momenta of the alphas
         TLorentzVector p_tot; // total momentum of the alphas
+        if (m > 3) {
+            cout << "\033[1;31m" << "Multiplicity > 3 event encountered, need to redo StandardAnalyzer.cpp to support this" << "\033[0m" << endl;
+            exit(1);
+        }
         for (int i = 0; i < m; i++) {
             if (mul == 3) break; // stop when we've found all three
             
             auto ion = event.getIon(i); 
-            if (*ion != ALPHA) continue; // we are looking for alphas
-            
+            if (*ion != ALPHA) {
+                continue; // we are looking for alphas
+            }
+
             TLorentzVector pi = event.getLorentzVector(i);
             mi[mul] = i; // store the index of the particle
             p[mul] = pi;
@@ -106,26 +111,20 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
         dE = p_beam.E() - p_tot.E(); // energy difference between beam and alphas
         exC12 = p_tot_cm.E() - C12_MASS; // excitation energy of C12
         ptot = p_tot_cm.P(); 
-        px = p_tot.X(); // note: not cm frame
-        py = p_tot.Y(); // note: not cm frame
-        pz = p_tot.Z(); // note: not cm frame
 
         // loop over the three alpha particles
-        // sumAng = 0; devAng = 0;
         for (int i = 0; i < 3; i++) {
             TLorentzVector pi = p[i]; // copy the momentum so we can boost it
-            vz[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg(); // idk why we have two
-            vzl[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg();
+            vz[i] = pi.Angle(Z_AXIS)*TMath::RadToDeg(); 
             E_lab[i] = pi.E() - Constants::ALPHA_MASS;
             theta_lab[i] = pi.Theta()*TMath::RadToDeg();
             phi_lab[i] = pi.Phi()*TMath::RadToDeg();
             pi.Boost(-bboost);
 
-        //    if (i > 0) 
-        //        sumAng += abs(pi.Angle(p[0].Vect()));
-        //    if (i == 2)
-        //        devAng = abs(pi.Angle(p[0].Vect().Cross(p[1].Vect())));
-
+            // from this point on, pi is boosted to the cm frame
+            px[i] = pi.X();
+            py[i] = pi.Y();
+            pz[i] = pi.Z();
             E_cm[i] = pi.E() - Constants::ALPHA_MASS;
             theta_cm[i] = pi.Theta()*TMath::RadToDeg();
             phi_cm[i] = pi.Phi()*TMath::RadToDeg();
@@ -134,7 +133,6 @@ void StandardAnalyzer::analyze(const std::vector<PhysicsEvent> &events) {
             exBe8[i] = pBe8.E() - BE8_MASS;
             prob[i] = ROOT::Math::breitwigner_cdf_c(abs(this->exBe8[i]-3030),1513,0)*2;
         }
-        // sumAng += abs(p[1].Angle(p[2].Vect()));
         tree->Fill();
     }
 }

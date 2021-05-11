@@ -29,6 +29,9 @@
 using namespace std;
 using boost::format;
 
+// if your data is very concentrated on a few strips, you may need to increase this value
+static int mem_scaler = 1;
+
 // filter the input to elements satisfying a < dt < b
 template <typename T>
 vector<T> dt_filter(const vector<T> *input, const vector<double> *DT, double a, double b) {
@@ -204,8 +207,8 @@ class fit_func {
         void separate_strip(int bid) {
             vector<int> mf(f_strips); // current index of the rf vectors
             vector<int> mb(f_strips); // current index of the rb vectors
-            vector<vector<double>> rf(f_strips, vector<double>(size/f_strips)); // resulting ft[0]. size/strips is probably alright
-            vector<vector<double>> rb(f_strips, vector<double>(size/f_strips)); // resulting bt[0]
+            vector<vector<double>> rf(f_strips, vector<double>(mem_scaler*size/f_strips)); // resulting ft[0]. size/strips is probably alright
+            vector<vector<double>> rb(f_strips, vector<double>(mem_scaler*size/f_strips)); // resulting bt[0]
 
             int fid;
             for (int i = 0; i < size; i++) {
@@ -323,7 +326,6 @@ pair<vector<double>, vector<double>> fit(vector<double> *FT, vector<double> *BT,
         double start = 0;
 
         fit_func f(FT, BT, FI, BI, det); // initialize the fitting class
-
         // pick the first back strip that's not disabled
         for (int i = 1; i < nb+1; i++) {
             if (!disabled[i-1]) {

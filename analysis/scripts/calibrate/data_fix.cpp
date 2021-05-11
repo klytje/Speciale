@@ -206,10 +206,10 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
 
         // perform the actual fitting
         double params[3*peaks.size()];
-        hist->Fit(gauss[0], "QR"); // fit the first gauss only within the range it is defined on
+        hist->Fit(gauss[0], "LQR"); // fit the first gauss only within the range it is defined on
         gauss[0]->GetParameters(&params[0]); // extract the parameters
         for (int i = 1; i < peaks.size(); i++) {
-            hist->Fit(gauss[i], "QR+"); // R+ tells ROOT that we want to fit multiple functions (otherwise the previous one is simply deleted)
+            hist->Fit(gauss[i], "LQR+"); // R+ tells ROOT that we want to fit multiple functions (otherwise the previous one is simply deleted)
             gauss[i]->GetParameters(&params[3*i]); // extract the parameters
         }
 
@@ -235,7 +235,7 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         }
 
         total->SetParameters(params);
-        hist->Fit(total, "Q");
+        hist->Fit(total, "LQ");
 
         if (plot::align_peaks) {
             std::cout << "Results of the total Gauss fit is shown on the figure." << endl;
