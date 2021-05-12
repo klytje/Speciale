@@ -13,7 +13,7 @@ using namespace ROOT;
 using boost::format;
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
+    if (!(argc == 4 || argc == 6)) {
         cout << "Usage: ./sim_compare <output path> <output/X.root> <comparison file>" << endl;
         exit(1);
     }
@@ -23,62 +23,27 @@ int main(int argc, char *argv[]) {
 
     ROOT::RDF::RNode dsim = RDataFrame("tree", argv[2]);
     ROOT::RDF::RNode ddat = RDataFrame("tree", argv[3]);
-    filter(&dsim);
+    filter(&dsim); // energy & momentum cuts
     filter(&ddat);
+    setup_dataframe(&ddat); // define Dalitz coordinates
+    setup_dataframe(&dsim);
+    cut_edges(&ddat);
+    cut_edges(&dsim);
 
     //*** DALITZ PLOT ***//
     TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
     vector<double> x_axis = {double(bins), -1, 1};
     vector<double> y_axis = {double(bins), -1, 1};
 
-    auto prepare_dataframe = [] (ROOT::RDF::RNode* data) {
-        ROOT::RDF::RNode &df = *data;
-
-        // define sorting methods
-        auto max = [] (double e1, double e2, double e3) {return std::max({e1, e2, e3});};
-        auto min = [] (double e1, double e2, double e3) {return std::min({e1, e2, e3});};
-        auto mid = [] (double e1, double e2, double e3) {
-            if (e1 > e2) {
-                if (e2 > e3) {
-                    return e2;
-                } else if (e1 > e3) {
-                    return e3;
-                } else {
-                    return e1;
-                }
-            } else {
-                if (e1 > e3) {
-                    return e1;
-                } else if (e2 > e3) {
-                    return e3;
-                } else {
-                    return e2;
-                }
-            }
-        };
-
-        // create the necessary columns
-        df = df.Filter("abs(deltaE)<200")
-               .Define("E_tot", "E_cm[0] + E_cm[1] + E_cm[2]")
-               .Define("e_cm_1", "E_cm[0]/E_tot") // normalized such that e1 + e2 + e3 = 1
-               .Define("e_cm_2", "E_cm[1]/E_tot")
-               .Define("e_cm_3", "E_cm[2]/E_tot")
-               .Define("e_1", max, {"e_cm_1", "e_cm_2", "e_cm_3"}) // we want e1 > e2 > e3
-               .Define("e_2", mid, {"e_cm_1", "e_cm_2", "e_cm_3"})
-               .Define("e_3", min, {"e_cm_1", "e_cm_2", "e_cm_3"})
-               .Define("X","sqrt(3)*(e_2 - e_3)")
-               .Define("Y","3*e_1 - 1")
-               .Filter("Y < 0.93") // remove ground state decay
-               .Filter("pow(X, 2) + pow(Y, 2) < 0.99"); // remove some irrelevent differences at the borders
-    };
-    prepare_dataframe(&ddat);
-    prepare_dataframe(&dsim);
-
     // check if we are dealing with sim3a_i data
     if (string(argv[2]).find("_i") != string::npos) {
         double delta; // phase difference, essentially controls the amount of interference between the two terms
         double k; // ratio of l = 1 : l = 3
-        if (string(argv[2]).find("0+") != string::npos) {
+        if (argc == 6) {
+            k = atof(argv[4]);
+            delta = atof(argv[5]);
+            cout << "Using k and delta from terminal input." << endl;
+        } else if (string(argv[2]).find("0+") != string::npos) {
             delta = 2*M_PI*0.11; // 0.59 is also good
             k = 0.630681;
             cout << "File name contains \"0+\" and \"_i\", assuming 0+ sim3a_i data..." << endl;
@@ -130,7 +95,7 @@ int main(int argc, char *argv[]) {
     cout << "Created " << path << "." << endl;
 
 
-    //*** RADIAL COMPARISON ***//
+//*** RADIAL COMPARISON ***//
     x_axis = {100, 0, 1};
     TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
 
@@ -138,20 +103,7 @@ int main(int argc, char *argv[]) {
     TH1D dat_rho = ddat.Define("x", "sqrt(pow(X,2)+pow(Y,2))").Histo1D({"dat_rho", "dat_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
     sim_rho.Scale(1/sim_rho.GetMaximum());
     dat_rho.Scale(1/dat_rho.GetMaximum());
-
-    dat_rho.GetXaxis()->SetTitle("\\rho");
-    dat_rho.GetYaxis()->SetTitle("Arbitrary units");
-    dat_rho.GetXaxis()->CenterTitle();
-    dat_rho.GetYaxis()->CenterTitle();
-    dat_rho.GetXaxis()->SetNdivisions(205);
-    dat_rho.GetYaxis()->SetNdivisions(203);
-    
-    sim_rho.SetLineColor(kOrange+1);
-    dat_rho.SetLineColor(kBlack);
-    sim_rho.SetLineWidth(2);
-    dat_rho.SetLineWidth(2);
-    dat_rho.Draw("HIST L");
-    sim_rho.Draw("HIST L SAME");
+    setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
     path = string(argv[1]) + "rho.pdf";
     c2->SetLeftMargin(0.15);
@@ -159,7 +111,7 @@ int main(int argc, char *argv[]) {
     cout << "Created " << path << "." << endl;
 
 
-    //*** ANGULAR COMPARISON ***//
+//*** ANGULAR COMPARISON ***//
     x_axis = {100, 0, M_PI/3};
 
     TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
@@ -167,20 +119,7 @@ int main(int argc, char *argv[]) {
     TH1D dat_ang = ddat.Define("x", "atan2(X,Y)").Histo1D({"dat_ang", "dat_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
     sim_ang.Scale(1/sim_ang.GetMaximum());
     dat_ang.Scale(1/dat_ang.GetMaximum());
-
-    dat_ang.GetXaxis()->SetTitle("\\varphi");
-    dat_ang.GetYaxis()->SetTitle("Arbitrary units");
-    dat_ang.GetXaxis()->CenterTitle();
-    dat_ang.GetYaxis()->CenterTitle();
-    dat_ang.GetXaxis()->SetNdivisions(206);
-    dat_ang.GetYaxis()->SetNdivisions(203);
-    
-    sim_ang.SetLineColor(kOrange+1);
-    dat_ang.SetLineColor(kBlack);
-    sim_ang.SetLineWidth(2);
-    dat_ang.SetLineWidth(2);
-    dat_ang.Draw("HIST L");
-    sim_ang.Draw("HIST L SAME");
+    setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
     path = string(argv[1]) + "phi.pdf";
     c3->SetLeftMargin(0.15);
@@ -188,7 +127,7 @@ int main(int argc, char *argv[]) {
     cout << "Created " << path << "." << endl;
 
 
-    //*** ENERGY COMPARISON ***//
+//*** ENERGY COMPARISON ***//
     x_axis = {100, 0, 7000};
     TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
     TH1D* sim_E = new TH1D("sim_E", "sim_E", int(x_axis[0]), x_axis[1], x_axis[2]);
@@ -202,20 +141,7 @@ int main(int argc, char *argv[]) {
     }
     sim_E->Scale(1/sim_E->GetMaximum());
     dat_E->Scale(1/dat_E->GetMaximum());
-
-    dat_E->GetXaxis()->SetTitle("E_{cm}");
-    dat_E->GetYaxis()->SetTitle("Arbitrary units");
-    dat_E->GetXaxis()->CenterTitle();
-    dat_E->GetYaxis()->CenterTitle();
-    dat_E->GetXaxis()->SetNdivisions(205);
-    dat_E->GetYaxis()->SetNdivisions(203);
-    
-    sim_E->SetLineColor(kOrange+1);
-    dat_E->SetLineColor(kBlack);
-    sim_E->SetLineWidth(2);
-    dat_E->SetLineWidth(2);
-    dat_E->Draw("HIST L");
-    sim_E->Draw("HIST L SAME");
+    setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 
     path = string(argv[1]) + "E_cm.pdf";
     c4->SetLeftMargin(0.15);

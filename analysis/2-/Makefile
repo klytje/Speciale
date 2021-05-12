@@ -227,6 +227,10 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_events.root | figures/%
 	$< $(shell pwd)/figures/$*/ output/$*.root output/all_events.root
 
+# fits the dalitz plots from the data with the sim3a_i simulation to find k and delta
+dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/2-_i.root | figures/article
+	$< $(shell pwd)/figures/article/ output/true_events.root output/2-_i.root
+
 ### thesis specific figures ###
 # plots before / after of the TDC values
 tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data))

@@ -3,6 +3,7 @@
 #include <ROOT/RDFHelpers.hxx>
 #include <TROOT.h>
 #include <TVector3.h>
+#include <TF1.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -277,7 +278,6 @@ void cut_gs(ROOT::RDF::RNode* df) {
 
     double mu = tf_ex->GetParameter(1);
     double sigma = tf_ex->GetParameter(2);
-    cout << mu << ", " << sigma << endl;
     *df = df->Filter((format("%1% < E_23 && E_23 < %2%") % (mu-3*sigma) % (mu+3*sigma)).str());
 }
 
@@ -313,7 +313,7 @@ TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
     return hist;
 }
 
-TH2D* dalitz(vector<double> x, vector<double> y, int bins = 200, vector<double> w = {}) {
+TH2D* dalitz(const vector<double> x, const vector<double> y, const int bins = 200, vector<double> w = {}) {
     // if no weights are supplied, create a new array filled with 1s
     if (w.size() == 0) {
         w = vector<double>(x.size(), 1);
@@ -342,7 +342,7 @@ TH2D* dalitz(vector<double> x, vector<double> y, int bins = 200, vector<double> 
     return hist;
 }
 
-TH2D* dalitz_slice(vector<double> x, vector<double> y, int bins = 200, vector<double> w = {}) {
+TH2D* dalitz_slice(const vector<double> x, const vector<double> y, const int bins = 100, vector<double> w = {}) {
     // if no weights are supplied, create a new array filled with 1s
     if (w.size() == 0) {
         w = vector<double>(x.size(), 1);
@@ -354,7 +354,7 @@ TH2D* dalitz_slice(vector<double> x, vector<double> y, int bins = 200, vector<do
     return hist;
 }
 
-TH2D dalitz_slice(const char* file, int bins = 100, bool bounded = true) {
+TH2D dalitz_slice(const char* file, const int bins = 100, bool bounded = true) {
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
     filter(&df);
     setup_dataframe(&df);
@@ -372,4 +372,20 @@ TH2D dalitz_slice(const char* file, int bins = 100, bool bounded = true) {
 
     TH2D hist = df.Histo2D({"h2", "Dalitz slice", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
     return hist;
+}
+
+void setup_compare_plot(TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
+    hdat->GetXaxis()->SetTitle(xlabel.c_str());
+    hdat->GetYaxis()->SetTitle(ylabel.c_str());
+    hdat->GetXaxis()->CenterTitle();
+    hdat->GetYaxis()->CenterTitle();
+    hdat->GetXaxis()->SetNdivisions(205);
+    hdat->GetYaxis()->SetNdivisions(203);
+    
+    hsim->SetLineColor(kOrange+1);
+    hdat->SetLineColor(kBlack);
+    hsim->SetLineWidth(2);
+    hdat->SetLineWidth(2);
+    hdat->Draw("HIST L");
+    hsim->Draw("HIST L SAME");
 }
