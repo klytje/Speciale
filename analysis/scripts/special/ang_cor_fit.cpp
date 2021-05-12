@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]) {
         } else if (state == "2-") {
             y_bounds = {0.30, 0.52};
         } else if (state == "3-") {
-            y_bounds = {0.25, 0.4};
+            y_bounds = {0.3, 0.6};
         }
     }
 

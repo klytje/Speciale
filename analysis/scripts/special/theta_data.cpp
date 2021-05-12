@@ -22,58 +22,30 @@ const double mu23 = m_alpha/2;
 const double mu1_23 = m_alpha*2./3;
 const int n_sigma = 3; // number of sigmas to include in the peak fits
 
-// from email correspondence with Oliver: 
-// "Ved Ep = 2.00 MeV har jeg eff[Be(gs)] = 6.6(3)% og eff[Be(2+)] = 2.10(44)%"
-const double gs_eff = 0.066;
-const double ex_eff = 0.021;
-
 int main(int argc, char const *argv[]) {
+    double gs_eff = 0;
+    double ex_eff = 0;
     if (argc != 3) {
         cout << "Usage: ./theta_proj <output path> <input>" << endl;
         exit(1);
     }
-    setup_style();
-    // auto max = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_t> y, ROOT::VecOps::RVec<Double_t> z) {
-    //     TVector3 p1 = {x[0], y[0], z[0]};
-    //     TVector3 p2 = {x[1], y[1], z[1]};
-    //     TVector3 p3 = {x[2], y[2], z[2]};
-    //     vector<double> mags = {p1.Mag(), p2.Mag(), p3.Mag()};
-    //     sort(mags.begin(), mags.end());
-    //     if (p1.Mag() > mags[1]) {
-    //         return 0;
-    //     } else if (p2.Mag() > mags[1]) {
-    //         return 1;
-    //     } else {
-    //         return 2;
-    //     }
-    // };
 
-    // auto mid = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_t> y, ROOT::VecOps::RVec<Double_t> z) {
-    //     TVector3 p1 = {x[0], y[0], z[0]};
-    //     TVector3 p2 = {x[1], y[1], z[1]};
-    //     TVector3 p3 = {x[2], y[2], z[2]};
-    //     vector<double> mags = {p1.Mag(), p2.Mag(), p3.Mag()};
-    //     sort(mags.begin(), mags.end());
-    //     if (p1.Mag() > mags[1]) {
-    //         if (mags[1] > p2.Mag()) {
-    //             return 2;
-    //         } else {
-    //             return 1;
-    //         }
-    //     } else if (p2.Mag() > mags[1]) {
-    //         if (mags[1] > p3.Mag()) {
-    //             return 0;
-    //         } else {
-    //             return 2;
-    //         }
-    //     } else {
-    //         if (mags[1] > p1.Mag()) {
-    //             return 1;
-    //         } else {
-    //             return 0;
-    //         }
-    //     }
-    // };
+    if (string(argv[1]).find("0+") != string::npos) {
+        cout << "Output path contains \"0+\", assuming we are dealing with that state." << endl;
+        // from email correspondence with Oliver: 
+        // "Ved Ep = 2.00 MeV har jeg eff[Be(gs)] = 6.6(3)% og eff[Be(2+)] = 2.10(44)%"
+        gs_eff = 0.066;
+        ex_eff = 0.021;
+    } else if (string(argv[1]).find("3-") != string::npos) {
+        cout << "Output path contains \"3-\", assuming we are dealing with that state." << endl;
+        // from email correspondence with Oliver: 
+        // "Ved Ep = 2.64 MeV har jeg eff[Be(gs)] = 4.32(22)% og eff[Be(2+)] = 2.12(45)%"
+        gs_eff = 0.043;
+        ex_eff = 0.021;
+    } else {
+        cout << "\033[1;31m" << "Could not deduce the state based on output path. Branching ratio cannot be calculated." << "\033[0m" << endl;
+    } 
+    setup_style();
 
     // auto theta = [] (double r1x, double r1y, double r1z, double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
     //     TVector3 p23 = {r2x-r3x, r2y-r3y, r2z-r3z};
@@ -281,6 +253,12 @@ int main(int argc, char const *argv[]) {
     TLine* l2 = new TLine(peaks[0][1], 0, peaks[0][1], h2.GetMaximum());
     TLine* l3 = new TLine(peaks[1][0], 0, peaks[1][0], h2.GetMaximum());
     TLine* l4 = new TLine(peaks[1][1], 0, peaks[1][1], h2.GetMaximum());
+    l1->SetLineWidth(2);
+    l2->SetLineWidth(2);
+    l3->SetLineWidth(2);
+    l4->SetLineWidth(2);
+    l3->SetLineStyle(11);
+    l4->SetLineStyle(11);
     h2.GetXaxis()->SetTitle("Energy [keV]");
     h2.GetXaxis()->CenterTitle();
     h2.GetYaxis()->SetTitle("Count");
@@ -382,6 +360,7 @@ int main(int argc, char const *argv[]) {
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
 
+    // all events within 3 sigma of the ground state are assumed to belong to that branch. all other events are assumed to be to the first excited state. 
     ROOT::RDF::RNode df_gs = df.Filter((format("%1% < E_23 && E_23 < %2%") % peaks[0][0] % peaks[0][1]).str());
     ROOT::RDF::RNode df_ex = df.Filter((format("!(%1% < E_23 && E_23 < %2%)") % peaks[0][0] % peaks[0][1]).str());
     TH2D* hgs = new TH2D("hgs", "Dalitz plot", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
