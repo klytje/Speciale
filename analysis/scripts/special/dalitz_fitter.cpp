@@ -88,7 +88,7 @@ public:
 
     double DoEval(const double *params) const override {
         const double k = params[0];
-        const double delta = params[1];
+        const double delta = params[1]*2*M_PI;
         const double c = fit_type == 1 ? 1 : params[2];
 
         vector<double> w = vector<double>(sim1x.size());
@@ -98,11 +98,14 @@ public:
         TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
         hsim->Scale(1./hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
 
-        double chi = 0;
+        double chi = 0, eps = 1e-9;
         for (int i = 1; i < hsim->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
             for (int j = 1; j < hsim->GetNbinsY(); j++) {
                 if (hdata->GetBinContent(i, j) != 0) {
-                    chi += pow(hsim->GetBinContent(i, j) + hdata->GetBinContent(i, j), 2)/hdata->GetBinContent(i, j);
+                    double mu = hdata->GetBinContent(i, j); // model
+                    double m = hsim->GetBinContent(i, j); // observed
+                    chi += m*log(max(m, eps)/max(mu, eps)) + mu - m; // ML
+                    // chi += pow(hsim->GetBinContent(i, j) + hdata->GetBinContent(i, j), 2)/hdata->GetBinContent(i, j);
                 }
             }
         }
@@ -139,8 +142,6 @@ int main(int argc, char const *argv[]) {
     filter(&sim1);
     setup_dataframe(&data); // define dalitz coordinates
     setup_dataframe(&sim1);
-    // cut_edges(&data); // cut edges
-    // cut_edges(&sim1);
     cut_gs(&data); // cut the ground state decay events
     TH2D* hdata;
     {
@@ -148,20 +149,10 @@ int main(int argc, char const *argv[]) {
         vector<double> datay = data.Take<double>("y").GetValue();
         hdata = dalitz_slice(datax, datay, bins);
         hdata->Scale(1./hdata->GetMaximum());
-
-        // debug plot
-        // TCanvas* c = new TCanvas("c", "c", 600, 600);
-        // TH2D* test = dalitz(datax, datay, 2*bins);
-        // test->Draw("colz");
-        // string path = string(argv[1]) + "tmp.pdf";
-        // c->SetLogz();
-        // c->SetRightMargin(0.15);
-        // c->SaveAs(path.c_str());
     }
 
     container* csim1;
     container* csim2;
-
     vector<double> sim1x, sim1y, sim2x, sim2y, sim1wU; 
     vector<vector<vector<double>>> sim1f;
     {
@@ -191,12 +182,17 @@ int main(int argc, char const *argv[]) {
     }
     
 //*** PERFORM FIT ***//
-    auto minimizer = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Scan"); 
+    // Which type & algorithm do we use? Based on my own investigation, the parameter space has a multitude of local minima, so any algorithm based on 
+    // first derivates are useless (essentially the whole Minuit2 library). I've had some luck with the GSLMultiMin BFGS algorithm, which were reasonably
+    // fast and appears to have found the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
+    // I think the best option is GSLSimAn, which takes a hell of a time to run (~15000 function calls), but found the correct minimum.
+    string type = "GSLMultiMin", algorithm = "BFGS";
+    auto minimizer = ROOT::Math::Factory::CreateMinimizer(type.c_str(), algorithm.c_str()); 
     auto functor = ROOT::Math::Functor(MinFitter, &MinuitFitter::DoEval, MinFitter->NDim());
     minimizer->SetFunction(functor);
-    minimizer->SetPrintLevel(2);
-    minimizer->SetLimitedVariable(0, "k", 0.186, 0.01, 0, 1);
-    minimizer->SetLimitedVariable(1, "delta", 2*M_PI*0.691, 0.02, 0, 2*M_PI);
+    minimizer->SetPrintLevel(2); // level 2 shows some additional live fitting information, which is nice so we know it is progressing
+    minimizer->SetLimitedVariable(0, "k", 0.5, 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691
+    minimizer->SetLimitedVariable(1, "delta", 0.5, 0.01, 0, 1);
     // minimizer->SetFixedVariable(1, "delta", 0);
     minimizer->Minimize();
 
@@ -205,7 +201,7 @@ int main(int argc, char const *argv[]) {
     filesystem::create_directories(path);
 
     const double* res = minimizer->X();
-    const double k = res[0], delta = res[1];
+    double k = res[0], delta = res[1]*2*M_PI;
     auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
         return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
     };

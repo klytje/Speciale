@@ -99,8 +99,8 @@ int main(int argc, char *argv[]) {
     x_axis = {100, 0, 1};
     TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
 
-    TH1D sim_rho = dsim.Define("x", "sqrt(pow(X,2)+pow(Y,2))").Histo1D({"sim_rho", "sim_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "x", "w").GetValue();
-    TH1D dat_rho = ddat.Define("x", "sqrt(pow(X,2)+pow(Y,2))").Histo1D({"dat_rho", "dat_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
+    TH1D sim_rho = dsim.Define("tmp", "sqrt(pow(x, 2)+pow(y, 2))").Histo1D({"sim_rho", "sim_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    TH1D dat_rho = ddat.Define("tmp", "sqrt(pow(x, 2)+pow(y, 2))").Histo1D({"dat_rho", "dat_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
     sim_rho.Scale(1/sim_rho.GetMaximum());
     dat_rho.Scale(1/dat_rho.GetMaximum());
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
@@ -115,8 +115,8 @@ int main(int argc, char *argv[]) {
     x_axis = {100, 0, M_PI/3};
 
     TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
-    TH1D sim_ang = dsim.Define("x", "atan2(X,Y)").Histo1D({"sim_ang", "sim_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "x", "w").GetValue();
-    TH1D dat_ang = ddat.Define("x", "atan2(X,Y)").Histo1D({"dat_ang", "dat_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
+    TH1D sim_ang = dsim.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "sim_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    TH1D dat_ang = ddat.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "dat_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
     sim_ang.Scale(1/sim_ang.GetMaximum());
     dat_ang.Scale(1/dat_ang.GetMaximum());
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
@@ -134,8 +134,8 @@ int main(int argc, char *argv[]) {
     TH1D* dat_E = new TH1D("dat_E", "dat_E", int(x_axis[0]), x_axis[1], x_axis[2]);
 
     for (int i = 0; i < 3; i++) {
-        TH1D sim_temp = dsim.Define("x", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "sim_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "x", "w").GetValue();
-        TH1D dat_temp = ddat.Define("x", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "dat_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "x").GetValue();
+        TH1D sim_temp = dsim.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "sim_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+        TH1D dat_temp = ddat.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "dat_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
         sim_E->Add(&sim_temp);
         dat_E->Add(&dat_temp);
     }
