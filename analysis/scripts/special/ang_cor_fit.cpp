@@ -45,7 +45,7 @@ int main(int argc, char const *argv[]) {
     setup_style();
     int bins = 200;
     TCanvas* c = new TCanvas("c", "c", 600, 600);
-    TH2D* hist = dalitz(argv[4], bins);
+    TH2D* hist = dalitz(argv[4], bins, true);
 
     hist->GetXaxis()->SetTitle("x");
     hist->GetYaxis()->SetTitle("y");

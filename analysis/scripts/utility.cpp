@@ -216,7 +216,7 @@ void cut_edges(ROOT::RDF::RNode* df) {
             .Filter("y < 0.93");
 }
 
-const double m_alpha = 3.72737*1e6;
+const double m_alpha = 3.72737*1e6; // in keV
 const auto E23 = [] (double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
     TVector3 p2 = {r2x, r2y, r2z};
     TVector3 p3 = {r3x, r3y, r3z};
@@ -267,64 +267,81 @@ void cut_gs(ROOT::RDF::RNode* df) {
             .Define("py3", "py[i_min]")
             .Define("pz3", "pz[i_min]")
             .Define("E_23", E23, {"px2", "py2", "pz2", "px3", "py3", "pz3"});
-    TH1D hist = (*df).Histo1D({"h2", "h", 200, E_exc[0], E_exc[1]}, "E_23").GetValue();
+    TH1D hist = (*df).Histo1D({"cut_gs", "h", 200, E_exc[0], E_exc[1]}, "E_23").GetValue();
     TF1* tf_ex = new TF1("tf_ex", "gaus", E_exc[0], E_exc[1]);
     hist.Fit(tf_ex, "LQR+");
-
-    // TCanvas* c = new TCanvas("c", "c", 600, 600);
-    // hist.Draw();
-    // string path = "tmp.pdf";
-    // c->SaveAs(path.c_str());
 
     double mu = tf_ex->GetParameter(1);
     double sigma = tf_ex->GetParameter(2);
     *df = df->Filter((format("%1% < E_23 && E_23 < %2%") % (mu-3*sigma) % (mu+3*sigma)).str());
 }
 
-// I ended up needing this in a whole lot of different files, so I moved it here to a common #include file instead
-TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
-    // set the axes
-    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
-    filter(&df);
-    setup_dataframe(&df);
+// makes a Dalitz plot from a dataframe. it assumes the Dalitz coordinates x and y are already defined. 
+// if bounded, it cuts away all events outside the unit circle. if weighted, it uses the w column as weights
+TH2D* dalitz(ROOT::RDF::RNode* df, const int bins = 200, const bool bounded = false, const bool weighted = false) {
+    if (!(df->HasColumn("x") && df->HasColumn("y"))) {
+        std::cout << "\033[1;31m" << "ERROR: The Dalitz coordinates x and y are not defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
+    if (weighted && !df->HasColumn("w")) {
+        std::cout << "\033[1;31m" << "ERROR: weighted was specified, but no w is defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
 
-    vector<double> x_axis;
-    vector<double> y_axis;
-    if (bounded) {
-        x_axis = {double(bins), -1, 1};
-        y_axis = {double(bins), -1, 1};
-        cut_edges(&df);
-    } else {
-        x_axis = {double(bins), -1.3, 1.3};
-        y_axis = {double(bins), -1.3, 1.3};
-    }
-
-    TH2D* hist = new TH2D("h1", "Dalitz plot", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
+    double lim = bounded ? 1 : 1.3;
+    vector<double> x_axis = {double(bins), -lim, lim};
+    vector<double> y_axis = {double(bins), -lim, lim};
+    TH2D* hist = new TH2D("hist", "h", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
     int perms[] = {1, 2, 3}; // we can get the other slices simply by permutating i, j, k
     do {
         int i = perms[0];
         int j = perms[1];
         int k = perms[2];
-        TH2D htemp = df.Define("x_temp", (format("sqrt(3)*(e_%1% - e_%2%)") % j % k).str())
-                    .Define("y_temp", (format("3*e_%1% - 1") % i).str())
-                    .Histo2D({"h1", "temp", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x_temp", "y_temp").GetValue();
+        TH2D htemp;
+        if (weighted) {
+            htemp = df->Define("x_temp", (format("sqrt(3)*(e_%1% - e_%2%)") % j % k).str())
+                        .Define("y_temp", (format("3*e_%1% - 1") % i).str())
+                        .Histo2D({"h1", "temp", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x_temp", "y_temp", "w").GetValue();
+        } else {
+            htemp = df->Define("x_temp", (format("sqrt(3)*(e_%1% - e_%2%)") % j % k).str())
+                        .Define("y_temp", (format("3*e_%1% - 1") % i).str())
+                        .Histo2D({"h1", "temp", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x_temp", "y_temp").GetValue();
+        }
         hist->Add(&htemp);
     } while (std::next_permutation(perms, perms+3)); // repeat for each of the 3! = 6 permutations of {1, 2, 3}
     return hist;
 }
 
+// makes a complete Dalitz plot based on the input file, including various cuts
+TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
+    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
+    filter(&df);
+    setup_dataframe(&df);
+    if (bounded) {
+        cut_edges(&df);
+    }
+
+    return dalitz(&df, bins, bounded);
+}
+
+// makes a Dalitz plot from vectors. this is slightly more complicated since we do not have access to the energies
 TH2D* dalitz(const vector<double> x, const vector<double> y, const int bins = 200, vector<double> w = {}) {
     // if no weights are supplied, create a new array filled with 1s
     if (w.size() == 0) {
         w = vector<double>(x.size(), 1);
     }
-    TH2D* hist = new TH2D("h1", "Dalitz plot", bins, -1, 1, bins, -1, 1);
+    TH2D* hist = new TH2D("hist", "h", bins, -1, 1, bins, -1, 1);
     const vector<double> cost = {cos(0), cos(2./3*M_PI), cos(4./3*M_PI)};
     const vector<double> sint = {sin(0), sin(2./3*M_PI), sin(4./3*M_PI)};
+
+    // in this first loop, each event is mirrored across the radial line at 60 degrees
     for (int i = 0; i < x.size(); i++) {
         double phi = atan2(y[i], x[i]);
         double X = x[i]*cos(2*phi-M_PI/3) + y[i]*sin(2*phi-M_PI/3);
         double Y = -x[i]*sin(2*phi-M_PI/3) + y[i]*cos(2*phi-M_PI/3);
+
+        // in this second loop, both the original and mirrored event are duplicated and rotated by 120 degrees
+        // the rotation matrix is precalculated for efficiency
         for (int r = 0; r < 3; r++) {
             double x1 = x[i]*cost[r] + y[i]*sint[r];
             double x2 = X*cost[r] + Y*sint[r];
@@ -334,46 +351,60 @@ TH2D* dalitz(const vector<double> x, const vector<double> y, const int bins = 20
             hist->Fill(x2, y2, w[i]);
         }
     }
-    for (int r = 0; r < 6; r++) {
-        // precalculate cos(theta) and sin(theta) to reduce computation time
-        for (int i = 0; i < x.size(); i++) {
-        }
-    }
     return hist;
 }
 
+// makes a Dalitz slice plot from vectors
 TH2D* dalitz_slice(const vector<double> x, const vector<double> y, const int bins = 100, vector<double> w = {}) {
     // if no weights are supplied, create a new array filled with 1s
     if (w.size() == 0) {
         w = vector<double>(x.size(), 1);
     }
-    TH2D* hist = new TH2D("h1", "Dalitz plot", bins, -1, 1, bins, -1, 1);
+    TH2D* hist = new TH2D("hist", "h", bins, 0, 1, bins, 0, 1);
     for (int i = 0; i < x.size(); i++) {
         hist->Fill(x[i], y[i], w[i]);
     }
     return hist;
 }
 
-TH2D dalitz_slice(const char* file, const int bins = 100, bool bounded = true) {
-    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
-    filter(&df);
-    setup_dataframe(&df);
 
-    vector<double> x_axis;
-    vector<double> y_axis;
-    if (bounded) {
-        x_axis = {double(bins), 0, 1};
-        y_axis = {double(bins), 0, 1};
-        cut_edges(&df);
+// makes a Dalitz slice from a given file input
+TH2D* dalitz_slice(ROOT::RDF::RNode* df, const int bins = 200, const bool bounded = false, const bool weighted = false) {
+    if (!(df->HasColumn("x") && df->HasColumn("y"))) {
+        std::cout << "\033[1;31m" << "ERROR: The Dalitz coordinates x and y are not defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
+    if (weighted && !df->HasColumn("w")) {
+        std::cout << "\033[1;31m" << "ERROR: weighted was specified, but no w is defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
+
+    double lim = bounded ? 1 : 1.3;
+    vector<double> x_axis = {double(bins), 0, lim};
+    vector<double> y_axis = {double(bins), 0, lim};
+    TH2D tmp; // .GetPtr() and direct pointer assignment (*hist = ...) crashes ROOT, so we have to do it in this roundabout fashion
+    if (weighted) {
+        tmp = df->Histo2D({"tmp", "h", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y", "w").GetValue();
     } else {
-        x_axis = {double(bins), 0, 1.3};
-        y_axis = {double(bins), 0, 1.3};
+        tmp = df->Histo2D({"tmp", "h", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
     }
-
-    TH2D hist = df.Histo2D({"h2", "Dalitz slice", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]}, "x", "y").GetValue();
+    TH2D* hist = new TH2D("hist", "h", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
+    hist->Add(&tmp);
     return hist;
 }
 
+TH2D* dalitz_slice(const char* file, const int bins = 100, bool bounded = true) {
+    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
+    filter(&df);
+    setup_dataframe(&df);
+    if (bounded) {
+        cut_edges(&df);
+    }
+
+    return dalitz_slice(&df, bins, bounded);
+}
+
+// I ended up needing these specific plot options quite a lot, so I relocated it here as a common method. note that it also draws the histograms
 void setup_compare_plot(TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
     hdat->GetXaxis()->SetTitle(xlabel.c_str());
     hdat->GetYaxis()->SetTitle(ylabel.c_str());
@@ -388,4 +419,19 @@ void setup_compare_plot(TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
     hdat->SetLineWidth(2);
     hdat->Draw("HIST L");
     hsim->Draw("HIST L SAME");
+}
+
+// I also ended up needing this quite a bit
+void setup_dalitz_plot(TH2D* h, string draw_options = "") {
+    h->GetXaxis()->SetTitle("x");
+    h->GetYaxis()->SetTitle("y");
+    h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->CenterTitle();
+    h->GetXaxis()->SetNdivisions(2);
+    h->GetYaxis()->SetNdivisions(2);
+
+    if (draw_options == "") {
+        draw_options = "colz";
+    }
+    h->Draw(draw_options.c_str());
 }

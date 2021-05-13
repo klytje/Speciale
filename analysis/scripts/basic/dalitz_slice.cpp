@@ -22,17 +22,17 @@ int main(int argc, char *argv[]) {
     double x = sqrt(1-pow(y, 2));
     double theta = atan(y/x)*180./M_PI;
 
-    TH2D hist = dalitz_slice(argv[1], 100, false);
+    TH2D* hist = dalitz_slice(argv[1], 100, false);
 
     //*** "before" plot with the cuts shown ***//
     TCanvas* c1 = new TCanvas("c1", "c", 600, 600);
-    hist.GetXaxis()->SetTitle("x");
-    hist.GetXaxis()->CenterTitle();
-    hist.GetXaxis()->SetNdivisions(2);
-    hist.GetYaxis()->SetTitle("y");
-    hist.GetYaxis()->CenterTitle();
-    hist.GetYaxis()->SetNdivisions(2);
-    hist.Draw("colz");
+    hist->GetXaxis()->SetTitle("x");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetXaxis()->SetNdivisions(2);
+    hist->GetYaxis()->SetTitle("y");
+    hist->GetYaxis()->CenterTitle();
+    hist->GetYaxis()->SetNdivisions(2);
+    hist->Draw("colz");
 
     TArc* a1 = new TArc(0, 0, 1, 0, theta);
     a1->SetLineColor(kRed);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     a2->SetLineColor(kRed);
     a2->SetLineWidth(3);
     a2->SetLineStyle(12);
-    a2->SetFillColorAlpha(0, 0);
+    a2->SetFillColorAlpha(0, 0); 
     a2->Draw("only same");
 
     TLine* l1 = new TLine(0, y, x, y);
@@ -63,13 +63,13 @@ int main(int argc, char *argv[]) {
     hist = dalitz_slice(argv[1], 100, true);
 
     TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
-    hist.GetXaxis()->SetTitle("x");
-    hist.GetXaxis()->CenterTitle();
-    hist.GetXaxis()->SetNdivisions(1);
-    hist.GetYaxis()->SetTitle("y");
-    hist.GetYaxis()->CenterTitle();
-    hist.GetYaxis()->SetNdivisions(1);
-    hist.Draw("colz");
+    hist->GetXaxis()->SetTitle("x");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetXaxis()->SetNdivisions(1);
+    hist->GetYaxis()->SetTitle("y");
+    hist->GetYaxis()->CenterTitle();
+    hist->GetYaxis()->SetNdivisions(1);
+    hist->Draw("colz");
     a1->Draw("only same");
     l1->Draw("same");
 

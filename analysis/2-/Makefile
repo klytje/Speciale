@@ -32,6 +32,7 @@ clean: clean/build clean/width_compare
 # removes all files associated with %, except for the raw data in data/
 # note: also removes any simulated data named %.root
 clean/%: 
+	@ rm -f sim/raw/$(*F).root
 	@ rm -f sim/raw/$(*F).dat
 	@ rm -f sim/data_i/$(*F).root
 	@ rm -f sim/data/$(*F).root
@@ -215,7 +216,7 @@ fig/% : $(addprefix figures/%/,$(figure_pdf)) output/%.root
 
 ### special figures ###
 # compiles a given "special" figure program
-../scripts/special/build/%: ../scripts/special/%.cpp
+../scripts/special/build/%: ../scripts/special/%.cpp ../scripts/utility.cpp
 	make -C ../scripts/special/build/ $*
 
 # creates an interactive 3D Dalitz plot of %. mainly used for debug
@@ -228,8 +229,15 @@ sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_ev
 	$< $(shell pwd)/figures/$*/ output/$*.root output/all_events.root
 
 # fits the dalitz plots from the data with the sim3a_i simulation to find k and delta
-dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/2-_i.root | figures/article
-	$< $(shell pwd)/figures/article/ output/all_events.root output/2-_i.root
+# overwrite these two variables with whatever simulations you want to fit: "make dalitz_fit file1=2-_i file2=0+"
+file1 := "2-_i"
+file2 := ""
+dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/$(file1).root | figures/article
+ifeq ($(file2), "")
+	$< $(shell pwd)/figures/article/ output/all_events.root output/$(file1).root
+else
+	$< $(shell pwd)/figures/article/ output/all_events.root output/$(file1).root output/$(file2).root
+endif
 
 ### thesis specific figures ###
 # plots before / after of the TDC values

@@ -17,7 +17,6 @@
 using namespace std;
 using boost::format;
 
-const double m_alpha = 3.72737*1e6;
 const double mu23 = m_alpha/2; 
 const double mu1_23 = m_alpha*2./3;
 const int n_sigma = 3; // number of sigmas to include in the peak fits
@@ -233,7 +232,7 @@ int main(int argc, char const *argv[]) {
     df = df.Define("E_23", E23, {"px2", "py2", "pz2", "px3", "py3", "pz3"});
 
     TCanvas *c2 = new TCanvas("c2", "c2", 900, 600);
-    TH1D h2 = df.Histo1D({"h2", "h", 200, pleft[0], pright[1]}, "E_23").GetValue();
+    TH1D h2 = df.Histo1D({"h2", "h", 200, 0, 6000}, "E_23").GetValue();
     double pars[6];
     TF1* tf_gs = new TF1("tf_gs", "gaus", pleft[0], pleft[1]);
     TF1* tf_ex = new TF1("tf_ex", "gaus", pright[0], pright[1]);
@@ -242,9 +241,9 @@ int main(int argc, char const *argv[]) {
     tf_gs->GetParameters(&pars[0]);
     tf_ex->GetParameters(&pars[3]);
 
-    TF1* tf_both = new TF1("tf_both", "gaus(0) + gaus(3)", 0, 250000);
+    TF1* tf_both = new TF1("tf_both", "gaus(0) + gaus(3)", pleft[0], pright[1]);
     tf_both->SetParameters(pars);
-    h2.Fit(tf_both, "QR");
+    h2.Fit(tf_both, "LQR");
 
     double mu_gs = tf_both->GetParameter(1), mu_ex = tf_both->GetParameter(4);
     double sigma_gs = tf_both->GetParameter(2), sigma_ex = tf_both->GetParameter(5);
@@ -295,7 +294,7 @@ int main(int argc, char const *argv[]) {
     hright.SetLineWidth(2);
 
     // scale each bin of the right panel for consistent counts
-    for (int i = 0; i < hright.GetNbinsX(); i++) {
+    for (int i = 0; i < hright.GetNbinsX()+1; i++) { // n+1th bin is the overflow bin
         hright.SetBinContent(i, hright.GetBinContent(i)/scale);
     }
 
@@ -305,14 +304,14 @@ int main(int argc, char const *argv[]) {
     x->SetTextAlign(22);
     x->Draw();
 
-    TText* yl = new TText(0.07, 0.5, "Count");
+    TText* yl = new TText(0.07, 0.5, "^{8}Be Count");
     yl->SetNDC();
     yl->SetTextAngle(90);
     yl->SetTextSize(0.04);
     yl->SetTextAlign(22);
     yl->Draw();
 
-    TText* yr = new TText(0.93, 0.5, "Count");
+    TText* yr = new TText(0.93, 0.5, "^{8}Be* Count");
     yr->SetNDC();
     yr->SetTextAngle(270);
     yr->SetTextSize(0.04);

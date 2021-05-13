@@ -36,29 +36,29 @@ struct plot {
 
     // axes for the histograms
     struct x_axes {
-        static inline vector<double> energy = {100, -500, 500}; // standard limits but with fewer bins; needed for the energy histograms
-        static inline vector<double> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
-        static inline vector<double> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
-        static inline vector<double> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
-        static inline vector<double> FT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
-        static inline vector<double> BT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<int> energy = {100, -500, 500}; // standard limits but with fewer bins; needed for the energy histograms
+        static inline vector<int> standard = {1000, -500, 500}; // standard limits; also used as bounds for the dt filters
+        static inline vector<int> centered = {100, -50, 50}; // centered limits; used after the data has been centered on 0
+        static inline vector<int> gauss = {500, -50, 50}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<int> FT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
+        static inline vector<int> BT = {500, 65100, 65600}; // x-axis for the gaussian plots. more bins since it's 1d
     };
 
     // a struct to avoid polluting this namespace with y-axis stuff. use the y_axis map to access them
     struct y_axes {
-        static const inline vector<double> SU = {24, 1, 25};
-        static const inline vector<double> SD = {24, 1, 25};
-        static const inline vector<double> Det1 = {16, 1, 17};
-        static const inline vector<double> Det2 = {16, 1, 17};
+        static const inline vector<int> SU = {24, 1, 25};
+        static const inline vector<int> SD = {24, 1, 25};
+        static const inline vector<int> Det1 = {16, 1, 17};
+        static const inline vector<int> Det2 = {16, 1, 17};
     };
-    static const inline map<int, vector<double>> y_axis = {{0, y_axes::SU}, {1, y_axes::SD}, {2, y_axes::Det1}, {3, y_axes::Det2}}; // accessor for the y-axes
+    static const inline map<int, vector<int>> y_axis = {{0, y_axes::SU}, {1, y_axes::SD}, {2, y_axes::Det1}, {3, y_axes::Det2}}; // accessor for the y-axes
 };
 
 // a simple container for histogram information
 class hist_info {
     public: 
         // 1D histograms - no y-axis
-        hist_info(vector<double> x_axis, string filename, string title, string x_label, string y_label) {
+        hist_info(vector<int> x_axis, string filename, string title, string x_label, string y_label) {
             this->x_axis = x_axis;
             this->x_label = x_label;
             this->y_label = y_label;
@@ -67,7 +67,7 @@ class hist_info {
         }
 
         // 2D histograms
-        hist_info(vector<double> x_axis, vector<double> y_axis, string filename, string title, string x_label, string y_label) {
+        hist_info(vector<int> x_axis, vector<int> y_axis, string filename, string title, string x_label, string y_label) {
             this->x_axis = x_axis;
             this->x_label = x_label;
             this->y_axis = y_axis;
@@ -76,8 +76,7 @@ class hist_info {
             this->filename = plot::path + filename + plot::format;
         }
 
-        vector<double> x_axis;
-        vector<double> y_axis;
+        vector<int> x_axis, y_axis;
         string title;
         string x_label;
         string y_label;
@@ -90,7 +89,7 @@ void hist2D(const vector<double> *DT, const vector<int> *BI, const hist_info inf
     const vector<int> &BIref = *BI;
 
     TCanvas *canvas = new TCanvas("diff", "diff", 600, 600);
-    TH2D *h = new TH2D("2D Histogram", info.title.c_str(), int(info.x_axis[0]), info.x_axis[1], info.x_axis[2], int(info.y_axis[0]), info.y_axis[1], info.y_axis[2]);
+    TH2D *h = new TH2D("2D Histogram", info.title.c_str(), info.x_axis[0], info.x_axis[1], info.x_axis[2], info.y_axis[0], info.y_axis[1], info.y_axis[2]);
 
     // fill the histogram
     for (int i = 0; i < DTref.size(); i++) {
@@ -124,7 +123,7 @@ void hist2D(const vector<double> *DT, const vector<int> *BI, double sigma, int s
     const vector<int> &BIref = *BI;
 
     TCanvas *canvas = new TCanvas("diff", "diff", 600, 600);
-    TH2D *h = new TH2D("2D Histogram", info.title.c_str(), int(info.x_axis[0]), info.x_axis[1], info.x_axis[2], int(info.y_axis[0]), info.y_axis[1], info.y_axis[2]);
+    TH2D *h = new TH2D("2D Histogram", info.title.c_str(), info.x_axis[0], info.x_axis[1], info.x_axis[2], info.y_axis[0], info.y_axis[1], info.y_axis[2]);
     TLine *vline_l = new TLine(sigma_n*sigma, info.y_axis[1], sigma_n*sigma, info.y_axis[2]);
     TLine *vline_r = new TLine(-sigma_n*sigma, info.y_axis[1], -sigma_n*sigma, info.y_axis[2]);
     vline_l->SetLineColor(kRed);
@@ -167,7 +166,7 @@ void hist1D(const vector<T> *input, double mean, int sigma, const hist_info info
     const vector<T> &data = *input;
 
     TCanvas *canvas = new TCanvas("diff", "diff", 600, 600);
-    TH1D *h = new TH1D("1D Histogram", info.title.c_str(), int(info.x_axis[0]), info.x_axis[1], info.x_axis[2]);    
+    TH1D *h = new TH1D("1D Histogram", info.title.c_str(), info.x_axis[0], info.x_axis[1], info.x_axis[2]);    
     // fill the histogram
     for (int i = 0; i < data.size(); i++) {
         h->Fill(data[i]);
@@ -213,7 +212,7 @@ void hist1D(const vector<T> *input, const hist_info info) {
     const vector<T> &data = *input;
 
     TCanvas *canvas = new TCanvas("diff", "diff", 600, 600);
-    TH1D *h = new TH1D("1D Histogram", info.title.c_str(), int(info.x_axis[0]), info.x_axis[1], info.x_axis[2]);    
+    TH1D *h = new TH1D("1D Histogram", info.title.c_str(), info.x_axis[0], info.x_axis[1], info.x_axis[2]);    
 
     // fill the histogram
     for (int i = 0; i < data.size(); i++) {

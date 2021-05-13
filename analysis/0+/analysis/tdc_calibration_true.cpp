@@ -6,6 +6,8 @@
 
 using namespace std;
 
+// specify which steps you want in your tdc calibration.
+// all methods generates a whole bunch of figures you can see in analysis/figures/; you should verify they all look good.
 int main(int argc, char *argv[]) {
     data_container data;
     prepare_data(argc, argv, &data, "mul==3");
@@ -17,22 +19,21 @@ int main(int argc, char *argv[]) {
     // start a ROOT application window such that the plots can actually be shown (probably not necessary in batch mode)
     TApplication *app = new TApplication("ROOT window", 0, 0);
 
-    // ensures that the file path exists
+    // ensures that the file path exists, also applies a standard color scheme
     setup();
 
-    // attempt to repair the broken peaks
+    // repair any broken peaks (very specific to this 0+ data)
     repair_peaks(&data);
 
-    // attempt to align the peaks since each detector is offset slightly from the others
-    vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}}; // I manually read these off my data (just run it without anything to see them)
+    // align multiple peaks (check your own data in the ROOT terminal for their locations)
+    // note that this *must* be done; the rest of the code *cannot* handle multiple peaks
+    vector<vector<int>> ft_peaks = {{65400, 65500}, {65500, 65600}};
     vector<vector<int>> bt_peaks = {{65100, 65180}, {65180, 65250}, {65300, 65380}, {65380, 65460}, {65460, 65520}, {65520, 65600}};
     align_peaks(&data, ft_peaks, bt_peaks);
 
-    // save(&data, "true_aligned_peaks.root");
-
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {1000, 65300, 66000}; // the area where we expect the peak to be. this is to help the fitting algorithm
-    vector<double> bt_peak = {1000, 65000, 65500};
+    vector<int> ft_peak = {ft_peaks[0][1]-ft_peaks[0][0], ft_peaks[0][0], ft_peaks[0][1]}; // the area where we expect the peak
+    vector<int> bt_peak = {bt_peaks[0][1]-bt_peaks[0][0], bt_peaks[0][0], bt_peaks[0][1]};
     gauss_filter(&data, 3, ft_peak, bt_peak);
 
     // perform a tdc calibration on the data

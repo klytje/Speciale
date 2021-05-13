@@ -21,9 +21,9 @@ using namespace std;
 using namespace ROOT::Math;
 
 // setup for the Dalitz plots
-const int bins = 100;
-const double range[] = {-1, 1};
+const int bins = 50; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
 
+// this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
 class container {
 public:
     container() {};
@@ -48,11 +48,12 @@ double calc_weight(vector<vector<double>> f, double wU, double k, double delta) 
     return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
 }
 
-class MinuitFitter : public ROOT::Math::IMultiGenFunction {
+class Dalitz_fitter {
 public:
-    MinuitFitter() : fit_type(-1) {}
+    Dalitz_fitter() = default;
 
-    MinuitFitter(TH2D* hdata, container* sim, int ndim) : Ndim(ndim), fit_type(0) {
+    // type 1 constructor
+    Dalitz_fitter(TH2D* hdata, container* sim) {
         this->hdata = hdata;
         this->sim1 = sim;
         sim1x = *(*sim).x;
@@ -61,35 +62,21 @@ public:
         wU = *(*sim).wU;
     }
 
-    MinuitFitter(TH2D* hdata, container* sim1, container* sim2, int ndim) : Ndim(ndim), fit_type(1) {
+    // type 2 constructor
+    Dalitz_fitter(TH2D* hdata, container* sim1, TH2D* hsim2) {
         this->hdata = hdata;
+        this->hsim2 = hsim2;
         this->sim1 = sim1;
-        this->sim2 = sim2;
         sim1x = *(*sim1).x;
         sim1y = *(*sim1).y;
-        sim2x = *(*sim2).x;
-        sim2y = *(*sim2).y;
         f = *(*sim1).f;
         wU = *(*sim1).wU;
     }
     
-    ROOT::Math::IBaseFunctionMultiDim *Clone() const override {
-        if (fit_type == 1) {
-            return new MinuitFitter(hdata, sim1, Ndim);
-        } else if (fit_type == 2) {
-            return new MinuitFitter(hdata, sim1, sim2, Ndim);
-        }
-        return nullptr;
-    }
-
-    unsigned int NDim() const override {
-        return Ndim;
-    }
-
-    double DoEval(const double *params) const override {
+    // type 1 evaluation method. we only fit one sim3a_i data set
+    double eval_type1(const double *params) const {
         const double k = params[0];
         const double delta = params[1]*2*M_PI;
-        const double c = fit_type == 1 ? 1 : params[2];
 
         vector<double> w = vector<double>(sim1x.size());
         for (int i = 0; i < w.size(); i++) {
@@ -98,35 +85,81 @@ public:
         TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
         hsim->Scale(1./hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
 
+        double chi = maximum_likelihood(hsim);
+        hsim->Delete();
+        return chi;
+    }
+
+    // type 2 evaluation method. we fit both a sim3a_i and sim3a data set
+    double eval_type2(const double *params) const {
+        const double k = params[0];
+        const double delta = params[1]*2*M_PI;
+        const double c = params[2];
+
+        vector<double> w = vector<double>(sim1x.size());
+        for (int i = 0; i < w.size(); i++) {
+            w[i] = calc_weight(f[i], wU[i], k, delta);
+        }
+        TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
+        TH2D* hsim2c = (TH2D*) hsim2->Clone();
+        hsim->Scale(c/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        hsim2c->Scale((1-c)/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        hsim->Add(hsim2c);
+
+        double chi = maximum_likelihood(hsim);
+        hsim->Delete();
+        return chi;
+    }
+
+    // calculate the log likelihood for a given evaluation
+    double maximum_likelihood(TH2D* h) const {
         double chi = 0, eps = 1e-9;
-        for (int i = 1; i < hsim->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
-            for (int j = 1; j < hsim->GetNbinsY(); j++) {
+        for (int i = 1; i < h->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
+            for (int j = 1; j < h->GetNbinsY(); j++) {
                 if (hdata->GetBinContent(i, j) != 0) {
                     double mu = hdata->GetBinContent(i, j); // model
-                    double m = hsim->GetBinContent(i, j); // observed
+                    double m = h->GetBinContent(i, j); // observed
                     chi += m*log(max(m, eps)/max(mu, eps)) + mu - m; // ML
-                    // chi += pow(hsim->GetBinContent(i, j) + hdata->GetBinContent(i, j), 2)/hdata->GetBinContent(i, j);
                 }
             }
         }
-        hsim->Delete();
         return chi;
-        // return hdata->Chi2Test(hsim, "UW NORM");
+    }
+
+    // does not work since mu can be 0
+    double chi2(TH2D* h) {
+        double chi = 0;
+        for (int i = 1; i < h->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
+            for (int j = 1; j < h->GetNbinsY(); j++) {
+                if (hdata->GetBinContent(i, j) != 0) {
+                    double mu = hdata->GetBinContent(i, j); // model
+                    double m = h->GetBinContent(i, j); // observed
+                    chi += pow(m + mu, 2)/mu;
+                }
+            }
+        }
+        return chi;
     }
 
 private:
-    const int fit_type;
-    TH2D* hdata;
-    container *sim1, *sim2; // only stored for cloning
+    TH2D *hdata, *hsim2;
+    container *sim1; // only stored for cloning
     vector<vector<vector<double>>> f;
     vector<double> wU;
-    vector<double> sim1x, sim2x;
-    vector<double> sim1y, sim2y;
-    int Ndim;
+    vector<double> sim1x, sim1y;
 };
 
 // the idea is to take two simulated data sets as input and fit them to the data through their Dalitz plots
 int main(int argc, char const *argv[]) {
+    /* 
+        Which type & algorithm do we use? Based on my own investigation, the parameter space has a multitude of local minima, so any algorithm based on 
+        first derivates are useless (essentially the whole Minuit2 library). I've had some luck with the GSLMultiMin BFGS algorithm, which is reasonably
+        fast and appears to find the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
+        I think the best option is GSLSimAn, which takes a hell of a time to run (~15k function calls), but found the correct minimum. 
+    */
+    string type = "GSLMultiMin", algorithm = "BFGS";
+    // note that you can also change the bin count of the Dalitz plot at the top of this file, and that it may affect the quality of the fit
+
     if (!(argc == 4 || argc == 5)) {
         cout << "Two modes are supported: " << endl;
         cout << "./dalitz_fitter <output path> <data> <sim3a_i data> <sim data>" << endl;
@@ -134,25 +167,32 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
     setup_style();
+    int fit_type;
+    if (argc == 5) {
+        fit_type = 2;
+    } else {
+        fit_type = 1;
+    }
 
 //*** PREPARE THE DATA ***//
     ROOT::RDF::RNode data = ROOT::RDataFrame("tree", argv[2]);
     ROOT::RDF::RNode sim1 = ROOT::RDataFrame("tree", argv[3]);
+    ROOT::RDF::RNode sim2 = ROOT::RDataFrame(0); // empty dataframe
     filter(&data); // perform energy and momentum cut
     filter(&sim1);
     setup_dataframe(&data); // define dalitz coordinates
     setup_dataframe(&sim1);
     cut_gs(&data); // cut the ground state decay events
-    TH2D* hdata;
+    TH2D *hdata, *hsim2;
     {
-        vector<double> datax = data.Take<double>("x").GetValue();
-        vector<double> datay = data.Take<double>("y").GetValue();
-        hdata = dalitz_slice(datax, datay, bins);
+        hdata = dalitz_slice(&data, bins, true);
+        // vector<double> datax = data.Take<double>("x").GetValue();
+        // vector<double> datay = data.Take<double>("y").GetValue();
+        // hdata = dalitz_slice(datax, datay, bins);
         hdata->Scale(1./hdata->GetMaximum());
     }
 
     container* csim1;
-    container* csim2;
     vector<double> sim1x, sim1y, sim2x, sim2y, sim1wU; 
     vector<vector<vector<double>>> sim1f;
     {
@@ -168,88 +208,151 @@ int main(int argc, char const *argv[]) {
         csim1 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
     }
 
-    MinuitFitter* MinFitter;
-    if (argc == 5) {
-        ROOT::RDF::RNode sim2 = ROOT::RDataFrame("tree", argv[4]);
+    Dalitz_fitter* fitter;
+    ROOT::Math::Functor functor;
+    if (fit_type == 2) {
+        sim2 = ROOT::RDataFrame("tree", argv[4]);
         filter(&sim2);
         setup_dataframe(&sim2);
-        sim2x = sim2.Take<double>("x").GetValue();
-        sim2y = sim2.Take<double>("y").GetValue();
-        csim2 = new container(&sim2x, &sim2y);
-        MinFitter = new MinuitFitter(hdata, csim1, csim2, 3);
+        hsim2 = dalitz_slice(&sim2, bins, true);
+        hsim2->Scale(1./hdata->GetMaximum());
+
+        fitter = new Dalitz_fitter(hdata, csim1, hsim2);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, 3);
     } else {
-        MinFitter = new MinuitFitter(hdata, csim1, 2);
+        fitter = new Dalitz_fitter(hdata, csim1);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, 2);
     }
     
-//*** PERFORM FIT ***//
-    // Which type & algorithm do we use? Based on my own investigation, the parameter space has a multitude of local minima, so any algorithm based on 
-    // first derivates are useless (essentially the whole Minuit2 library). I've had some luck with the GSLMultiMin BFGS algorithm, which were reasonably
-    // fast and appears to have found the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
-    // I think the best option is GSLSimAn, which takes a hell of a time to run (~15000 function calls), but found the correct minimum.
-    string type = "GSLMultiMin", algorithm = "BFGS";
     auto minimizer = ROOT::Math::Factory::CreateMinimizer(type.c_str(), algorithm.c_str()); 
-    auto functor = ROOT::Math::Functor(MinFitter, &MinuitFitter::DoEval, MinFitter->NDim());
     minimizer->SetFunction(functor);
     minimizer->SetPrintLevel(2); // level 2 shows some additional live fitting information, which is nice so we know it is progressing
-    minimizer->SetLimitedVariable(0, "k", 0.5, 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691
+    minimizer->SetLimitedVariable(0, "k", 0.5, 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691 for 2-
     minimizer->SetLimitedVariable(1, "delta", 0.5, 0.01, 0, 1);
     // minimizer->SetFixedVariable(1, "delta", 0);
+    if (fit_type == 2) {
+        minimizer->SetLimitedVariable(2, "c", 0.2, 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
+    }
     minimizer->Minimize();
+    cout << "\nGenerating figures (this may take a while)" << endl;
 
 //*** GENERATE FIGURES ***//
     string path = string(argv[1]) + "dalitz_fit/";
     filesystem::create_directories(path);
 
     const double* res = minimizer->X();
-    double k = res[0], delta = res[1]*2*M_PI;
+    const double k = res[0], delta = res[1]*2*M_PI;
+    const double c = fit_type == 2 ? res[2] : 1;
     auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
         return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
     };
     sim1 = sim1.Define("w", weights, {"f", "wU"});
 
+    // DALITZ PLOTS
+    TCanvas* c1 = new TCanvas("c1", "c", 900, 600);
+    c1->Divide(2, 1, 0, 0);
+    
+    c1->cd(1);
+    TH2D* dalitz_data = dalitz(&data, 2*bins, true);
+    double data_scale = dalitz_data->GetMaximum();
+    dalitz_data->Scale(1./data_scale);
+    setup_dalitz_plot(dalitz_data, "col");
+
+    c1->cd(2);
+    TH2D* dalitz_sim = dalitz(&sim1, 2*bins, true, true);
+    dalitz_sim->Scale(c/dalitz_sim->GetMaximum());
+    if (fit_type == 2) { // we need to add the two simulations with their respective ratios
+        TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true);
+        dalitz_sim2->Scale((1-c)/dalitz_sim2->GetMaximum());
+        dalitz_sim->Add(dalitz_sim2);
+    }
+    setup_dalitz_plot(dalitz_sim, "col");
+    
+    path = string(argv[1]) + "dalitz_fit/dalitz.pdf";
+    c1->SetLogz();
+    c1->SetRightMargin(0.15);
+    c1->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
+
+    // DALITZ DIFFERENCE PLOT
+    TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
+    dalitz_data->Scale(data_scale); // scale both the data and simulation so the z-axis makes some kind of sense
+    dalitz_sim->Scale(data_scale);
+
+    dalitz_data->Add(dalitz_sim, -1); // subtract the two plots
+    dalitz_data->Draw("colz");
+
+    path = string(argv[1]) + "dalitz_fit/dalitz_diff.pdf";
+    c2->SetLogz();
+    c2->SetRightMargin(0.15);
+    c2->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
+
     // RADIAL PROJECTION
     vector<double> x_axis = {100, 0, 1};
-    TCanvas* c1 = new TCanvas("c1", "c", 600, 600);
-    TH1D sim_rho = sim1.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
-                        .Histo1D({"sim_rho", "sim_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
-    TH1D dat_rho = data.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"dat_rho", "dat_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    sim_rho.Scale(1/sim_rho.GetMaximum());
-    dat_rho.Scale(1/dat_rho.GetMaximum());
+    TCanvas* c3 = new TCanvas("c3", "c", 600, 600);
+    TH1D dat_rho = data.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"dat_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+    TH1D sim_rho = sim1.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"sim_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    dat_rho.Scale(1./dat_rho.GetMaximum());
+    sim_rho.Scale(c/sim_rho.GetMaximum());
+    if (fit_type == 2) {
+        TH1D sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                        .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+        sim2_rho.Scale((1-c)/sim2_rho.GetMaximum());
+        sim_rho.Add(&sim2_rho);
+    }
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
     path = string(argv[1]) + "dalitz_fit/rho.pdf";
-    c1->SetLeftMargin(0.15);
-    c1->SaveAs(path.c_str());
+    c3->SetLeftMargin(0.15);
+    c3->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
 
     // ANGULAR PROJECTION
     x_axis = {100, 0, M_PI/3};
-    TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
-    TH1D sim_ang = sim1.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "sim_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
-    TH1D dat_ang = data.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "dat_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    sim_ang.Scale(1/sim_ang.GetMaximum());
-    dat_ang.Scale(1/dat_ang.GetMaximum());
+    TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
+    TH1D dat_ang = data.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+    TH1D sim_ang = sim1.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    dat_ang.Scale(1./dat_ang.GetMaximum());
+    sim_ang.Scale(c/sim_ang.GetMaximum());
+    if (fit_type == 2) {
+        TH1D sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+        sim2_ang.Scale((1-c)/sim2_ang.GetMaximum());
+        sim_ang.Add(&sim2_ang);
+    }
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
     path = string(argv[1]) + "dalitz_fit/phi.pdf";
-    c2->SetLeftMargin(0.15);
-    c2->SaveAs(path.c_str());
+    c4->SetLeftMargin(0.15);
+    c4->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
 
     // ENERGY COMPARISON
     x_axis = {100, 0, 7000};
-    TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
-    TH1D* sim_E = new TH1D("sim_E", "sim_E", int(x_axis[0]), x_axis[1], x_axis[2]);
-    TH1D* dat_E = new TH1D("dat_E", "dat_E", int(x_axis[0]), x_axis[1], x_axis[2]);
+    TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
+    TH1D* dat_E = new TH1D("dat_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
+    TH1D* sim_E = new TH1D("sim_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
     for (int i = 0; i < 3; i++) {
-        TH1D sim_temp = sim1.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "sim_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
-        TH1D dat_temp = data.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "dat_temp", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-        sim_E->Add(&sim_temp);
+        TH1D dat_temp = data.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+        TH1D sim_temp = sim1.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
         dat_E->Add(&dat_temp);
+        sim_E->Add(&sim_temp);
     }
-    sim_E->Scale(1/sim_E->GetMaximum());
     dat_E->Scale(1/dat_E->GetMaximum());
+    sim_E->Scale(c/sim_E->GetMaximum());
+    if (fit_type == 2) {
+        TH1D* sim2_E = new TH1D("sim2_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
+        for (int i = 0; i < 3; i++) {
+            TH1D sim2_temp = sim2.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+            sim2_E->Add(&sim2_temp);
+        }
+        sim2_E->Scale((1-c)/sim2_E->GetMaximum());
+        sim_E->Add(sim2_E);
+    }
     setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 
     path = string(argv[1]) + "dalitz_fit/E_cm.pdf";
-    c3->SetLeftMargin(0.15);
-    c3->SaveAs(path.c_str());
+    c5->SetLeftMargin(0.15);
+    c5->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
 }

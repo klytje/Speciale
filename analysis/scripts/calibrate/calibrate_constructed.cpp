@@ -97,7 +97,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> lo
 }
 
 // calculate the mean, ignoring all events outside the x_axis, as well as those that are 0
-vector<double> calc_mean_custom(const vector<int> *BI, const vector<double> *DT, const vector<double> x_axis, int strips) {
+vector<double> calc_mean_custom(const vector<int> *BI, const vector<double> *DT, const vector<int> x_axis, int strips) {
     const vector<int> &bi = *BI;
     const vector<double> &dt = *DT;
     vector<double> sum(strips);
@@ -151,7 +151,7 @@ vector<double> calc_mode_custom(const vector<int> *BI, const vector<double> *DT,
 }
 
 // takes the mean value of each strip and subtracts it from dt and bt. ignores any event outside the x_axis, as well as any for which dt == 0
-vector<double> center_dt_custom(vector<double>* DT, vector<double>* BT, const vector<int>* BI, const vector<double> x_axis, int strips) {
+vector<double> center_dt_custom(vector<double>* DT, vector<double>* BT, const vector<int>* BI, const vector<int> x_axis, int strips) {
     vector<double>& dt = *DT;
     vector<double>& bt = *BT;
 

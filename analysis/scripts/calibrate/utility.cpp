@@ -754,10 +754,10 @@ void setup() {
 
 // attempt to fit a gaussian to the input, and, optionally, plot it
 template <typename T>
-map<string, double> gauss_fit(const vector<T> *input, const vector<double> x_axis = {1000, -500, 500}, bool plot = true, bool save = false) {
+map<string, double> gauss_fit(const vector<T> *input, const vector<int> x_axis = {1000, -500, 500}, bool plot = true, bool save = false) {
     const vector<T> &data = *input;
     TCanvas* canvas = new TCanvas("diff", "diff", 600, 600);
-    TH1D *h = new TH1D("1D Histogram", "temporary histogram", int(x_axis[0]), x_axis[1], x_axis[2]); 
+    TH1D *h = new TH1D("1D Histogram", "temporary histogram", x_axis[0], x_axis[1], x_axis[2]); 
 
     // fill the histogram
     for (int i = 0; i < data.size(); i++) {

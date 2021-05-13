@@ -235,7 +235,7 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
         }
 
         total->SetParameters(params);
-        hist->Fit(total, "LQ");
+        hist->Fit(total, "LQR");
 
         if (plot::align_peaks) {
             std::cout << "Results of the total Gauss fit is shown on the figure." << endl;
@@ -322,22 +322,22 @@ void align_peaks(data_container* data, vector<vector<int>> ft_peaks, vector<vect
     for (int i = 1; i < ft_peaks.size(); i++) {
         arg += (format(" + gaus(%1%)") % (3*i)).str();
     }
-    TF1* total = new TF1("total", arg.c_str(), plot::x_axes::FT[1], plot::x_axes::FT[2]); // the multi-gauss fit function
+    TF1* total = new TF1("total", arg.c_str(), ft_peaks[0][0], ft_peaks[ft_peaks.size()-1][1]); // the multi-gauss fit function
     multi_gauss_fit(&ft_plot, ft_peaks, total, "FT");
     perform_shift(&ft, &ft_plot, total, 3, "FT");
 
     //### BT ###//
     arg = "gaus(0)";
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i < bt_peaks.size(); i++) {
         arg += (format(" + gaus(%1%)") % (3*i)).str();
     } 
-    total = new TF1("total", arg.c_str(), plot::x_axes::BT[1], plot::x_axes::BT[2]); // the multi-gauss fit function
+    total = new TF1("total", arg.c_str(), bt_peaks[0][0], bt_peaks[bt_peaks.size()-1][1]); // the multi-gauss fit function
     multi_gauss_fit(&bt_plot, bt_peaks, total, "BT");
     perform_shift(&bt, &bt_plot, total, 3, "BT");
 }
 
 // perform a gaussian fit to both FT and BT and remove outliers beyond n_sigma
-void gauss_filter(data_container* data, int n_sigma, vector<double> ft_peak, vector<double> bt_peak) {
+void gauss_filter(data_container* data, int n_sigma, vector<int> ft_peak, vector<int> bt_peak) {
     print_title("### Removing outliers ###");
     vector<double>& ft = *data->get_double("FT");
     vector<double>& bt = *data->get_double("BT");
@@ -384,7 +384,7 @@ void gauss_filter(data_container* data, int n_sigma, vector<double> ft_peak, vec
 
 // perform a gaussian fit to both FT and BT and remove outliers beyond n_sigma
 // note this is almost the same as the gauss_filter above, except we only check the non-zero BT/FT alphas here
-void gauss_filter_custom(data_container* data, int n_sigma, vector<double> ft_peak, vector<double> bt_peak) {
+void gauss_filter_custom(data_container* data, int n_sigma, vector<int> ft_peak, vector<int> bt_peak) {
     print_title("### Removing outliers ###");
     vector<double>& ft = *data->get_double("FT");
     vector<double>& bt = *data->get_double("BT");

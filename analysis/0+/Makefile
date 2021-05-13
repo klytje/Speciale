@@ -124,7 +124,7 @@ debug_match: $(calibrate_rec)
 	../calibrate/build/mul_compare $(addprefix match/,$(shell ls match))
 
 test: $(calibrate_rec) $(calibrate_true)
-	$(calibrate_rec) output/2455_000.root output/2455_001.root output/2455_002.root
+	$(calibrate_true) output/2455_000.root output/2455_001.root output/2455_002.root
 
 test_all: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
 	$(calibrate_rec) $(addprefix output/,$(shell ls data))
@@ -279,8 +279,15 @@ multiple_components: ../scripts/special/build/multiple_components $(data) output
 	$< $(shell pwd)/figures/article/ output/3-.root output/0+_i.root $(data)
 
 # fits the dalitz plots from the data with the sim3a_i simulation to find k and delta
-dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/0+_i.root | figures/article
-	$< $(shell pwd)/figures/article/ output/true_events.root output/0+_i.root
+# overwrite these two variables with whatever simulations you want to fit: "make dalitz_fit file1=2-_i file2=0+"
+file1 := "2-_i"
+file2 := ""
+dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/$(file1).root | figures/article
+ifeq ($(file2), "")
+	$< $(shell pwd)/figures/article/ $(data) output/$(file1).root
+else
+	$< $(shell pwd)/figures/article/ $(data) output/$(file1).root output/$(file2).root
+endif
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets

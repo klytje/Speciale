@@ -41,7 +41,7 @@ vector<complex<double>> BalamuthWeight::CalculateAmplitudes(vector<TLorentzVecto
     double Q = 0;
     for(auto & alpha : p){ Q += (alpha.Energy() - ALPHA_MASS);}// * 1e6;}  //Q-value of the alpha breakup.
     double Eb = (secLevel.E() + BE8_MASS) - 2 * ALPHA_MASS;                 //Energy of intermediate state above threshold.
-	std::cout << secLevel.E() << "\n";
+	// std::cout << secLevel.E() << "\n";
 
 
     vector<complex<double>> amplitudes;
