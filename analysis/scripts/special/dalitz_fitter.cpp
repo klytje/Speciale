@@ -10,8 +10,10 @@
 
 // other stuff
 #include <filesystem>
+#include <fstream>
 #include <boost/format.hpp>
 #include <math.h>
+#include <time.h>
 
 // my stuff
 #include "../plot_style.cpp"
@@ -78,6 +80,11 @@ public:
         const double k = params[0];
         const double delta = params[1]*2*M_PI;
 
+        // some of the minimizers do not respect our limits, which results in nan values
+        if (k > 1) { 
+            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+        }
+
         vector<double> w = vector<double>(sim1x.size());
         for (int i = 0; i < w.size(); i++) {
             w[i] = calc_weight(f[i], wU[i], k, delta);
@@ -96,6 +103,11 @@ public:
         const double delta = params[1]*2*M_PI;
         const double c = params[2];
 
+        // some of the minimizers do not respect our limits, which results in nan values
+        if (k > 1 || c > 1) { 
+            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+        }
+
         vector<double> w = vector<double>(sim1x.size());
         for (int i = 0; i < w.size(); i++) {
             w[i] = calc_weight(f[i], wU[i], k, delta);
@@ -107,7 +119,7 @@ public:
         hsim->Add(hsim2c);
 
         double chi = maximum_likelihood(hsim);
-        hsim->Delete();
+        hsim->Delete(); hsim2c->Delete();
         return chi;
     }
 
@@ -157,26 +169,76 @@ int main(int argc, char const *argv[]) {
         fast and appears to find the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
         I think the best option is GSLSimAn, which takes a hell of a time to run (~15k function calls), but found the correct minimum. 
     */
-    string type = "GSLMultiMin", algorithm = "BFGS";
+    string type = "GSLSimAn", algorithm = "";
     // note that you can also change the bin count of the Dalitz plot at the top of this file, and that it may affect the quality of the fit
 
-    if (!(argc == 4 || argc == 5)) {
+    if (argc < 3) {
         cout << "Two modes are supported: " << endl;
-        cout << "./dalitz_fitter <output path> <data> <sim3a_i data> <sim data>" << endl;
-        cout << "./dalitz_fitter <output path> <data> <sim3a_i data>" << endl;
+        cout << "./dalitz_fitter <data> <sim3a_i data> <sim data>" << endl;
+        cout << "./dalitz_fitter <data> <sim3a_i data>" << endl;
+        cout << "Figures are automatically written to figures/dalitz_fit/" << endl;
+        cout << "Only the name of the files should be provided, e.g. output/true_events.root --> true_events" << endl;
+        cout << "Guess values can be supplied after the files. Format: .k X .delta Y .c Z" << endl;
+        cout << "The algorithm can also be specified similarly to the guess values with .type A .algo B" << endl;
         exit(1);
     }
     setup_style();
-    int fit_type;
-    if (argc == 5) {
+
+    // parse arguments
+    int fit_type, guess_pars = 0;
+    double guess[] = {0.5, 0.5, 0.2};
+    bool fix_delta = false;
+    string args[argc-1];
+    for (int i = 0; i < argc; i++) {
+        args[i] = argv[i];
+    }
+    for (int i = 3; i < argc; i++) {
+        if (args[i].find(".k") != string::npos) {
+            guess[0] = atof(args[i+1].c_str());
+            guess_pars += 2;
+        }
+        if (args[i].find(".delta") != string::npos) {
+            if (args[i+1].substr(6) == "fixed") {
+                fix_delta = true;
+            } else {
+                guess[1] = atof(args[i+1].c_str());
+            }
+            guess_pars += 2;
+        }
+        if (args[i].find(".c") != string::npos) {
+            guess[2] = atof(args[i+1].c_str());
+            guess_pars += 2;
+        }
+        if (args[i].find(".type") != string::npos) {
+            type = args[i+1];
+            if (type == "GSLSimAn") {
+                cout << "Warning: Using GSL simulated annealing, expect around 15k function calls." << endl;
+            }
+            guess_pars += 2;
+        }
+        if (args[i].find(".algo") != string::npos) {
+            algorithm = args[i+1];
+            guess_pars += 2;
+        }
+    }
+    if (argc == 3 + guess_pars) {
+        fit_type = 1;
+    } else if (argc == 4 + guess_pars) {
         fit_type = 2;
     } else {
-        fit_type = 1;
+        cout << "\033[1;31m" << "Invalid number of arguments." << "\033[0m" << endl;
+        exit(1);
     }
 
+    // create folder
+    time_t curr_t = time(0);
+    tm *t = localtime(&curr_t);
+    string folder = "figures/dalitz_fit/" + to_string(t->tm_mon) + "." + to_string(t->tm_mday) + " " + to_string(t->tm_hour) + ":" + to_string(t->tm_min) + ":" + to_string(t->tm_sec) + "/";
+    filesystem::create_directories(folder);
+
 //*** PREPARE THE DATA ***//
-    ROOT::RDF::RNode data = ROOT::RDataFrame("tree", argv[2]);
-    ROOT::RDF::RNode sim1 = ROOT::RDataFrame("tree", argv[3]);
+    ROOT::RDF::RNode data = ROOT::RDataFrame("tree", "output/" + args[1] + ".root");
+    ROOT::RDF::RNode sim1 = ROOT::RDataFrame("tree", "output/" + args[2] + ".root");
     ROOT::RDF::RNode sim2 = ROOT::RDataFrame(0); // empty dataframe
     filter(&data); // perform energy and momentum cut
     filter(&sim1);
@@ -211,7 +273,7 @@ int main(int argc, char const *argv[]) {
     Dalitz_fitter* fitter;
     ROOT::Math::Functor functor;
     if (fit_type == 2) {
-        sim2 = ROOT::RDataFrame("tree", argv[4]);
+        sim2 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
         filter(&sim2);
         setup_dataframe(&sim2);
         hsim2 = dalitz_slice(&sim2, bins, true);
@@ -223,24 +285,69 @@ int main(int argc, char const *argv[]) {
         fitter = new Dalitz_fitter(hdata, csim1);
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, 2);
     }
-    
+
+    // first minimization    
     auto minimizer = ROOT::Math::Factory::CreateMinimizer(type.c_str(), algorithm.c_str()); 
     minimizer->SetFunction(functor);
     minimizer->SetPrintLevel(2); // level 2 shows some additional live fitting information, which is nice so we know it is progressing
-    minimizer->SetLimitedVariable(0, "k", 0.5, 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691 for 2-
-    minimizer->SetLimitedVariable(1, "delta", 0.5, 0.01, 0, 1);
-    // minimizer->SetFixedVariable(1, "delta", 0);
+    minimizer->SetLimitedVariable(0, "k", guess[0], 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691 for 2-
+    if (fix_delta) {
+        minimizer->SetFixedVariable(1, "delta", 0);
+    } else {
+        minimizer->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
+    }
     if (fit_type == 2) {
-        minimizer->SetLimitedVariable(2, "c", 0.2, 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
+        minimizer->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
     }
     minimizer->Minimize();
+    const double* res = minimizer->X();
+
+    // second minimization to estimate errors
+    std::ofstream file(folder + "fit.txt");
+    file << "*** FIT REPORT ***" << endl;
+    file << format("Type: %1%, algorithm: %2%") % type % algorithm << endl;
+    file << format("Fitting %1% with %2%") % args[1] % args[2];
+    if (fit_type == 2) {
+        file << " and " << args[3];
+    }
+    file << format("\nUsing bin width: %1%") % bins << endl;
+    file << format("Function value at minimum: FVAL = %1%") % minimizer->MinValue() << endl;
+    file << "\nROOT Minimizer report: " << endl;
+    auto *coutbuf = std::cout.rdbuf();
+    if (!minimizer->ProvidesError()) {
+        file << "   Chosen algorithm does not support errors; a second fit was made to estimate them." << endl;
+        file << "    Results from first fit: " << endl;
+        file << format("        k = %1% (FREE)") % res[0] << endl;
+        file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
+        if (fit_type == 2) {
+            file << format("        c = %1% (FREE)") % res[2] << endl;
+        }
+        cout << "    \nEstimating errors with a local minima fitter" << endl;
+        auto minimize2 = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+        minimize2->SetFunction(functor);
+        minimize2->SetLimitedVariable(0, "k", res[0], 0.01, 0, 1); 
+        if (fix_delta) {
+            minimize2->SetFixedVariable(1, "delta", 0);
+        } else {
+            minimize2->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
+        }
+        if (fit_type == 2) {
+            minimize2->SetLimitedVariable(2, "c", res[2], 0.01, 0, 1);
+        }
+        minimize2->Minimize();
+        res = minimize2->X();
+        std::cout.rdbuf(file.rdbuf()); // redirect std::cout to fit.txt
+        minimize2->PrintResults();
+    } else {
+        std::cout.rdbuf(file.rdbuf());
+        minimizer->PrintResults();
+    }
+    std::cout.rdbuf(coutbuf); // remove the redirection
+
+    file.close();
     cout << "\nGenerating figures (this may take a while)" << endl;
 
 //*** GENERATE FIGURES ***//
-    string path = string(argv[1]) + "dalitz_fit/";
-    filesystem::create_directories(path);
-
-    const double* res = minimizer->X();
     const double k = res[0], delta = res[1]*2*M_PI;
     const double c = fit_type == 2 ? res[2] : 1;
     auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
@@ -268,7 +375,7 @@ int main(int argc, char const *argv[]) {
     }
     setup_dalitz_plot(dalitz_sim, "col");
     
-    path = string(argv[1]) + "dalitz_fit/dalitz.pdf";
+    string path = folder + "dalitz.pdf";
     c1->SetLogz();
     c1->SetRightMargin(0.15);
     c1->SaveAs(path.c_str());
@@ -282,8 +389,7 @@ int main(int argc, char const *argv[]) {
     dalitz_data->Add(dalitz_sim, -1); // subtract the two plots
     dalitz_data->Draw("colz");
 
-    path = string(argv[1]) + "dalitz_fit/dalitz_diff.pdf";
-    c2->SetLogz();
+    path = folder + "dalitz_diff.pdf";
     c2->SetRightMargin(0.15);
     c2->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
@@ -297,13 +403,13 @@ int main(int argc, char const *argv[]) {
     sim_rho.Scale(c/sim_rho.GetMaximum());
     if (fit_type == 2) {
         TH1D sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
-                        .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+                        .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
         sim2_rho.Scale((1-c)/sim2_rho.GetMaximum());
         sim_rho.Add(&sim2_rho);
     }
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
-    path = string(argv[1]) + "dalitz_fit/rho.pdf";
+    path = folder + "rho.pdf";
     c3->SetLeftMargin(0.15);
     c3->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
@@ -322,7 +428,7 @@ int main(int argc, char const *argv[]) {
     }
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
-    path = string(argv[1]) + "dalitz_fit/phi.pdf";
+    path = folder + "phi.pdf";
     c4->SetLeftMargin(0.15);
     c4->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
@@ -351,7 +457,7 @@ int main(int argc, char const *argv[]) {
     }
     setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 
-    path = string(argv[1]) + "dalitz_fit/E_cm.pdf";
+    path = folder + "E_cm.pdf";
     c5->SetLeftMargin(0.15);
     c5->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;

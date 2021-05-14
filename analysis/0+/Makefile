@@ -186,7 +186,7 @@ output/%.root : match/%m.root id/%mi.root $(event_analysis)
 .SECONDEXPANSION:
 
 # data file to compare against
-data = output/all_events.root
+data = output/true_events.root
 
 # from here on I'll make heavy use of a few somewhat exotic automatic variables.
 # example: pattern: figures/%.pdf, matched by figures/abc/xyz.pdf

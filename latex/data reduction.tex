@@ -54,7 +54,15 @@ When comparing the measured data with a theoretical model, two distinct steps mu
 The output of \simX{} is an unpacked \ROOT{} file with a structure identical to the output of the \Unpacker{}. This means that after a simulation is performed, the data can be subjected to all the same operations as the experimental data, right up to the analysis itself. 
 
 \subsubsection{sim3a}
-This final module is not officially part of \AUSAlib{}, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the reaction \ce{^12C -> ^8Be + \alpha} through the balamuth equation \note{reference?}, and outputs the data in a format suitable for input to simX. 
+This final module is not officially part of \AUSAlib{}, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the reaction \ce{^12C -> ^8Be + \alpha} through the balamuth equation \note{reference?}, and outputs the data in a format suitable for input to simX. \\
+
+The tool can also perform simulations with two final state channels. Since we are dealing exclusively with the reaction \ce{^12C \rightarrow ^8Be}, this means that we can simultaneously simulate decay events for both the ground state channel $\alpha_0$ and the first excited state channel $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
+\begin{align}
+	|f^2| &= \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2
+	&= \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}(\Re(f_lf_{l'}*)\cos\delta + \Im(f_lf_{l'}*)\sin\delta) \big]
+\end{align}
+
+With $l$ and $l'$ being the angular momenta \note{transfer} for these two channels, 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}
