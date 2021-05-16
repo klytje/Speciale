@@ -169,13 +169,13 @@ event_analysis := analysis/build/EventAnalysis
 analysis/build/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
 	make -C analysis/build/ EventAnalysis
 
-output/%.root : match/%m.root id/%mi.root $(event_analysis)
-	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
-
-# Analysis with interference
+# if the output is based on a simulation with sim3a_i, we need to perform a special merge operation on it as well
 output/%.root : id/%mi.root sim/configs/%.balamuth_i $(event_analysis)
 	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 	echo sim/raw/$*.root output/$*.root | root -l ../scripts/special/interference_merger.C
+
+output/%.root : match/%m.root id/%mi.root $(event_analysis)
+	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 
 ###############
 ### FIGURES ###
@@ -226,6 +226,26 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 # compare a simulation with the data. Generates a variety of projection plot for easy comparison
 sim_compare/%: ../scripts/special/build/sim_compare output/%.root $(data) | figures/%
 	$< $(shell pwd)/figures/$*/ output/$*.root output/all_events.root
+
+### Dalitz fitter ###
+# run "make dalitz_fit" without any parameters for information on how to use it. 
+# the code below here automatically passes any parameters directly to the program. note that we use "." for arguments since Makefile reserves many of the more common ways of passing arguments (-, --, =)
+# example: "make dalitz_fit true_events 2-_i 3- .k 0.5 .delta 0.5 .c 0.5 .type Minuit2 .algo Migrad
+# .delta fixed fixes delta at 0
+# I recommend using type GSLSimAn, in which case algo is ignored. It takes a lot of time, but it seems to be the most accurate one
+# type GSLMultiMin and type BFGS | BFGS2 also appear to do well, although they sometimes cannot find the true minimum
+
+# If the first argument is "dalitz_fit"...
+ifeq (dalitz_fit, $(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "dalitz_fit"
+  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(RUN_ARGS):;@:)
+endif
+
+.PHONY: dalitz_fit
+dalitz_fit: ../scripts/special/build/dalitz_fitter
+	eval $< $(RUN_ARGS)
 
 ### thesis specific figures ###
 # plots before / after of the TDC values

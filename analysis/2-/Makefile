@@ -231,6 +231,7 @@ sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_ev
 ### Dalitz fitter ###
 # run "make dalitz_fit" without any parameters for information on how to use it. 
 # the code below here automatically passes any parameters directly to the program. note that we use "." since Makefile reserves many of the more common ways of passing arguments (-, --, =)
+# .delta fixed fixes delta at 0
 # example: "make dalitz_fit true_events 2-_i 3- .k 0.5 .delta 0.5 .c 0.5 .type Minuit2 .algo Migrad
 # I recommend using type GSLSimAn, in which case algo is ignored. It takes a lot of time, but it seems to be the most accurate one
 # type GSLMultiMin and type BFGS | BFGS2 also appear to do well, although they sometimes cannot find the true minimum

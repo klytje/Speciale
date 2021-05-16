@@ -54,27 +54,40 @@ class Dalitz_fitter {
 public:
     Dalitz_fitter() = default;
 
-    // type 1 constructor
+    // fit_type 1 constructor
     Dalitz_fitter(TH2D* hdata, container* sim) {
         this->hdata = hdata;
-        this->sim1 = sim;
         sim1x = *(*sim).x;
         sim1y = *(*sim).y;
-        f = *(*sim).f;
-        wU = *(*sim).wU;
+        f1 = *(*sim).f;
+        wU1 = *(*sim).wU;
     }
 
-    // type 2 constructor
+    // fit_type 2 constructor
     Dalitz_fitter(TH2D* hdata, container* sim1, TH2D* hsim2) {
         this->hdata = hdata;
         this->hsim2 = hsim2;
-        this->sim1 = sim1;
         sim1x = *(*sim1).x;
         sim1y = *(*sim1).y;
-        f = *(*sim1).f;
-        wU = *(*sim1).wU;
+        f1 = *(*sim1).f;
+        wU1 = *(*sim1).wU;
     }
     
+    // fit_type 3 constructor
+    Dalitz_fitter(TH2D* hdata, container* sim1, container* sim2) {
+        this->hdata = hdata;
+
+        sim1x = *(*sim1).x;
+        sim1y = *(*sim1).y;
+        f1 = *(*sim1).f;
+        wU1 = *(*sim1).wU;
+
+        sim2x = *(*sim2).x;
+        sim2y = *(*sim2).y;
+        f2 = *(*sim2).f;
+        wU2 = *(*sim2).wU;
+    }
+
     // type 1 evaluation method. we only fit one sim3a_i data set
     double eval_type1(const double *params) const {
         const double k = params[0];
@@ -85,13 +98,17 @@ public:
             return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
         }
 
+        // calculate the weight
         vector<double> w = vector<double>(sim1x.size());
         for (int i = 0; i < w.size(); i++) {
-            w[i] = calc_weight(f[i], wU[i], k, delta);
+            w[i] = calc_weight(f1[i], wU1[i], k, delta);
         }
+
+        // generate the dalitz slices
         TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
         hsim->Scale(1./hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
 
+        // calculate chi
         double chi = maximum_likelihood(hsim);
         hsim->Delete();
         return chi;
@@ -108,18 +125,62 @@ public:
             return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
         }
 
+        // calculate the weight
         vector<double> w = vector<double>(sim1x.size());
         for (int i = 0; i < w.size(); i++) {
-            w[i] = calc_weight(f[i], wU[i], k, delta);
+            w[i] = calc_weight(f1[i], wU1[i], k, delta);
         }
+
+        // generate the dalitz slices
         TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
-        TH2D* hsim2c = (TH2D*) hsim2->Clone();
+        TH2D* hsim2c = (TH2D*) hsim2->Clone(); // we clone the locally stored sim2 histogram to avoid modifying it
+
+        // scale & add the two simulation histograms according to their ratio c
         hsim->Scale(c/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
-        hsim2c->Scale((1-c)/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        hsim2c->Scale((1-c)/hsim2c->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
         hsim->Add(hsim2c);
 
+        // calculate chi
         double chi = maximum_likelihood(hsim);
-        hsim->Delete(); hsim2c->Delete();
+        hsim->Delete(); hsim2c->Delete(); // clean up after ourselves
+        return chi;
+    }
+
+    // type 3 evaluation method. we fit two sim3a_i datasets
+    double eval_type3(const double *params) const {
+        const double k1 = params[0];
+        const double delta1 = params[1]*2*M_PI;
+        const double c = params[2];
+        const double k2 = params[3];
+        const double delta2 = params[4]*2*M_PI;
+
+        // some of the minimizers do not respect our limits, which results in nan values
+        if (k1 > 1 || k2 > 1 || c > 1) { 
+            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+        }
+
+        // calculate the weights
+        vector<double> w1 = vector<double>(sim1x.size());
+        vector<double> w2 = vector<double>(sim2x.size());
+        for (int i = 0; i < w1.size(); i++) {
+            w1[i] = calc_weight(f1[i], wU1[i], k1, delta1);
+        }
+        for (int i = 0; i < w2.size(); i++) {
+            w2[i] = calc_weight(f2[i], wU2[i], k2, delta2);
+        }
+
+        // generate the dalitz slices
+        TH2D* hsim1 = dalitz_slice(sim1x, sim1y, bins, w1);
+        TH2D* hsim2 = dalitz_slice(sim2x, sim2y, bins, w2);
+
+        // scale & add the two simulation histograms according to their ratio c
+        hsim1->Scale(c/hsim1->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        hsim2->Scale((1-c)/hsim2->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        hsim1->Add(hsim2);
+
+        // calculate chi
+        double chi = maximum_likelihood(hsim1);
+        hsim1->Delete(); hsim2->Delete(); // clean up after ourselves
         return chi;
     }
 
@@ -155,10 +216,9 @@ public:
 
 private:
     TH2D *hdata, *hsim2;
-    container *sim1; // only stored for cloning
-    vector<vector<vector<double>>> f;
-    vector<double> wU;
-    vector<double> sim1x, sim1y;
+    vector<vector<vector<double>>> f1, f2;
+    vector<double> wU1, wU2;
+    vector<double> sim1x, sim1y, sim2x, sim2y;
 };
 
 // the idea is to take two simulated data sets as input and fit them to the data through their Dalitz plots
@@ -174,8 +234,9 @@ int main(int argc, char const *argv[]) {
 
     if (argc < 3) {
         cout << "Two modes are supported: " << endl;
-        cout << "./dalitz_fitter <data> <sim3a_i data> <sim data>" << endl;
-        cout << "./dalitz_fitter <data> <sim3a_i data>" << endl;
+        cout << "./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
+        cout << "./dalitz_fitter <data> <sim3a_i data> <sim3a data>" << endl; // fit_type = 2
+        cout << "./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
         cout << "Figures are automatically written to figures/dalitz_fit/" << endl;
         cout << "Only the name of the files should be provided, e.g. output/true_events.root --> true_events" << endl;
         cout << "Guess values can be supplied after the files. Format: .k X .delta Y .c Z" << endl;
@@ -248,112 +309,189 @@ int main(int argc, char const *argv[]) {
     TH2D *hdata, *hsim2;
     {
         hdata = dalitz_slice(&data, bins, true);
-        // vector<double> datax = data.Take<double>("x").GetValue();
-        // vector<double> datay = data.Take<double>("y").GetValue();
-        // hdata = dalitz_slice(datax, datay, bins);
         hdata->Scale(1./hdata->GetMaximum());
     }
 
-    container* csim1;
-    vector<double> sim1x, sim1y, sim2x, sim2y, sim1wU; 
-    vector<vector<vector<double>>> sim1f;
+    // extract the data from the first simulation data set
+    container *csim1, *csim2;
+    vector<double> sim1x, sim1y, sim2x, sim2y, sim1wU, sim2wU; 
+    vector<vector<vector<double>>> sim1f, sim2f;
     {
+        if (!sim1.HasColumn("f")) {
+            cout << "\033[1;31m" << "ERROR: First simulation data set does not appear to be from sim3a_i" << "\033[0m" << endl;
+            exit(1);        
+        }
         sim1x = sim1.Take<double>("x").GetValue();
         sim1y = sim1.Take<double>("y").GetValue();
-        if (sim1.HasColumn("f")) {
-            sim1f = sim1.Take<vector<vector<double>>>("f").GetValue();
-            sim1wU = sim1.Take<double>("wU").GetValue();
-        } else {
-            cout << "\033[1;31m" << "ERROR: First simulation data set does not appear to be from sim3a_i" << "\033[0m" << endl;
-            exit(1);
-        }
+        sim1f = sim1.Take<vector<vector<double>>>("f").GetValue();
+        sim1wU = sim1.Take<double>("wU").GetValue();
         csim1 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
     }
 
-    Dalitz_fitter* fitter;
-    ROOT::Math::Functor functor;
+    // extract the data from the second simulation data set
     if (fit_type == 2) {
         sim2 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
         filter(&sim2);
         setup_dataframe(&sim2);
-        hsim2 = dalitz_slice(&sim2, bins, true);
-        hsim2->Scale(1./hdata->GetMaximum());
+        if (sim2.HasColumn("f")) { // check if we are dealing with sim3a_i data
+            cout << "Second simulation data set appears to be from sim3a_i." << endl;
+            fit_type == 3;
 
-        fitter = new Dalitz_fitter(hdata, csim1, hsim2);
-        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, 3);
-    } else {
-        fitter = new Dalitz_fitter(hdata, csim1);
-        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, 2);
+            sim2x = sim2.Take<double>("x").GetValue();
+            sim2y = sim2.Take<double>("y").GetValue();
+            sim2f = sim2.Take<vector<vector<double>>>("f").GetValue();
+            sim2wU = sim2.Take<double>("wU").GetValue();
+            csim2 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
+        } else {
+            hsim2 = dalitz_slice(&sim2, bins, true);
+            hsim2->Scale(1./hdata->GetMaximum());
+        }
     }
 
-    // first minimization    
+    // prepare the fitting algorithm
+    Dalitz_fitter* fitter;
+    ROOT::Math::Functor functor;
+    int pars = 0;
+    if (fit_type == 1) {
+        pars = 2; // k & delta
+        fitter = new Dalitz_fitter(hdata, csim1);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, pars);
+    } else if (fit_type == 2) {
+        pars = 3; // k, delta, c
+        fitter = new Dalitz_fitter(hdata, csim1, hsim2);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
+    } else if (fit_type == 3) {
+        pars = 5; // k1, delta1, c, k2, delta2
+        fitter = new Dalitz_fitter(hdata, csim1, csim2);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
+    }
+
+    // a small function to set the fitting parameters. I know it's longer than it strictly needs to be, but I think this makes it easier to read
+    auto set_params = [&fit_type, &fix_delta, &guess] (ROOT::Math::Minimizer* m) {
+        if (fit_type == 1) {
+            m->SetLimitedVariable(0, "k", guess[0], 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691 for 2-
+            if (fix_delta)
+                m->SetFixedVariable(1, "delta", 0);
+            else 
+                m->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
+        }
+        if (fit_type == 2) {
+            m->SetLimitedVariable(0, "k", guess[0], 0.01, 0, 1);
+            if (fix_delta)
+                m->SetFixedVariable(1, "delta", 0);
+            else 
+                m->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
+            m->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
+        }
+        if (fit_type == 3) { // order: k1, d1, c, k2, c2
+            m->SetLimitedVariable(0, "k1", guess[0], 0.01, 0, 1);
+            m->SetLimitedVariable(3, "k2", guess[3], 0.01, 0, 1);
+            m->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
+            if (fix_delta) {
+                m->SetFixedVariable(1, "delta1", 0);
+                m->SetFixedVariable(4, "delta2", 0);
+            } else {
+                m->SetLimitedVariable(1, "delta1", guess[1], 0.01, 0, 1);
+                m->SetLimitedVariable(4, "delta2", guess[4], 0.01, 0, 1);
+            }
+        }
+    };
+
+    // first minimization
     auto minimizer = ROOT::Math::Factory::CreateMinimizer(type.c_str(), algorithm.c_str()); 
     minimizer->SetFunction(functor);
     minimizer->SetPrintLevel(2); // level 2 shows some additional live fitting information, which is nice so we know it is progressing
-    minimizer->SetLimitedVariable(0, "k", guess[0], 0.01, 0, 1); // Morten found k = 0.186, delta = 0.691 for 2-
-    if (fix_delta) {
-        minimizer->SetFixedVariable(1, "delta", 0);
-    } else {
-        minimizer->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
-    }
-    if (fit_type == 2) {
-        minimizer->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
-    }
+    set_params(minimizer);
     minimizer->Minimize();
     const double* res = minimizer->X();
 
-    // second minimization to estimate errors
-    std::ofstream file(folder + "fit.txt");
+    // prints MINOS errors
+    std::ofstream file(folder + "info.txt"); // create a file to store all of the fit information
+    auto minos_errs = [&fit_type, &res, &file] (ROOT::Math::Minimizer* m) {
+        // const double* res2 = m->X();
+        double err_up[5], err_low[5];
+        m->GetMinosError(0, err_low[0], err_up[0]);
+        m->GetMinosError(1, err_low[1], err_up[1]);
+        if (fit_type == 2 || fit_type == 3) {
+            m->GetMinosError(2, err_low[2], err_up[2]);
+        }
+        if (fit_type == 3) {
+            m->GetMinosError(3, err_low[3], err_up[3]);
+            m->GetMinosError(4, err_low[4], err_up[4]);
+        }
+        file << "\nEstimating errors with MINOS: " << endl;
+        file << format("k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
+        file << format("delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+        if (fit_type == 2 || fit_type == 3) {
+            file << format("c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
+        }
+        if (fit_type == 3) {
+            file << format("k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
+            file << format("delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
+        }
+    };
+
+    // print a bunch of information to the file
     file << "*** FIT REPORT ***" << endl;
     file << format("Type: %1%, algorithm: %2%") % type % algorithm << endl;
     file << format("Fitting %1% with %2%") % args[1] % args[2];
-    if (fit_type == 2) {
+    if (fit_type == 2 || fit_type == 3) {
         file << " and " << args[3];
     }
     file << format("\nUsing bin width: %1%") % bins << endl;
     file << format("Function value at minimum: FVAL = %1%") % minimizer->MinValue() << endl;
     file << "\nROOT Minimizer report: " << endl;
     auto *coutbuf = std::cout.rdbuf();
-    if (!minimizer->ProvidesError()) {
-        file << "   Chosen algorithm does not support errors; a second fit was made to estimate them." << endl;
+
+    // unless the first fit was a Migrad, we perform a quick second fit with it to estimate the errors.
+    if (algorithm != "Migrad") {
         file << "    Results from first fit: " << endl;
         file << format("        k = %1% (FREE)") % res[0] << endl;
         file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
         if (fit_type == 2) {
             file << format("        c = %1% (FREE)") % res[2] << endl;
         }
-        cout << "    \nEstimating errors with a local minima fitter" << endl;
+        cout << "    \nEstimating errors with Migrad" << endl;
+
+        // update our guess values
+        for (int i = 0; i < pars; i++) guess[i] = res[i];
+
         auto minimize2 = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
         minimize2->SetFunction(functor);
-        minimize2->SetLimitedVariable(0, "k", res[0], 0.01, 0, 1); 
-        if (fix_delta) {
-            minimize2->SetFixedVariable(1, "delta", 0);
-        } else {
-            minimize2->SetLimitedVariable(1, "delta", guess[1], 0.01, 0, 1);
-        }
-        if (fit_type == 2) {
-            minimize2->SetLimitedVariable(2, "c", res[2], 0.01, 0, 1);
-        }
-        minimize2->Minimize();
+        set_params(minimize2);
+        minimize2->Minimize(); 
         res = minimize2->X();
         std::cout.rdbuf(file.rdbuf()); // redirect std::cout to fit.txt
         minimize2->PrintResults();
+        minos_errs(minimize2);
     } else {
         std::cout.rdbuf(file.rdbuf());
         minimizer->PrintResults();
+        minos_errs(minimizer);
     }
     std::cout.rdbuf(coutbuf); // remove the redirection
-
     file.close();
-    cout << "\nGenerating figures (this may take a while)" << endl;
 
 //*** GENERATE FIGURES ***//
-    const double k = res[0], delta = res[1]*2*M_PI;
+    cout << "\nGenerating figures (this may take a while)" << endl;
+    const double k = res[0]; 
+    const double delta = res[1]*2*M_PI;
     const double c = fit_type == 2 ? res[2] : 1;
-    auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
+    const double k2 = fit_type == 3 ? res[3] : 1;
+    const double delta2 = fit_type == 3 ? res[4] : 1;
+
+    auto weights = [] (vector<vector<double>> f, double wU, double k, double delta) { 
         return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
     };
+    auto w1 = [&k, &delta, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k, delta);};
+    auto w2 = [&k2, &delta2, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k2, delta2);};
     sim1 = sim1.Define("w", weights, {"f", "wU"});
+
+    bool sim2_weighted = false;
+    if (fit_type == 3) {
+        sim2 = sim2.Define("w", weights, {"f", "wU"});
+        sim2_weighted = true;
+    }
 
     // DALITZ PLOTS
     TCanvas* c1 = new TCanvas("c1", "c", 900, 600);
@@ -369,7 +507,7 @@ int main(int argc, char const *argv[]) {
     TH2D* dalitz_sim = dalitz(&sim1, 2*bins, true, true);
     dalitz_sim->Scale(c/dalitz_sim->GetMaximum());
     if (fit_type == 2) { // we need to add the two simulations with their respective ratios
-        TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true);
+        TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true, sim2_weighted);
         dalitz_sim2->Scale((1-c)/dalitz_sim2->GetMaximum());
         dalitz_sim->Add(dalitz_sim2);
     }
@@ -402,8 +540,14 @@ int main(int argc, char const *argv[]) {
     dat_rho.Scale(1./dat_rho.GetMaximum());
     sim_rho.Scale(c/sim_rho.GetMaximum());
     if (fit_type == 2) {
-        TH1D sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+        TH1D sim2_rho;
+        if (fit_type == 3) {
+            sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                                .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+        } else {
+            sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
                         .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+        }
         sim2_rho.Scale((1-c)/sim2_rho.GetMaximum());
         sim_rho.Add(&sim2_rho);
     }
@@ -422,7 +566,12 @@ int main(int argc, char const *argv[]) {
     dat_ang.Scale(1./dat_ang.GetMaximum());
     sim_ang.Scale(c/sim_ang.GetMaximum());
     if (fit_type == 2) {
-        TH1D sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+        TH1D sim2_ang;
+        if (fit_type == 3) {
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+        } else {
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+        }
         sim2_ang.Scale((1-c)/sim2_ang.GetMaximum());
         sim_ang.Add(&sim2_ang);
     }
@@ -449,7 +598,14 @@ int main(int argc, char const *argv[]) {
     if (fit_type == 2) {
         TH1D* sim2_E = new TH1D("sim2_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
         for (int i = 0; i < 3; i++) {
-            TH1D sim2_temp = sim2.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+            TH1D sim2_temp;
+            if (fit_type == 3) {
+                sim2_temp= sim2.Define("tmp", (format("E_cm[%1%]") % i).str())
+                                .Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+            } else {
+                sim2_temp= sim2.Define("tmp", (format("E_cm[%1%]") % i).str())
+                                .Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+            }
             sim2_E->Add(&sim2_temp);
         }
         sim2_E->Scale((1-c)/sim2_E->GetMaximum());
