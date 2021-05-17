@@ -4,7 +4,7 @@ This section will introduce all of the relevant theory for this thesis.
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
 
-Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, which is based on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
+Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, and through that, on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
 
 \subsection{R-matrix theory}
 This whole section on R-matrix theory follows the general steps used in the lecture notes by D. Baye \cite{Baye lecture notes}. \\ 
@@ -165,13 +165,13 @@ $\gamma_{nl}$ is known as the reduced width amplitude. It is easier to see its s
 
 where \note{ask Hans about this!}. \\
 
-Note that the R-matrix has an infinity of real simple poles, bounded from below. If we instead only want to deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. Instead of going through the derivation, we refer to \note{citation}, and list the primary result
+Note that the R-matrix has an infinity of real simple poles, bounded from below. If we instead only want to deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. Since we only need a single result from this description, see e.g. \cite{Baye} for a derivation of the equation
 \begin{align} \label{theory: r-matrix: Gamma gamma}
 	\Gamma = \frac{2 \gamma_{nl}^2 P(E_R)}{1 + \gamma_{nl}^2 S'(E_R)}
 \end{align}
 which relates the usual width $\Gamma$ to the reduced width $\gamma_{nl}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant when we want to compare simulations from different reaction models. 
 
-\subsubsection{Applications}
+\subsubsection{Applications} \label{sec: theory: r-matrix: applications}
 One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
 
 For the phase shift, we obtain the equation
@@ -206,7 +206,7 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 
 These two equations are useful when we want to relate the reduced width $\gamma^2$ to the \note{normal width} $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
 
-\subsubsection{Three-body decays}
+\subsubsection{Three-body decays} \label{sec: theory: r-matrix: three body}
 So far, the R-matrix theory can only describe two-body decays. To extend this model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
 
 By using these extensions, one can derive similar equations as for the two-body model, which will not be discussed here. This three-body model is used internally in some of the simulation tools which will be introduced later. 

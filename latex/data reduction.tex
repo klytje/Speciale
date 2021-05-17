@@ -51,18 +51,47 @@ The module also allows the user to define new properties, such as the four-momen
 \subsubsection{simX}
 When comparing the measured data with a theoretical model, two distinct steps must be simulated: the actual physical process, and its interaction with the experimental setup. \simX{} handles both of these. It can also be configured to take the first step as input, and only simulate their interaction with the detection system, which allows users to generate their Monte Carlo data in any way they like. \\
 
-The output of \simX{} is an unpacked \ROOT{} file with a structure identical to the output of the \Unpacker{}. This means that after a simulation is performed, the data can be subjected to all the same operations as the experimental data, right up to the analysis itself. 
+The simulation is based on the three-body decay extension of R-matrix theory as mentioned in section \ref{sec: theory: r-matrix: three body}. By neglecting Bose symmetry, one can derive the following equation for the decay amplitude \cite{Lane}
+\begin{align*}
+	|f|^2 \propto \frac{\Gamma_1\Gamma_2}{E_{2-3} - E_0 - \gamma_2^2[S_{l'}(E_{2-3}) - S_{l'}(E_0)]^2 + \Gamma_2^2/4}
+\end{align*}
+which is the foundation of this simulation tool. In this equation, $\Gamma_1$ and $\Gamma_2$ are the widths for each step of the decay, related to $\gamma_1$ and $\gamma_2$ through (\ref{theory: r-matrix: Gamma gamma}). $E_0$ is then the formal energy of the \ce{^8Be} resonance. To improve the accuracy of the tool, an angular correlation function can also be supplied. These were calculated with my own tool, to be introduced later. The most relevant correlation functions can be seen on table \ref{table: datared: Wtheta}. \\
+
+\begin{wraptable}[9]{r}{7cm}
+	\vspace{-16pt}
+	\begin{tabular}{ll}
+		State       & $W(\theta)$ \\ \hline \vrule width 0pt height 2.5ex
+		$0^+$, $l=2$ & $\frac{45}{4}\cos^4\theta$ \\[3pt]
+		$2^-$, $l=1$ & $\frac{3}{2}\sin^2\theta$ \\[3pt]
+		$2^-$, $l=3$ & $-\frac{45}{8}\cos^4\theta + \frac{21}{4}\cos^2\theta + \frac{3}{8}$ \\[3pt]
+		$3^-$, $l=1$ & $\frac{3}{7}\cos^2\theta + \frac{6}{7}$ \\[3pt]
+		$3^-$, $l=3$ & $\frac{15}{4}\cos^4 - 4\cos^2\theta + \frac{19}{12}$
+	\end{tabular}
+	\caption{The relevant correlation functions calculated with my own tool.}
+	\label{table: datared: Wtheta}
+\end{wraptable}
+
+The output of \simX{} is an unpacked \ROOT{} file with a structure identical to the output of the \Unpacker{}. This means that after a simulation is performed, the data can be subjected to the exact same operations as the experimentally measured data, right up to the analysis itself. 
 
 \subsubsection{sim3a}
-This final module is not officially part of \AUSAlib{}, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the reaction \ce{^12C -> ^8Be + \alpha} through the balamuth equation \note{reference?}, and outputs the data in a format suitable for input to simX. \\
+This final module is not officially part of \AUSAlib{}, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the specific reaction \ce{^12C -> ^8Be + \alpha} based on the following R-matrix expression, first proposed in \cite{Balamuth}:
+\begin{align} \label{datared: tools: balamuth eq}
+	f_{1,23} \propto &\sum_{m_b} (lm_a-m_bj_bm_b | j_am_a)Y_l^{m_a-m_b}(\Theta_1, \Phi_1)Y_{l'}^{m_b}(\theta_2, \varphi_2) \\
+	&\times \frac{\sqrt{\Gamma_1 \Gamma_2/\sqrt{E_1E_{2-3}}}e^{i(\delta_{l'}-\phi_{l'})}}{E_0 - \gamma_2^2[S_{l'}(E_{2-3}) - S_{l'}(E_0)] - E_{2-3} - \frac{i}{2}\Gamma_2}
+\end{align}
+Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directions for the primary and secondary particles \note{ensure these terms have been introduced} in the center-of-mass frames of \ce{^12C} and \ce{^8Be}, respectively. $j_a$ and $j_b$ are then the spins of these two states, and $\delta_{l'} - \phi_{l'}$ the Coulomb minus hard sphere phase shift, as presented in section \ref{sec: theory: r-matrix: applications}. As the indices on $f_{1,23}$ implies, this equation defines a definite order of emission. Since we are dealing with three identical bosons, we need to symmetrize it as
+\begin{align*}
+	f_l = f_{1,23} + f_{2,13} + f_{3,12}
+\end{align*} 
+which will then introduce interference effects in the simulation. \\
 
-The tool can also perform simulations with two final state channels. Since we are dealing exclusively with the reaction \ce{^12C \rightarrow ^8Be}, this means that we can simultaneously simulate decay events for both the ground state channel $\alpha_0$ and the first excited state channel $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
+A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for multiple orbital angular momentum values for the first $\alpha$ particle. This modification will allow us to simultaneously simulate decay events for both $\alpha_0$ and $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
 \begin{align}
 	&|f^2| = \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2 \nonumber\\
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the angular momentum \note{transfer} for the two channels, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. 
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}
@@ -115,10 +144,10 @@ The first step of the reduction is to convert it to a format \ROOT{} recognizes.
 		& 5804.77(5)
 	\end{tabular}
 	\caption{The decay energies of the composite target used for the calibration. They are taken from the NNDC \cite{nudat}.}
-	\label{analysis: table: calibration}
+	\label{table: analysis: calibration}
 \end{wraptable}
 
-A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{analysis: table: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
+A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{table: analysis: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
 
 After the energy calibration, the events from the front and backside of each detector is matched with the \Sorter{} tool, effectively turning the list of detector hits into a list of detected particles. To identify which particles we are dealing with, the \Identifier{} is used. This tool will also correct for the energy loss due to passage through both the target and the dead layer of the detectors. After this, the data is finally passed to the \EventBuilder{}, which deals with individual events. \\
 

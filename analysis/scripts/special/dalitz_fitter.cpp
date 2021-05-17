@@ -296,9 +296,9 @@ int main(int argc, char const *argv[]) {
 
     // parse arguments
     string type = "GSLSimAn", algorithm = "";
-    bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
+    bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT! this is the number of bins for each axis on a Dalitz *slice*, so the total plot has twice this number
     int fit_type, guess_pars = 0;
-    double guess[] = {0.5, 3.14, 0.2, 0.5, 3.14};
+    double guess[] = {0.5, 0.5, 0.2, 0.5, 0.5};
     bool fix_delta = false;
     string args[argc-1];
     for (int i = 0; i < argc; i++) {
@@ -615,20 +615,20 @@ int main(int argc, char const *argv[]) {
     cout << "Created " << path << "." << endl;
 
     // RADIAL PROJECTION
-    vector<double> x_axis = {100, 0, 1};
+    vector<double> x_axis = {0, 1};
     TCanvas* c3 = new TCanvas("c3", "c", 600, 600);
-    TH1D dat_rho = data.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"dat_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    TH1D sim_rho = sim1.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"sim_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    TH1D dat_rho = data.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"dat_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+    TH1D sim_rho = sim1.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"sim_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
     dat_rho.Scale(1./dat_rho.GetMaximum());
     sim_rho.Scale(c/sim_rho.GetMaximum());
     if (fit_type == 2) {
         TH1D sim2_rho;
         if (fit_type == 3) {
             sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
-                                .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+                                .Histo1D({"sim2_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
         } else {
             sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
-                        .Histo1D({"sim2_rho", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+                        .Histo1D({"sim2_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
         }
         sim2_rho.Scale((1-c)/sim2_rho.GetMaximum());
         sim_rho.Add(&sim2_rho);
@@ -641,18 +641,18 @@ int main(int argc, char const *argv[]) {
     cout << "Created " << path << "." << endl;
 
     // ANGULAR PROJECTION
-    x_axis = {100, 0, M_PI/3};
+    x_axis = {0, M_PI/3};
     TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
-    TH1D dat_ang = data.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    TH1D sim_ang = sim1.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+    TH1D dat_ang = data.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+    TH1D sim_ang = sim1.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
     dat_ang.Scale(1./dat_ang.GetMaximum());
     sim_ang.Scale(c/sim_ang.GetMaximum());
     if (fit_type == 2) {
         TH1D sim2_ang;
         if (fit_type == 3) {
-            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
         } else {
-            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
         }
         sim2_ang.Scale((1-c)/sim2_ang.GetMaximum());
         sim_ang.Add(&sim2_ang);
@@ -665,28 +665,28 @@ int main(int argc, char const *argv[]) {
     cout << "Created " << path << "." << endl;
 
     // ENERGY COMPARISON
-    x_axis = {100, 0, 7000};
+    x_axis = {0, 7000};
     TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
-    TH1D* dat_E = new TH1D("dat_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
-    TH1D* sim_E = new TH1D("sim_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
+    TH1D* dat_E = new TH1D("dat_E", "h", bins, x_axis[0], x_axis[1]);
+    TH1D* sim_E = new TH1D("sim_E", "h", bins, x_axis[0], x_axis[1]);
     for (int i = 0; i < 3; i++) {
-        TH1D dat_temp = data.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-        TH1D sim_temp = sim1.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+        TH1D dat_temp = data.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        TH1D sim_temp = sim1.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
         dat_E->Add(&dat_temp);
         sim_E->Add(&sim_temp);
     }
     dat_E->Scale(1/dat_E->GetMaximum());
     sim_E->Scale(c/sim_E->GetMaximum());
     if (fit_type == 2) {
-        TH1D* sim2_E = new TH1D("sim2_E", "h", int(x_axis[0]), x_axis[1], x_axis[2]);
+        TH1D* sim2_E = new TH1D("sim2_E", "h", bins, x_axis[0], x_axis[1]);
         for (int i = 0; i < 3; i++) {
             TH1D sim2_temp;
             if (fit_type == 3) {
                 sim2_temp= sim2.Define("tmp", (format("E_cm[%1%]") % i).str())
-                                .Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
+                                .Histo1D({"sim2_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
             } else {
                 sim2_temp= sim2.Define("tmp", (format("E_cm[%1%]") % i).str())
-                                .Histo1D({"sim2_temp", "h", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
+                                .Histo1D({"sim2_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
             }
             sim2_E->Add(&sim2_temp);
         }
