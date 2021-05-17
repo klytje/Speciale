@@ -60,6 +60,7 @@ public:
         sim1y = *(*sim).y;
         f1 = *(*sim).f;
         wU1 = *(*sim).wU;
+        setup_vdat(hdata);
     }
 
     // fit_type 2 constructor
@@ -70,6 +71,7 @@ public:
         sim1y = *(*sim1).y;
         f1 = *(*sim1).f;
         wU1 = *(*sim1).wU;
+        setup_vdat(hdata);
     }
     
     // fit_type 3 constructor
@@ -85,6 +87,7 @@ public:
         sim2y = *(*sim2).y;
         f2 = *(*sim2).f;
         wU2 = *(*sim2).wU;
+        setup_vdat(hdata);
     }
 
     // type 1 evaluation method. we only fit one sim3a_i data set
@@ -105,7 +108,8 @@ public:
 
         // generate the dalitz slices
         TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
-        hsim->Scale(1./hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
+        double scale = calc_scale(hsim);
+        hsim->Scale(scale);
 
         // calculate chi
         double chi = maximum_likelihood(hsim);
@@ -135,9 +139,14 @@ public:
         TH2D* hsim2c = (TH2D*) hsim2->Clone(); // we clone the locally stored sim2 histogram to avoid modifying it
 
         // scale & add the two simulation histograms according to their ratio c
+        // we first normalize it so we can correctly add the two simulations
         hsim->Scale(c/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
         hsim2c->Scale((1-c)/hsim2c->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
         hsim->Add(hsim2c);
+
+        // we can now scale the combined product to match the data
+        double scale = calc_scale(hsim);
+        hsim->Scale(scale);
 
         // calculate chi
         double chi = maximum_likelihood(hsim);
@@ -173,9 +182,14 @@ public:
         TH2D* hsim2 = dalitz_slice(sim2x, sim2y, bins, w2);
 
         // scale & add the two simulation histograms according to their ratio c
+        // we first normalize it so we can correctly add the two simulations
         hsim1->Scale(c/hsim1->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
         hsim2->Scale((1-c)/hsim2->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
         hsim1->Add(hsim2);
+
+        // we can now scale the combined product to match the data
+        double scale = calc_scale(hsim1);
+        hsim1->Scale(scale);
 
         // calculate chi
         double chi = maximum_likelihood(hsim1);
@@ -195,7 +209,7 @@ public:
                 }
             }
         }
-        return chi;
+        return 2*chi;
     }
 
     // does not work since mu can be 0
@@ -218,6 +232,38 @@ private:
     vector<vector<vector<double>>> f1, f2;
     vector<double> wU1, wU2;
     vector<double> sim1x, sim1y, sim2x, sim2y;
+    vector<double> vdat; // stores all entries of hdata, used to determine the scaling factor
+
+    // prepares the vdat vector needed for calc_scale. this is just to avoid repeating this calculation for every evaluation
+    void setup_vdat(TH2D* data) {
+        vdat = vector<double>(pow(bins, 2), 0);
+        for (int i = 1; i < bins; i++) { // skip underflow bin
+            for (int j = 1; j < bins; j++) {
+                vdat[i*bins+j] = hdata->GetBinContent(i, j);
+            }
+        }
+        sort(vdat.begin(), vdat.end(), greater<double>());
+    }
+
+    // calculate the scaling factor between the simulation and the data based on the cmp_bins highest values of both
+    double calc_scale(TH2D* hsim) const {
+        int cmp_bins = bins;
+        int bins2 = pow(bins, 2);
+        vector<double> vsim(bins2, 0);
+        for (int i = 1; i < bins; i++) {
+            for (int j = 1; j < bins; j++) {
+                vsim[i*bins+j] = hsim->GetBinContent(i, j);
+            }
+        }
+        sort(vsim.begin(), vsim.end(), greater<double>());
+        double scale = 0;
+        for (int i = 0; i < cmp_bins; i++) {
+            scale += vdat[i]/vsim[i];
+        }
+
+        // scale is now the sum of the differences of all bins. to get a scale factor, we divide by the number of bins
+        return abs(scale/cmp_bins); 
+    }
 };
 
 // the idea is to take two simulated data sets as input and fit them to the data through their Dalitz plots
@@ -230,19 +276,19 @@ int main(int argc, char const *argv[]) {
     */
     if (argc < 3) {
         cout << "Two modes are supported: " << endl;
-        cout << "./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
-        cout << "./dalitz_fitter <data> <sim3a_i data> <sim3a data>" << endl; // fit_type = 2
-        cout << "./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
+        cout << "\t./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
+        cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a data>" << endl; // fit_type = 2
+        cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
         cout << "Figures are automatically written to figures/dalitz_fit/" << endl;
         cout << "Only the name of the files should be provided, e.g. output/true_events.root --> true_events" << endl;
         cout << "The following list of parameters can be supplied like \".X Y\"" << endl;
-        cout << "\tk: guess for the l : l' ratio of the first simulated data set" << endl;
-        cout << "\tdelta: guess for the delta value of the first simulated data set" << endl;
-        cout << "\tk2: guess for the l : l' ratio of the second simulated data set" << endl;
+        cout << "\tk:      guess for the l : l' ratio of the first simulated data set" << endl;
+        cout << "\tdelta:  guess for the delta value of the first simulated data set" << endl;
+        cout << "\tk2:     guess for the l : l' ratio of the second simulated data set" << endl;
         cout << "\tdelta2: guess for the delta value of the second simulated data set" << endl;
-        cout << "\ttype: fitting class used (e.g. GSLMultiMin, GSLSimAn, Minuit2)" << endl;
-        cout << "\talgo: fitting algorithm used (e.g. BFGS2, Migrad)" << endl;
-        cout << "\tbins: number of bins. This may affect the quality of the fit" << endl;
+        cout << "\ttype:   fitting class used (e.g. GSLMultiMin, GSLSimAn, Minuit2)" << endl;
+        cout << "\talgo:   fitting algorithm used (e.g. BFGS2, Migrad)" << endl;
+        cout << "\tbins:   number of bins. This may affect the quality of the fit" << endl;
         cout << "Either delta can also be set to \"fixed\", in which case they will be fixed to 0" << endl;
         exit(1);
     }
@@ -250,7 +296,7 @@ int main(int argc, char const *argv[]) {
 
     // parse arguments
     string type = "GSLSimAn", algorithm = "";
-    bins = 50; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
+    bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
     int fit_type, guess_pars = 0;
     double guess[] = {0.5, 3.14, 0.2, 0.5, 3.14};
     bool fix_delta = false;
@@ -263,7 +309,7 @@ int main(int argc, char const *argv[]) {
             guess[0] = atof(args[i+1].c_str());
             guess_pars += 2;
         }
-        if (args[i].find(".delta") != string::npos || args[i].find(".delta") != string::npos) {
+        else if (args[i].find(".delta") != string::npos || args[i].find(".delta") != string::npos) {
             if (args[i+1] == "fixed") {
                 fix_delta = true;
             } else {
@@ -271,15 +317,15 @@ int main(int argc, char const *argv[]) {
             }
             guess_pars += 2;
         }
-        if (args[i].find(".c") != string::npos) {
+        else if (args[i].find(".c") != string::npos) {
             guess[2] = atof(args[i+1].c_str());
             guess_pars += 2;
         }
-        if (args[i].find(".k2") != string::npos) {
+        else if (args[i].find(".k2") != string::npos) {
             guess[3] = atof(args[i+1].c_str());
             guess_pars += 2;
         }
-        if (args[i].find(".delta2") != string::npos) {
+        else if (args[i].find(".delta2") != string::npos) {
             if (args[i+1] == "fixed") {
                 fix_delta = true;
             } else {
@@ -287,15 +333,15 @@ int main(int argc, char const *argv[]) {
             }
             guess_pars += 2;
         }
-        if (args[i].find(".type") != string::npos) {
+        else if (args[i].find(".type") != string::npos) {
             type = args[i+1];
             guess_pars += 2;
         }
-        if (args[i].find(".algo") != string::npos) {
+        else if (args[i].find(".algo") != string::npos) {
             algorithm = args[i+1];
             guess_pars += 2;
         }
-        if (args[i].find(".bins") != string::npos) {
+        else if (args[i].find(".bins") != string::npos) {
             bins = atof(args[i+1].c_str());
             guess_pars += 2;
         }
@@ -334,7 +380,7 @@ int main(int argc, char const *argv[]) {
     TH2D *hdata, *hsim2;
     {
         hdata = dalitz_slice(&data, bins, true);
-        hdata->Scale(1./hdata->GetMaximum());
+        // hdata->Scale(1./hdata->GetMaximum());
     }
 
     // extract the data from the first simulation data set
@@ -446,14 +492,14 @@ int main(int argc, char const *argv[]) {
             m->GetMinosError(4, err_low[4], err_up[4]);
         }
         file << "    Estimating errors with MINOS: " << endl;
-        file << format("    k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
-        file << format("    delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+        file << format("        k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
+        file << format("        delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
         if (fit_type == 2 || fit_type == 3) {
-            file << format("    c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
+            file << format("        c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
         }
         if (fit_type == 3) {
-            file << format("    k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
-            file << format("    delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
+            file << format("        k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
+            file << format("        delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
         }
         file << endl;
     };

@@ -204,12 +204,7 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
 \end{align}
 
-These two equations are useful when we want to relate the reduced width $\gamma^2$ to the \note{normal width} $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). \\
-
-\note{malpositioned, move somewhere else} Whenever we want to use R-matrix theory, we usually have to specify the interaction radius $a$. Since this radius obviously depends on the strength of the Coulomb force, it will in general depend on the interacting nuclei. A popular choice for its value is to use the nuclear radii \note{reference Lane p. 266 eq 1.1}: 
-\begin{align*}
-	a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx 1.4fm
-\end{align*}
+These two equations are useful when we want to relate the reduced width $\gamma^2$ to the \note{normal width} $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
 
 \subsubsection{Three-body decays}
 So far, the R-matrix theory can only describe two-body decays. To extend this model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
@@ -231,6 +226,17 @@ where $\theta$ is the angle between the axis defined by the first decay and the 
 	2\cos \theta = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
 \end{align}
 
+A few other relevant properties of 3-particle reactions are presented in \cite{Ohlsen}. From this paper, especially the excitation energy of the particle 2-3 system $E_{2-3}$ is important, since it is simply the excitation energy of \ce{^8Be}. This quantity is defined as
+\begin{align} \label{theory: kinematics: E23}
+	E_{2-3} = \frac{p^2_{2-3}}{2\mu} = \frac{(\bm{p}_2 - \bm{p}_3)^2}{4m_{\alpha}}
+\end{align}
+
+Another quantity from the same paper is the breakup angle $\theta$, defined as
+\begin{align} \label{theory: kinematics: theta data}
+	\cos \theta = \frac{\bm{p}_{1-23} \cdot \bm{p}_{2-3}}{p_{1-23}p_{2-3}}
+\end{align}
+\note{difference between this and (\ref{theory: kinematics: theta})}
+
 \subsubsection{The Dalitz plot}
 The goal of this thesis is to understand the excited states of \ce{^12C} based on the three $\alpha$-particles resulting from its decay. We can describe each of these decay products with a four-vector, for a total of $12$ degrees of freedom. Conservation of energy and momentum removes four degrees, the three masses $m_{\alpha}$ removes three, and finally the orientation of each product removes another three. Thus we are left wondering how best to choose the two remaining degrees of freedom. \\
 
@@ -241,7 +247,7 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 
 devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \note{https://arxiv.org/pdf/hep-ph/0507058.pdf}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen in figure \ref{fig: theory: dalitz: dalitz}. \\
 
-Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. This single slice contains all the information of the decay, but since it is easier to see structure on the full plot, we will mainly be using those. \\
+Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Although this single slice contains all the information of the decay, since it is easier to see structure on the full plot, we will mainly be using those. \\
 
 \begin{figure}[t]
 	\centering
@@ -274,7 +280,7 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 
 \note{SOMETHING ABOUT ALLOWED REGIONS, MAYBE ALSO FEYNMANN GOLDEN RULE --> BANDS}
 
-\subsection{Angular correlations}
+\subsection{Angular correlations} \label{sec: theory: angular correlations}
 \note{introduce the effect when you understand it} \\
 
 The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. The correlation between the two decay products can be expressed as a series of Legendre polynomials in the angle between them

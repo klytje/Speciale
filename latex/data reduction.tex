@@ -70,6 +70,35 @@ where $l$ and $l'$ are the angular momentum \note{transfer} for the two channels
 	\label{analysis: figure: AUSAlib pipeline}
 \end{figure}
 
+\subsection{Custom tools}
+Besides the tools contained in these public libraries, a few custom scripts were created for this thesis. These will all be introduced here. 
+
+\subsubsection{Dalitz fitter}
+Although we are working primarily with the $0+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting algorithm which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
+
+Before we can perform such a fit, we have a few choices to make, the most important of which is probably the choice of minimization algorithm. Even with only a few free parameters to fit, the parameter space is filled with local minima, which the algorithm must avoid. \note{introduce the final choice of fitting algorithm} \\
+
+With the choice of algorithm made, we immediately discover another problem: it does not support error estimates. This is trivially solved by performing another fit based on the output of the first with any local minimizer, such as \texttt{Minuit2}'s \texttt{Migrad}, which \textit{does} provide error estimates. 
+
+Another problem is how to scale the binned output of \simta{}, such that it can be compared with the data. A simple solution would be to simply take the average of all bins. This does not work in practice, since we have too many low-count bins which inflates the scaling factor. Thus it was decided to compare the $\sqrt{\texttt{bins}}$ highest entries of each Dalitz plot instead, where \texttt{bins} is the total number of bins in the 2D histogram. \\
+
+Finally, we also have to decide how we want to calculate the goodness of fit. Since we are dealing with count data, the best choice is to use the standard maximum likelihood ratio
+\begin{align*}
+	2\ln \lambda = \sum_i \mu_i - m_i + m_i\ln \frac{m_i}{\mu_i}
+\end{align*}
+
+\subsubsection{Width converter}
+We will later have need of comparing simulations from \simX{} and \simta{} for a variety of different widths. Since the first uses the width $\Gamma$ and the second the reduced width $\gamma$, we will need to establish a relationship between the two. \\
+
+We already have this relationship from equation (\ref{theory: r-matrix: Gamma gamma}), with only the interaction radius $a_c$ as a free variable. Since this radius obviously depends on the strength of the Coulomb force, it will in general depend on the interacting nuclei. A popular choice for its value is to use the nuclear radii
+\begin{align*}
+a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx \SI{1.4}{fm}
+\end{align*}
+which we will also do here, with $r_0 = \SI{1.461}{fm}$ determined by roughly matching the widths \ce{\Gamma(^8Be^*)} from \cite{nudat} with \ce{\gamma(^8Be^*)} from \cite{Bhattacharya}.
+
+\subsubsection{Correlation functions}
+This final tool simply calculates the correlation function $W(\beta)$ for any given input $\{j_1, j_2, j, l_1, l_2\}$ based on the theory from section \ref{sec: theory: angular correlations}. It was also used to generate the functions shown on the figures in that section. 
+
 \subsection{Data reduction}
 The first step of the reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
 

@@ -11,12 +11,12 @@ fm = const.femto
 MeV = 1e6*const.eV
 m_p = 931.494*MeV/c**2
 
-# these units define MeV = fm = 1 to avoid precision errors
-# hbar = 197.329
-# c = 1
-# fm = 1
-# MeV = 1
-# m_p = 931.494*MeV/c**2
+# these units define MeV = fm = 1 to avoid precision errors (verified to agree with the exact numbers above)
+hbar = 197.329
+c = 1
+fm = 1
+MeV = 1
+m_p = 931.494*MeV/c**2
 
 ### setup ###
 # check input
@@ -39,7 +39,7 @@ A1 = A2 = 4
 
 E_res = 3.03*MeV # resonance energy, 3030 keV
 l = 2 # l quantum number of the excited state of 8Be
-a = 1.2*fm*(mpmath.power(A1, 1.0/3) + mpmath.power(A2, 1.0/3)) # interaction radius
+a = 1.461*fm*(mpmath.power(A1, 1.0/3) + mpmath.power(A2, 1.0/3)) # interaction radius
 mu = A1*A2/(A1 + A2)*m_p # reduced mass
 
 ### calculate Gamma ###
