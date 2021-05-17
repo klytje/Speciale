@@ -278,16 +278,25 @@ corr_funcs: ../scripts/special/build/corr_funcs | figures/article
 multiple_components: ../scripts/special/build/multiple_components $(data) output/0+.root output/0+_i.root | figures/article
 	$< $(shell pwd)/figures/article/ output/3-.root output/0+_i.root $(data)
 
-# fits the dalitz plots from the data with the sim3a_i simulation to find k and delta
-# overwrite these two variables with whatever simulations you want to fit: "make dalitz_fit file1=2-_i file2=0+"
-file1 := "2-_i"
-file2 := ""
-dalitz_fit: ../scripts/special/build/dalitz_fitter $(data) output/$(file1).root | figures/article
-ifeq ($(file2), "")
-	$< $(shell pwd)/figures/article/ $(data) output/$(file1).root
-else
-	$< $(shell pwd)/figures/article/ $(data) output/$(file1).root output/$(file2).root
+### Dalitz fitter ###
+# run "make dalitz_fit" without any parameters for information on how to use it. 
+# the code below here automatically passes any parameters directly to the program. note that we use "." since Makefile reserves many of the more common ways of passing arguments (-, --, =)
+# .delta fixed fixes delta at 0
+# example: "make dalitz_fit true_events 2-_i 3- .k 0.5 .delta 0.5 .c 0.5 .type Minuit2 .algo Migrad
+# I recommend using type GSLSimAn, in which case algo is ignored. It takes a lot of time, but it seems to be the most accurate one
+# type GSLMultiMin and type BFGS | BFGS2 also appear to do well, although they sometimes cannot find the true minimum
+
+# If the first argument is "dalitz_fit"...
+ifeq (dalitz_fit, $(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "dalitz_fit"
+  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(RUN_ARGS):;@:)
 endif
+
+.PHONY: dalitz_fit
+dalitz_fit: ../scripts/special/build/dalitz_fitter | figures/article
+	eval $< $(RUN_ARGS)
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
 # extra information for the next couple of targets

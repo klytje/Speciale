@@ -58,11 +58,11 @@ This final module is not officially part of \AUSAlib{}, but is rather a small to
 
 The tool can also perform simulations with two final state channels. Since we are dealing exclusively with the reaction \ce{^12C \rightarrow ^8Be}, this means that we can simultaneously simulate decay events for both the ground state channel $\alpha_0$ and the first excited state channel $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
 \begin{align}
-	|f^2| &= \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2
-	&= \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}(\Re(f_lf_{l'}*)\cos\delta + \Im(f_lf_{l'}*)\sin\delta) \big]
+	&|f^2| = \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2 \nonumber\\
+	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-With $l$ and $l'$ being the angular momenta \note{transfer} for these two channels, 
+where $l$ and $l'$ are the angular momentum \note{transfer} for the two channels, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}

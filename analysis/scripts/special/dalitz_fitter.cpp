@@ -22,8 +22,7 @@
 using namespace std;
 using namespace ROOT::Math;
 
-// setup for the Dalitz plots
-const int bins = 50; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
+int bins;
 
 // this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
 class container {
@@ -229,9 +228,6 @@ int main(int argc, char const *argv[]) {
         fast and appears to find the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
         I think the best option is GSLSimAn, which takes a hell of a time to run (~15k function calls), but found the correct minimum. 
     */
-    string type = "GSLSimAn", algorithm = "";
-    // note that you can also change the bin count of the Dalitz plot at the top of this file, and that it may affect the quality of the fit
-
     if (argc < 3) {
         cout << "Two modes are supported: " << endl;
         cout << "./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
@@ -239,27 +235,36 @@ int main(int argc, char const *argv[]) {
         cout << "./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
         cout << "Figures are automatically written to figures/dalitz_fit/" << endl;
         cout << "Only the name of the files should be provided, e.g. output/true_events.root --> true_events" << endl;
-        cout << "Guess values can be supplied after the files. Format: .k X .delta Y .c Z" << endl;
-        cout << "The algorithm can also be specified similarly to the guess values with .type A .algo B" << endl;
+        cout << "The following list of parameters can be supplied like \".X Y\"" << endl;
+        cout << "\tk: guess for the l : l' ratio of the first simulated data set" << endl;
+        cout << "\tdelta: guess for the delta value of the first simulated data set" << endl;
+        cout << "\tk2: guess for the l : l' ratio of the second simulated data set" << endl;
+        cout << "\tdelta2: guess for the delta value of the second simulated data set" << endl;
+        cout << "\ttype: fitting class used (e.g. GSLMultiMin, GSLSimAn, Minuit2)" << endl;
+        cout << "\talgo: fitting algorithm used (e.g. BFGS2, Migrad)" << endl;
+        cout << "\tbins: number of bins. This may affect the quality of the fit" << endl;
+        cout << "Either delta can also be set to \"fixed\", in which case they will be fixed to 0" << endl;
         exit(1);
     }
     setup_style();
 
     // parse arguments
+    string type = "GSLSimAn", algorithm = "";
+    bins = 50; // THIS VALUE AFFECTS THE QUALITY OF THE FIT!
     int fit_type, guess_pars = 0;
-    double guess[] = {0.5, 0.5, 0.2};
+    double guess[] = {0.5, 3.14, 0.2, 0.5, 3.14};
     bool fix_delta = false;
     string args[argc-1];
     for (int i = 0; i < argc; i++) {
         args[i] = argv[i];
     }
     for (int i = 3; i < argc; i++) {
-        if (args[i].find(".k") != string::npos) {
+        if (args[i].find(".k") != string::npos || args[i].find(".k1") != string::npos) {
             guess[0] = atof(args[i+1].c_str());
             guess_pars += 2;
         }
-        if (args[i].find(".delta") != string::npos) {
-            if (args[i+1].substr(6) == "fixed") {
+        if (args[i].find(".delta") != string::npos || args[i].find(".delta") != string::npos) {
+            if (args[i+1] == "fixed") {
                 fix_delta = true;
             } else {
                 guess[1] = atof(args[i+1].c_str());
@@ -270,15 +275,28 @@ int main(int argc, char const *argv[]) {
             guess[2] = atof(args[i+1].c_str());
             guess_pars += 2;
         }
+        if (args[i].find(".k2") != string::npos) {
+            guess[3] = atof(args[i+1].c_str());
+            guess_pars += 2;
+        }
+        if (args[i].find(".delta2") != string::npos) {
+            if (args[i+1] == "fixed") {
+                fix_delta = true;
+            } else {
+                guess[4] = atof(args[i+1].c_str());
+            }
+            guess_pars += 2;
+        }
         if (args[i].find(".type") != string::npos) {
             type = args[i+1];
-            if (type == "GSLSimAn") {
-                cout << "Warning: Using GSL simulated annealing, expect around 15k function calls." << endl;
-            }
             guess_pars += 2;
         }
         if (args[i].find(".algo") != string::npos) {
             algorithm = args[i+1];
+            guess_pars += 2;
+        }
+        if (args[i].find(".bins") != string::npos) {
+            bins = atof(args[i+1].c_str());
             guess_pars += 2;
         }
     }
@@ -289,6 +307,13 @@ int main(int argc, char const *argv[]) {
     } else {
         cout << "\033[1;31m" << "Invalid number of arguments." << "\033[0m" << endl;
         exit(1);
+    }
+    cout << endl;
+    if (type == "GSLSimAn") {
+        cout << "Warning: Using GSL simulated annealing, expect around 15k function calls." << endl;
+    }
+    if (fix_delta) {
+        cout << "All \u03B4 are fixed at 0, and will not be varied." << endl;
     }
 
     // create folder
@@ -335,7 +360,7 @@ int main(int argc, char const *argv[]) {
         setup_dataframe(&sim2);
         if (sim2.HasColumn("f")) { // check if we are dealing with sim3a_i data
             cout << "Second simulation data set appears to be from sim3a_i." << endl;
-            fit_type == 3;
+            fit_type = 3;
 
             sim2x = sim2.Take<double>("x").GetValue();
             sim2y = sim2.Take<double>("y").GetValue();
@@ -385,15 +410,16 @@ int main(int argc, char const *argv[]) {
         }
         if (fit_type == 3) { // order: k1, d1, c, k2, c2
             m->SetLimitedVariable(0, "k1", guess[0], 0.01, 0, 1);
-            m->SetLimitedVariable(3, "k2", guess[3], 0.01, 0, 1);
-            m->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
-            if (fix_delta) {
+            if (fix_delta) // variables *must* be supplied in order, so we need 2 if-else statements
                 m->SetFixedVariable(1, "delta1", 0);
-                m->SetFixedVariable(4, "delta2", 0);
-            } else {
+            else
                 m->SetLimitedVariable(1, "delta1", guess[1], 0.01, 0, 1);
+            m->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
+            m->SetLimitedVariable(3, "k2", guess[3], 0.01, 0, 1);
+            if (fix_delta)
                 m->SetLimitedVariable(4, "delta2", guess[4], 0.01, 0, 1);
-            }
+            else 
+                m->SetFixedVariable(4, "delta2", 0);
         }
     };
 
@@ -419,16 +445,32 @@ int main(int argc, char const *argv[]) {
             m->GetMinosError(3, err_low[3], err_up[3]);
             m->GetMinosError(4, err_low[4], err_up[4]);
         }
-        file << "\nEstimating errors with MINOS: " << endl;
-        file << format("k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
-        file << format("delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+        file << "    Estimating errors with MINOS: " << endl;
+        file << format("    k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
+        file << format("    delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
         if (fit_type == 2 || fit_type == 3) {
-            file << format("c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
+            file << format("    c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
         }
         if (fit_type == 3) {
-            file << format("k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
-            file << format("delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
+            file << format("    k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
+            file << format("    delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
         }
+        file << endl;
+    };
+
+    // print the result of a fit
+    auto fit_report = [&fit_type, &res, &fix_delta, &file] (ROOT::Math::Minimizer* m) {
+        file << format("        FVAL = %1%") % m->MinValue() << endl;
+        file << format("        k = %1% (FREE)") % res[0] << endl;
+        file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
+        if (fit_type == 2 || fit_type == 3) {
+            file << format("        c = %1% (FREE)") % res[2] << endl;
+        } 
+        if (fit_type == 3) {
+            file << format("        k2 = %1% (FREE)") % res[3] << endl;
+            file << format("        delta2 = %1% (%2%)") % res[4] % (fix_delta ? "FIXED" : "FREE") << endl;
+        } 
+        file << endl;
     };
 
     // print a bunch of information to the file
@@ -439,30 +481,25 @@ int main(int argc, char const *argv[]) {
         file << " and " << args[3];
     }
     file << format("\nUsing bin width: %1%") % bins << endl;
-    file << format("Function value at minimum: FVAL = %1%") % minimizer->MinValue() << endl;
     file << "\nROOT Minimizer report: " << endl;
-    auto *coutbuf = std::cout.rdbuf();
+    file << "    Results from first fit: " << endl;
+    fit_report(minimizer);
 
     // unless the first fit was a Migrad, we perform a quick second fit with it to estimate the errors.
+    auto *coutbuf = std::cout.rdbuf();
     if (algorithm != "Migrad") {
-        file << "    Results from first fit: " << endl;
-        file << format("        k = %1% (FREE)") % res[0] << endl;
-        file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
-        if (fit_type == 2) {
-            file << format("        c = %1% (FREE)") % res[2] << endl;
-        }
-        cout << "    \nEstimating errors with Migrad" << endl;
-
         // update our guess values
         for (int i = 0; i < pars; i++) guess[i] = res[i];
 
+        cout << "    \nEstimating errors with Migrad" << endl;
         auto minimize2 = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
         minimize2->SetFunction(functor);
         set_params(minimize2);
         minimize2->Minimize(); 
         res = minimize2->X();
         std::cout.rdbuf(file.rdbuf()); // redirect std::cout to fit.txt
-        minimize2->PrintResults();
+        file << "    Results from second fit: " << endl;
+        fit_report(minimize2);
         minos_errs(minimize2);
     } else {
         std::cout.rdbuf(file.rdbuf());
@@ -470,7 +507,6 @@ int main(int argc, char const *argv[]) {
         minos_errs(minimizer);
     }
     std::cout.rdbuf(coutbuf); // remove the redirection
-    file.close();
 
 //*** GENERATE FIGURES ***//
     cout << "\nGenerating figures (this may take a while)" << endl;
@@ -485,11 +521,11 @@ int main(int argc, char const *argv[]) {
     };
     auto w1 = [&k, &delta, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k, delta);};
     auto w2 = [&k2, &delta2, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k2, delta2);};
-    sim1 = sim1.Define("w", weights, {"f", "wU"});
+    sim1 = sim1.Define("w", w1, {"f", "wU"});
 
     bool sim2_weighted = false;
     if (fit_type == 3) {
-        sim2 = sim2.Define("w", weights, {"f", "wU"});
+        sim2 = sim2.Define("w", w2, {"f", "wU"});
         sim2_weighted = true;
     }
 
@@ -617,4 +653,24 @@ int main(int argc, char const *argv[]) {
     c5->SetLeftMargin(0.15);
     c5->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+
+    // CHI2 VALS
+    double chi1 = 0, chi2 = 0, chi3 = 0;
+    for (int i = 1; i < bins; i++) {
+        double mu_1 = dat_rho.GetBinContent(i); // model
+        double m_1 = sim_rho.GetBinContent(i); // observed
+        chi1 += pow(m_1 + mu_1, 2)/mu_1;
+
+        double mu_2 = dat_ang.GetBinContent(i); // model
+        double m_2 = sim_ang.GetBinContent(i); // observed
+        chi2 += pow(m_2 + mu_2, 2)/mu_2;
+
+        double mu_3 = dat_E->GetBinContent(i); // model
+        double m_3 = sim_E->GetBinContent(i); // observed
+        chi3 += pow(m_3 + mu_3, 2)/mu_3;
+    }
+    file << "Radial projection: chi2 = " << chi1 << endl;
+    file << "Angular projection: chi2 = " << chi2 << endl;
+    file << "Energy: chi2 = " << chi3 << endl;
+    file.close();
 }
