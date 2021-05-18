@@ -286,9 +286,10 @@ int main(int argc, char const *argv[]) {
         cout << "\tdelta:  guess for the delta value of the first simulated data set" << endl;
         cout << "\tk2:     guess for the l : l' ratio of the second simulated data set" << endl;
         cout << "\tdelta2: guess for the delta value of the second simulated data set" << endl;
-        cout << "\ttype:   fitting class used (e.g. GSLMultiMin, GSLSimAn, Minuit2)" << endl;
+        cout << "\ttype:   fitting class used (e.g. GSLMultiMin, GSLSimAn, Genetic)" << endl;
         cout << "\talgo:   fitting algorithm used (e.g. BFGS2, Migrad)" << endl;
         cout << "\tbins:   number of bins. This may affect the quality of the fit" << endl;
+        cout << "\tycut:   imposes a cut on the Dalitz y-coordinate at this value" << endl;
         cout << "Either delta can also be set to \"fixed\", in which case they will be fixed to 0" << endl;
         exit(1);
     }
@@ -297,6 +298,7 @@ int main(int argc, char const *argv[]) {
     // parse arguments
     string type = "GSLSimAn", algorithm = "";
     bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT! this is the number of bins for each axis on a Dalitz *slice*, so the total plot has twice this number
+    double y_cut = 1;
     int fit_type, guess_pars = 0;
     double guess[] = {0.5, 0.5, 0.2, 0.5, 0.5};
     bool fix_delta = false;
@@ -304,9 +306,11 @@ int main(int argc, char const *argv[]) {
     for (int i = 0; i < argc; i++) {
         args[i] = argv[i];
     }
+    cout << "\nOptional parameters parsed: " << endl;
     for (int i = 3; i < argc; i++) {
         if (args[i].find(".k") != string::npos || args[i].find(".k1") != string::npos) {
             guess[0] = atof(args[i+1].c_str());
+            cout << "\tk guess: " << guess[0] << endl;
             guess_pars += 2;
         }
         else if (args[i].find(".delta") != string::npos || args[i].find(".delta") != string::npos) {
@@ -314,22 +318,26 @@ int main(int argc, char const *argv[]) {
                 fix_delta = true;
             } else {
                 guess[1] = atof(args[i+1].c_str());
+                cout << "\tdelta guess: " << guess[1] << endl;
             }
             guess_pars += 2;
         }
         else if (args[i].find(".c") != string::npos) {
             guess[2] = atof(args[i+1].c_str());
             guess_pars += 2;
+            cout << "\tc guess: " << guess[2] << endl;
         }
         else if (args[i].find(".k2") != string::npos) {
             guess[3] = atof(args[i+1].c_str());
             guess_pars += 2;
+            cout << "\tk2 guess: " << guess[3] << endl;
         }
         else if (args[i].find(".delta2") != string::npos) {
             if (args[i+1] == "fixed") {
                 fix_delta = true;
             } else {
                 guess[4] = atof(args[i+1].c_str());
+                cout << "\tdelta2 guess: " << guess[4] << endl;
             }
             guess_pars += 2;
         }
@@ -344,19 +352,28 @@ int main(int argc, char const *argv[]) {
         else if (args[i].find(".bins") != string::npos) {
             bins = atof(args[i+1].c_str());
             guess_pars += 2;
+            cout << "\tnumber of bins set to " << bins << endl;
+        }
+        else if (args[i].find(".yc") != string::npos) {
+            y_cut = atof(args[i+1].c_str());
+            guess_pars += 2;
+            cout << "\tperforming cut at y = " << y_cut << endl;
         }
     }
     if (argc == 3 + guess_pars) {
         fit_type = 1;
+        cout << format("\nFitting %1% with %2%") % args[1] % args[2] << endl;
     } else if (argc == 4 + guess_pars) {
         fit_type = 2;
+        cout << format("\nFitting %1% with %2% and %3%") % args[1] % args[2] % args[3] << endl;
     } else {
         cout << "\033[1;31m" << "Invalid number of arguments." << "\033[0m" << endl;
         exit(1);
     }
-    cout << endl;
     if (type == "GSLSimAn") {
         cout << "Warning: Using GSL simulated annealing, expect around 15k function calls." << endl;
+    } else if (type == "Genetic") {
+        cout << "Warning: Using Genetic algorithm, expect around an hour of computation time." << endl;
     }
     if (fix_delta) {
         cout << "All \u03B4 are fixed at 0, and will not be varied." << endl;
@@ -376,12 +393,15 @@ int main(int argc, char const *argv[]) {
     filter(&sim1);
     setup_dataframe(&data); // define dalitz coordinates
     setup_dataframe(&sim1);
-    cut_gs(&data); // cut the ground state decay events
-    TH2D *hdata, *hsim2;
-    {
-        hdata = dalitz_slice(&data, bins, true);
-        // hdata->Scale(1./hdata->GetMaximum());
+    cut_circle(&data); // cut everything outside the unit circle
+    cut_circle(&sim1);
+    if (y_cut != 1) {
+        cut_y(&data, y_cut); // perform a cut on the y axis
+        cut_y(&sim1, y_cut);
     }
+    cut_gs(&data); // cut the ground state decay events
+    TH2D *hdata = dalitz_slice(&data, bins, true);
+    TH2D *hsim2;
 
     // extract the data from the first simulation data set
     container *csim1, *csim2;
@@ -404,6 +424,10 @@ int main(int argc, char const *argv[]) {
         sim2 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
         filter(&sim2);
         setup_dataframe(&sim2);
+        cut_circle(&sim2);
+        if (y_cut != 1) {
+            cut_y(&sim2, y_cut);
+        }
         if (sim2.HasColumn("f")) { // check if we are dealing with sim3a_i data
             cout << "Second simulation data set appears to be from sim3a_i." << endl;
             fit_type = 3;
@@ -526,9 +550,23 @@ int main(int argc, char const *argv[]) {
     if (fit_type == 2 || fit_type == 3) {
         file << " and " << args[3];
     }
+    file << format("\nNumber of events in files: %1% | %2%") % data.Count().GetValue() % sim1.Count().GetValue();
+    if (fit_type == 2 || fit_type == 3) {
+        file << " | " << to_string(sim2.Count().GetValue());
+    }
     file << format("\nUsing bin width: %1%") % bins << endl;
     file << "\nROOT Minimizer report: " << endl;
-    file << "    Results from first fit: " << endl;
+    file << "    Initial guess values:" << endl;
+    file << "    k = " << guess[0] << endl;
+    file << "    delta = " << guess[1] << endl;
+    if (fit_type == 2 || fit_type == 3) {
+        file << "    c = " << guess[2] << endl;
+    }
+    if (fit_type == 3) {
+        file << "    k2 = " << guess[3] << endl;
+        file << "    delta2 = " << guess[4] << endl;
+    }
+    file << "\n    Results from first fit: " << endl;
     fit_report(minimizer);
 
     // unless the first fit was a Migrad, we perform a quick second fit with it to estimate the errors.
@@ -576,8 +614,8 @@ int main(int argc, char const *argv[]) {
     }
 
     // DALITZ PLOTS
-    TCanvas* c1 = new TCanvas("c1", "c", 900, 600);
-    c1->Divide(2, 1, 0, 0);
+    TCanvas* c1 = new TCanvas("c1", "c", 1200, 600);
+    c1->Divide(2, 1, 0); // 0 x margin
     
     c1->cd(1);
     TH2D* dalitz_data = dalitz(&data, 2*bins, true);
@@ -597,7 +635,6 @@ int main(int argc, char const *argv[]) {
     
     string path = folder + "dalitz.pdf";
     c1->SetLogz();
-    c1->SetRightMargin(0.15);
     c1->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -610,7 +647,6 @@ int main(int argc, char const *argv[]) {
     dalitz_data->Draw("colz");
 
     path = folder + "dalitz_diff.pdf";
-    c2->SetRightMargin(0.15);
     c2->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -636,7 +672,6 @@ int main(int argc, char const *argv[]) {
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
     path = folder + "rho.pdf";
-    c3->SetLeftMargin(0.15);
     c3->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -660,7 +695,6 @@ int main(int argc, char const *argv[]) {
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
     path = folder + "phi.pdf";
-    c4->SetLeftMargin(0.15);
     c4->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -696,7 +730,6 @@ int main(int argc, char const *argv[]) {
     setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 
     path = folder + "E_cm.pdf";
-    c5->SetLeftMargin(0.15);
     c5->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -706,14 +739,22 @@ int main(int argc, char const *argv[]) {
         double mu_1 = dat_rho.GetBinContent(i); // model
         double m_1 = sim_rho.GetBinContent(i); // observed
         chi1 += pow(m_1 + mu_1, 2)/mu_1;
+        if (mu_1 != 0) {
+            chi1 += pow(m_1 + mu_1, 2)/mu_1;
+        }
 
         double mu_2 = dat_ang.GetBinContent(i); // model
         double m_2 = sim_ang.GetBinContent(i); // observed
         chi2 += pow(m_2 + mu_2, 2)/mu_2;
+        if (mu_2 != 0) {
+            chi2 += pow(m_2 + mu_2, 2)/mu_2;
+        }
 
         double mu_3 = dat_E->GetBinContent(i); // model
         double m_3 = sim_E->GetBinContent(i); // observed
-        chi3 += pow(m_3 + mu_3, 2)/mu_3;
+        if (mu_3 != 0) {
+            chi3 += pow(m_3 + mu_3, 2)/mu_3;
+        }
     }
     file << "Radial projection: chi2 = " << chi1 << endl;
     file << "Angular projection: chi2 = " << chi2 << endl;

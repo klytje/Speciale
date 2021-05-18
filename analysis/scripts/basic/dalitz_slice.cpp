@@ -79,4 +79,34 @@ int main(int argc, char *argv[]) {
 
     path = string(argv[2]) + "dalitz_slice_cut.pdf";
     c2->SaveAs(path.c_str());
+
+    //*** "after" plot based on E23 fit ***//
+    ROOT::RDF::RNode data = RDataFrame("tree", argv[1]);
+    filter(&data);
+    setup_dataframe(&data);
+    cut_gs(&data);
+    cut_circle(&data);
+    hist = dalitz_slice(&data, 100, true);
+
+    TCanvas* c3 = new TCanvas("c3", "c", 600, 600);
+    hist->GetXaxis()->SetTitle("x");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetXaxis()->SetNdivisions(1);
+    hist->GetYaxis()->SetTitle("y");
+    hist->GetYaxis()->CenterTitle();
+    hist->GetYaxis()->SetNdivisions(1);
+    hist->Draw("colz");
+
+    TArc* a3 = new TArc(0, 0, 1, 0, 90);
+    a3->SetLineColor(kRed);
+    a3->SetLineWidth(3);
+    a3->SetFillColorAlpha(0, 0); 
+    a3->Draw("only same");
+
+    c3->SetLogz();
+    c3->SetLogz();
+    c3->SetRightMargin(0.15);
+
+    path = string(argv[2]) + "dalitz_slice_E23_cut.pdf";
+    c3->SaveAs(path.c_str());
 }

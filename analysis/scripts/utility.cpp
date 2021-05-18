@@ -211,9 +211,14 @@ void setup_dataframe(ROOT::RDF::RNode* df) {
     return;
 }
 
-void cut_edges(ROOT::RDF::RNode* df) {
-    *df = df->Filter("pow(x,2) + pow(y,2) < 1.0")
-            .Filter("y < 0.93");
+// cuts a Dalitz plot at y = 0.93 or whatever is input
+void cut_y(ROOT::RDF::RNode* df, double y = 0.93) {
+    *df = df->Filter("y < " + to_string(y));
+}
+
+// removes any events outside a circle of radius 1
+void cut_circle(ROOT::RDF::RNode* df) {
+    *df = df->Filter("pow(x, 2) + pow(y, 2) < 1.0");
 }
 
 const double m_alpha = 3.72737*1e6; // in keV
@@ -318,7 +323,8 @@ TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
     filter(&df);
     setup_dataframe(&df);
     if (bounded) {
-        cut_edges(&df);
+        cut_circle(&df);
+        cut_gs(&df);
     }
 
     return dalitz(&df, bins, bounded);
@@ -398,7 +404,8 @@ TH2D* dalitz_slice(const char* file, const int bins = 100, bool bounded = true) 
     filter(&df);
     setup_dataframe(&df);
     if (bounded) {
-        cut_edges(&df);
+        cut_circle(&df);
+        cut_gs(&df);
     }
 
     return dalitz_slice(&df, bins, bounded);

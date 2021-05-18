@@ -66,7 +66,10 @@ int main(int argc, char *argv[]) {
     path = string(argv[argc-1]) + "cuts_tdc.pdf";
     c2->SaveAs(path.c_str());
 
-//*** TIME OF ARRIVAL CUT ***//
+//*** TIME OF ARRIVAL ***//
+    // NO CUT PERFORMED! The output file looks is a very nice-looking Gaussian peak, indicating that this is unnecessary. 
+    // This is probably due to it being very similar to the already-performed TDC cuts.
+
     // find the largest time interval given three arrival times
     auto dt = [] (double t1, double t2, double t3, int mul) {
         if (mul == -1) { // for the reconstructed data, t3 = 0
@@ -104,7 +107,17 @@ int main(int argc, char *argv[]) {
     double pmax = 100;
     double p_cut = 40;
     double deltaE_cut = 0.3;
-    double resonance_E = 17.76;
+    double resonance_E;
+    if (string(argv[argc-1]).find("0+") != string::npos) {
+        resonance_E = 17.76;
+    } else if (string(argv[argc-1]).find("2-") != string::npos) {
+        resonance_E = 16.62;
+    } else if (string(argv[argc-1]).find("3-") != string::npos) {
+        resonance_E = 18.35;
+    } else {
+        cout << "\033[1;31m" << "Could not determine Jp. Cannot generate final figure." << "\033[0m" << endl;
+        exit(1);
+    }
     x_axis[1] = 14; x_axis[2] = 20;
     TCanvas* c4 = new TCanvas("c4", "", 600, 600);
     htdc = tdc.Histo2D({"htdc", "", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), 0, pmax}, "mexC12", "mp").GetValue();

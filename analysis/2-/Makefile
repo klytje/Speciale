@@ -228,6 +228,10 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_events.root | figures/%
 	$< $(shell pwd)/figures/$*/ output/$*.root output/all_events.root
 
+# shows the effect of the various cuts we can impose on the data
+cuts/%: ../scripts/special/build/cuts $(addprefix merged/,$(shell ls data)) output/%.root | figures/article
+	$< output/$*.root $(addprefix merged/,$(shell ls data)) $(shell pwd)/figures/$*/
+	
 ### Dalitz fitter ###
 # run "make dalitz_fit" without any parameters for information on how to use it. 
 # the code below here automatically passes any parameters directly to the program. note that we use "." since Makefile reserves many of the more common ways of passing arguments (-, --, =)
@@ -264,7 +268,7 @@ width_compare: ../scripts/special/build/width_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 # calculates theta based on the data
-theta/%: ../scripts/special/build/theta_data output/%.root
+momentum/%: ../scripts/special/build/momentum_analysis output/%.root
 	$< $(shell pwd)/figures/$*/ output/$*.root
 
 

@@ -21,22 +21,27 @@ using namespace ROOT;
 using boost::format;
 
 int main(int argc, char *argv[]) {
-    //*** PLOT ***//
+    //*** RAW ***//
     setup_style();
 
-    TCanvas* canvas = new TCanvas("c", "c", 600, 600);
-    TH2D* hist = dalitz(argv[1]);
-    
-    hist->GetXaxis()->SetTitle("x");
-    hist->GetYaxis()->SetTitle("y");
-    hist->GetXaxis()->CenterTitle();
-    hist->GetYaxis()->CenterTitle();
-    hist->GetXaxis()->SetNdivisions(2);
-    hist->GetYaxis()->SetNdivisions(2);
-    hist->Draw("colz");
+    TCanvas* c1 = new TCanvas("c1", "c", 600, 600);
+    TH2D* h1 = dalitz(argv[1]);
+    setup_dalitz_plot(h1);
+    h1->Draw("colz");
 
-    string path = string(argv[2]) + "dalitz.pdf"; 
-    canvas->SetLogz();
-    canvas->SetRightMargin(0.15);
-    canvas->SaveAs(path.c_str());
+    string path = string(argv[2]) + "dalitz_no_cuts.pdf"; 
+    c1->SetLogz();
+    c1->SetRightMargin(0.15);
+    c1->SaveAs(path.c_str());
+
+    //*** w/ CUTS ***//
+    TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
+    TH2D* h2 = dalitz(argv[1], 200, true);
+    setup_dalitz_plot(h2);
+    h2->Draw("colz");
+
+    path = string(argv[2]) + "dalitz.pdf"; 
+    c2->SetLogz();
+    c2->SetRightMargin(0.15);
+    c2->SaveAs(path.c_str());
 }

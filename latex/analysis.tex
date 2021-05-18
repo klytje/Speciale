@@ -1,14 +1,14 @@
 \section{Analysis}
 \note{Remember to generate all figures with the full dataset to replace the placeholders.} \\
 
-After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. This is necessary as, although we only have multiplicity $3$ events, there is no guarantee that the three particles actually originate from the same decay. \\
+After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. The reasoning behind this is two-fold: one, to weed out any proton detections, and two, to ensure that any multi-coincidence $\alpha$ particle detections actually originates from the same decay event. \\
 
 In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. Unless stated otherwise, all figures from this section are made with only multiplicity $3$ data.
 
 \subsection{TDC cut}
 The general idea with this type of cut is that a given $\alpha$-particle should hit the front and backside of a detector within some small time interval. If this interval is too large, the two hits are probably not from the same particle, and the event should be discarded. \\
 
-It turns out that this cut is not that simple to perform, however. There are two issues with the \TDC{} values which must first be addressed. The first is a matter of alignment: the \TDC{} values for the different strips are not necessarily aligned with each other. The second is a major issue which was discovered with the data for only the $0+$ measurement. We must first deal with the latter. 
+It turns out that this cut is not that simple to perform, however. There are two issues with the \TDC{} values which must first be addressed. The first is a matter of alignment: the \TDC{} values for the different strips are not necessarily aligned with each other. The second is a major issue which was discovered with the data for only the $0^+$ measurement. We must first deal with the latter. 
 
 \subsubsection{Repairing the data}
 \begin{figure}
@@ -29,7 +29,7 @@ Such a clean split down the middle of a peak, with its two halves appearing at t
 
 Figure \ref{fig: analysis: tdc after} shows the data after it has been corrected. This reveals another piece of the puzzle: the two halves of the peaks does not match up exactly. It is, however, a very close match, and so, once again, we have chosen to simply accept the data as it is. \\
 
-\begin{figure}
+\begin{figure}[tb]
 	\includegraphics[width=\linewidth]{figures/mul_compare.pdf}
 	\caption{The second issue with the data. The multiple peaks are due to primary and secondary activations. See the text for a detailed discussion. }
 	\label{fig: analysis: mul}
@@ -127,20 +127,40 @@ To help guide our choice of cutoff values, an obvious first step would be to plo
 With all our cuts imposed on the data, we can finally continue with the data analysis. 
 
 \subsection{Dalitz plots}
-The purpose of this thesis is to test the validity of the currently established models for the $0+$ state. Thus a nice opener to the analysis is to make a Dalitz plot of the data. This can be seen on the left panel of figure \ref{fig: analysis: dalitz: slice}, which reveals that another cut is necessary. The figure shows that a large concentration of events are located in a band near $y \simeq 1$, where almost the entire energy of the first decay is given to the $\alpha$-particle. These events thus corresponds to decays through the ground state of \ce{^8Be}. \note{more}. The right panel of the figure is only there to more clearly illustrate the structure in the remaining areas. \\
+The purpose of this thesis is to test the validity of the currently established models for the $0^+$ state. Thus a nice opener to the analysis is to make a Dalitz plot of the data. This can be seen on the left panel of figure \ref{fig: analysis: dalitz: slice}, which reveals that another cut is necessary. The figure shows that a large concentration of events are located in a band near $y \simeq 1$, where almost the entire energy of the first decay is given to the primary $\alpha$-particle. These events thus corresponds to decays through the ground state of \ce{^8Be}, i.e. through the $\alpha_0$ channel. A simple way of getting rid of these $\alpha_0$ events would be to impose a cut on the y-coordinate, as done in \cite{Kuhlwein}. This cut is shown in the middle panel of the same figure. We can do even better than that, however, if we look at the momentum vectors instead of the energies. \\
 
-\begin{figure}[]
+\begin{figure}[tb]
 	\centering
-	\begin{minipage}{.5\textwidth}
+	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/dalitz_slice.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/true_events/dalitz_slice.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/true_events/dalitz_slice_cut.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/true_events/dalitz_slice_E23_cut.pdf}
+	\end{minipage}
+	\caption{The cuts on the Dalitz plot. The left panel shows the data before any cuts, with the red lines signifying the cutoffs. The middle panel shows the same data after the simple y-coordinate cut. The right panel also shows the same data, but with a cut based on the $E_{2-3}$ energies.}
+	\label{fig: analysis: dalitz: slice}
+\end{figure}
+
+We can use the momentum vectors of each event to calculate $E_{2-3}$ from (\ref{theory: kinematics: E23}). The results of this can be seen on figure \ref{fig: analysis: dalitz: E23}. Here we clearly see the two peaks corresponding to the $\alpha_0$ and $\alpha_1$ channels. By now performing a simple Gaussian fit of the right peak and discarding any event outside $3\sigma$, we can extract only the excited decay events, which can be seen on the right panel of the Dalitz slice panels, figure \ref{fig: analysis: dalitz: slice}. \\
+
+\begin{figure}
+	\centering
+		\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures/0+/true_events/E23.pdf}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/dalitz_slice_cut.pdf}
+		\includegraphics[width=\textwidth]{figures/0+/reconstructed_events/E23.pdf}
 	\end{minipage}
-	\caption{The cuts on the Dalitz plot. The left panel shows the data before the cut, with the red lines signifying the cutoffs. The right panel shows the same data after the cut, to more clearly show its structure. }
-	\label{fig: analysis: dalitz: slice}
+	\caption{The $E_{2-3}$ values from (\ref{theory: kinematics: E23}). The left panel shows the plots for our multiplicity three data, while the right shows it for the multiplicity two data. The left peak corresponds to ground state decays, while the right peak is for excited decays. Note the difference in both the $x$ and $y$ axes for the two peaks. }
+	\label{fig: analysis: dalitz: E23}
 \end{figure}
 
 Although all of the kinematic information is already stored in this slice, it is somewhat easier to see the structure in a standard Dalitz plot. We can reconstruct it by repeatedly mirroring the slice along one of its edges. By doing this, we obtain figure \ref{fig: analysis: dalitz: full}. The left panel shows the multiplicity three data, while the right panel shows the multiplicity two data. Although there are some minor deviations between the two panels, they both clearly show an equilateral triangle. \\
@@ -149,19 +169,19 @@ Although all of the kinematic information is already stored in this slice, it is
 	\centering
 	\begin{minipage}{.5\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/dalitz_true.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/true_events/dalitz.pdf}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/dalitz_reconstructed.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/dalitz.pdf}
 	\end{minipage}
-	\caption{The Dalitz plots for the data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data. Note the large difference in the column scale. }
+	\caption{The Dalitz plots for the data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data. Note the large difference in the column scale. \note{weird stuff at the top?}}
 	\label{fig: analysis: dalitz: full}
 \end{figure}
 
-Our next goal is to figure out what we expected to see. Since Zemach's analysis does not impose any constraints upon the $0+$ resonance at all, we are left with performing simulations. As mentioned in section \ref{section: data reduction}, we have two options for these: \simX{} and \simta{}. Only the latter accounts for interference, and is thus our preferred choice. \\
+Our next goal is to figure out what we expected to see. Although Zemach's analysis does not impose any constraints upon a $0^+$ resonance, it is curious that the center appears to be forbidden. The next step is to perform a simulation of the decay. In section \ref{section: data reduction} we discussed two possible simulation tools, \simX{} and \simta{}, both based on R-matrix theory. Only the latter accounts for our three identical bosons and the interference between them, and it is thus our preferred choice. \\
 
-The Monte-Carlo simulations are performed with \simta{}, after which they are put through \simX{}, which simulates interactions with the experimental setup. Then they are put through the entire \AUSAlib{} pipeline, after which we can make a Dalitz plot of them, like we did for the actual data. This results in the left panel of figure \ref{fig: analysis: dalitz: sim}. Something is clearly very wrong here: it does not at all look like our data. As a check, the same simulations were performed solely with \simX{}, which results in the right panel of the same figure. While this is somewhat better, it is still very different from our data.
+The result of a \simta{} simulation can be seen on the left panel of figure \ref{fig: analysis: dalitz: sim}. Something is clearly very wrong here: it does not at all look like our data. As a check, the same simulations were performed solely with \simX{}, which results in the right panel of the same figure. While this is somewhat better, it is still very different from our data.
 
 \begin{figure}[]
 	\centering
@@ -173,48 +193,57 @@ The Monte-Carlo simulations are performed with \simta{}, after which they are pu
 		\centering
 		\includegraphics[width=\linewidth]{figures/dalitz_simX.pdf}
 	\end{minipage}
-	\caption{The Dalitz plots for the $0+$ simulations. The left panel shows the results of the \simta{} simulation, while the right shows it for the \simX{} simulation. For a discussion on the difference between the two tools, see section \note{ref}.}
+	\caption{The Dalitz plots for the $0^+$ simulations. The left panel shows the results of the \simta{} simulation, while the right shows it for the \simX{} simulation. For a discussion on the difference between the two tools, see section \note{ref}.}
 	\label{fig: analysis: dalitz: sim}
 \end{figure}
 
 \subsubsection{Checking the simulation tools}
-Since the simulations are so different from what we see in our data, it is worthwhile to verify that they actually work as expected. Since we also have data on the $2-$ resonance which has been the subject of several papers (see \cite{Kuhlwein}), it is an obvious target for checking the tools. \\
+Since the simulations are so different from what we see in our data, it is worthwhile to verify that they actually work as expected. Since we also have data on the $2^-$ resonance which has been the subject of several papers (see e.g. \cite{Kuhlwein}), it is an obvious target for checking the tools. \\
 
-Using the fitting algorithm introduced in section \note{ref}, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a much better match than for the $0+$ resonance. \note{vals, compare with Morten}. \\
+Using the fitting algorithm introduced in section \ref{sec: datared: custom tools}, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a far better match than the $0^+$ resonance. The reason the simulation appears "grainy" is due to a low number of simulated events. \note{maybe make a small table of the numbers}. We could probably improve the fit even further by simulating even more events. The reason this is not done is due to a simple time limit: the fit already takes about an hour to perform, and if we are optimistic, scales linearly with the number of events. Since we will need quite a few more of these fits, it was limited to only a million simulated events. \note{maybe increase simulation number if there's time} \\
 
 \begin{figure}[]
 	\centering
-	\begin{minipage}{.5\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{figures/2-/dalitz.pdf}
-	\end{minipage}%
-	\begin{minipage}{.5\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{figures/2-/dalitz_sim3a.pdf}
-	\end{minipage}
-	\caption{The Dalitz plots for the $2-$ resonance. The left panel shows both the multiplicity two and three data, while the right shows the \simta{} simulation with $k=0.186$ and $\delta=0.69\cdot2\pi$. \note{normalize both? fix axes}}
+	\includegraphics[width=\linewidth,height=0.5\linewidth]{figures/2-/sim/dalitz.pdf}
+	\caption{The Dalitz plots for the $2-$ resonance. The left panel shows both the multiplicity two and three data, while the right shows a fit to the \simta{} simulation with $k=0.274$ and $\delta=0.665\cdot2\pi$. \note{fix height}}
 	\label{fig: analysis: dalitz: 2-}
 \end{figure}
 
-Since it is somewhat hard to compare 2D histograms, it is common to look at their projections instead. A popular choice are the polar projections, along with the center-mass energies. If we plot these, we get the three panels shown on figure \ref{fig: analysis: dalitz: 2- projections}. Here the black lines represents the data, while the orange represents the simulation. Although there are some deviations, especially for the radial projection $\rho$, this is overall a great fit to the data. With an assurance that the simulations are not wrong, we are instead left wondering what else could be the problem. 
+Since it is somewhat hard to compare 2D histograms, it is common to look at their projections instead. A popular choice are the polar projections, along with the center-mass energies. If we plot these, we get the three panels shown on figure \ref{fig: analysis: dalitz: 2- projections}. Here the black lines represents the data, while the orange represents the simulation. Although there are some deviations, especially for the radial projection $\rho$, this is overall a great fit to the data. \\
 
 \begin{figure}[bt]
 	\centering
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/2-/E_cm.pdf}
+		\includegraphics[width=\linewidth]{figures/2-/sim/E_cm.pdf}
 	\end{minipage}%
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/2-/rho.pdf}
+		\includegraphics[width=\linewidth]{figures/2-/sim/rho.pdf}
 	\end{minipage}%
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/2-/phi.pdf}
+		\includegraphics[width=\linewidth]{figures/2-/sim/phi.pdf}
 	\end{minipage}
-	\caption{The projections of the simulated $2-$ Dalitz plot with ${k=0.186}$ and ${\delta = 0.69\cdot2\pi}$. The black lines represents the data, while the orange lines are the simulations. The simulations nicely matches the data in all three projections, in line with the conclusion reached by Kuhlwein \cite{Kuhlwein}. }
+	\caption{The projections of the two $2-$ Dalitz plots from figure \ref{fig: analysis: dalitz: 2-}. The black lines represents the data, while the orange lines are the simulation. The two lines match nicely in all of the projections.}
 	\label{fig: analysis: dalitz: 2- projections}
 \end{figure}
+
+The $2^-$ data used here is the exact same data used by \cite{Kuhlwein}, who found the best fit to be with $k=18.6(2)$ and $\delta=69.1(0.2)\cdot2\pi$. Where does this difference come from? \\
+
+\begin{table}
+	\begin{tabular}{l|p{0.3\textwidth}p{0.4\textwidth}}
+		& This paper & Kuhlwein \cite{Kuhlwein} \\ \hline
+		$\text{abs}(\Delta E)$ & \SI{300}{keV} & \SI{200}{keV} \\
+		$p_{tot}$ & \SI{50}{MeV} & \SI{35}{MeV} \\
+		$\alpha_0$ removal & $E_{2-3}$ fit & Dalitz $y$-coordinate cut \\
+		\TDC{} cut & Frontside / backside hit time minimization & Time of arrival minimization
+	\end{tabular}
+\end{table}
+
+The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. See table \note{} for an overview of these differences. 
+
+With an assurance that the simulations are not wrong, we are instead left wondering what else could be the problem. 
 
 \subsubsection{Checking the reduced width amplitude}
 A solution could be that the reduced width amplitude used for the excited state \ce{^8Be*} is wrong. The value used for the previous simulation is $\gamma = \SI{32.787}{\sqrt{keV}}$ \note{where from?}. We can simultaneously use this as an additional check on our simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. Thus a conversion tool based on eq (\ref{theory: r-matrix: Gamma gamma}) was made to convert between $\gamma$ and $\Gamma$, allowing us to compare the two simulation tools. \\

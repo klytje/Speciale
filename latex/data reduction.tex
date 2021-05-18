@@ -1,7 +1,7 @@
 \section{Data reduction} \label{section: data reduction}
 Having gathered the raw data as explained in the previous section, it is now time to shape it into a form better suited for the subsequent analysis. Since this step is common to most types of experiments, a set of powerful tools have been developed to streamline the process.  
 
-\subsection{Tools} \label{section: analysis: tools}
+\subsection{Tools} \label{sec: datared: tools}
 \ROOT{} \cite{ROOT} is an object-oriented \CPP{} framework created at CERN in 1994. It was designed to be a replacement of the then-used \texttt{FORTRAN} library, which was quickly approaching its limits with the pure quantity of data being generated at the facility. Due to these roots, \ROOT{} was originally designed to handle the high-energy physics data being generated at the facility in an efficient manner. In the many years since its conception, it has grown into a true stand-alone package capable of handling most types of data analysis. \\
 
 \ROOT{} contains a vast quantity of methods and classes for most conceivable types of analysis. The basic storage type relevant for this work is the \texttt{TTree} class, consisting of a number of named branches. Each branch corresponds to some variable of an event, such as the multiplicity or alpha energies. These trees can then be directly written to disk, which is the approach used by \AUSAlib{} to store its data. \\
@@ -91,7 +91,9 @@ A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for 
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. 
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
+
+The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline. 
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/AUSAlib_pipeline.png}
@@ -99,7 +101,7 @@ where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the 
 	\label{analysis: figure: AUSAlib pipeline}
 \end{figure}
 
-\subsection{Custom tools}
+\subsection{Custom tools} \label{sec: datared: custom tools}
 Besides the tools contained in these public libraries, a few custom scripts were created for this thesis. These will all be introduced here. 
 
 \subsubsection{Dalitz fitter}
@@ -107,7 +109,7 @@ Although we are working primarily with the $0+$ resonance which should allow onl
 
 Before we can perform such a fit, we have a few choices to make, the most important of which is probably the choice of minimization algorithm. Even with only a few free parameters to fit, the parameter space is filled with local minima, which the algorithm must avoid. \note{introduce the final choice of fitting algorithm} \\
 
-With the choice of algorithm made, we immediately discover another problem: it does not support error estimates. This is trivially solved by performing another fit based on the output of the first with any local minimizer, such as \texttt{Minuit2}'s \texttt{Migrad}, which \textit{does} provide error estimates. 
+With the choice of algorithm made, we immediately discover another problem: it does not support error estimates. This is trivially solved by performing another fit based on the output of the first with any local minimizer, such as \texttt{Minuit2}'s \texttt{Migrad}, which \textit{does} provide error estimates. \\
 
 Another problem is how to scale the binned output of \simta{}, such that it can be compared with the data. A simple solution would be to simply take the average of all bins. This does not work in practice, since we have too many low-count bins which inflates the scaling factor. Thus it was decided to compare the $\sqrt{\texttt{bins}}$ highest entries of each Dalitz plot instead, where \texttt{bins} is the total number of bins in the 2D histogram. \\
 

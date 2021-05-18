@@ -4,7 +4,7 @@
 #include <TF1.h>
 #include <TLegend.h>
 #include <TVector3.h>
-#include <TText.h>
+#include <TLatex.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -298,20 +298,20 @@ int main(int argc, char const *argv[]) {
         hright.SetBinContent(i, hright.GetBinContent(i)/scale);
     }
 
-    TText* x = new TText(0.5, 0.09, "Energy [keV]");
+    TLatex* x = new TLatex(0.5, 0.08, "Energy [keV]");
     x->SetNDC();
     x->SetTextSize(0.04);
     x->SetTextAlign(22);
     x->Draw();
 
-    TText* yl = new TText(0.07, 0.5, "^{8}Be Count");
+    TLatex* yl = new TLatex(0.07, 0.5, "^{8}Be Count");
     yl->SetNDC();
     yl->SetTextAngle(90);
     yl->SetTextSize(0.04);
     yl->SetTextAlign(22);
     yl->Draw();
 
-    TText* yr = new TText(0.93, 0.5, "^{8}Be* Count");
+    TLatex* yr = new TLatex(0.93, 0.5, "^{8}Be* Count");
     yr->SetNDC();
     yr->SetTextAngle(270);
     yr->SetTextSize(0.04);
@@ -361,7 +361,7 @@ int main(int argc, char const *argv[]) {
 
     // all events within 3 sigma of the ground state are assumed to belong to that branch. all other events are assumed to be to the first excited state. 
     ROOT::RDF::RNode df_gs = df.Filter((format("%1% < E_23 && E_23 < %2%") % peaks[0][0] % peaks[0][1]).str());
-    ROOT::RDF::RNode df_ex = df.Filter((format("!(%1% < E_23 && E_23 < %2%)") % peaks[0][0] % peaks[0][1]).str());
+    ROOT::RDF::RNode df_ex = df.Filter((format("%1% < E_23 && E_23 < %2%") % peaks[1][0] % peaks[1][1]).str());
     TH2D* hgs = new TH2D("hgs", "Dalitz plot", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
     TH2D* hex = new TH2D("hex", "Dalitz plot", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);
 
