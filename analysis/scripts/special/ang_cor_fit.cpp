@@ -205,20 +205,25 @@ int main(int argc, char const *argv[]) {
 
         auto f0 = [] (double* x, double* par) {
             double y = par[0];
-            double c13 = par[1];
-            double c = par[2];
+            double c1 = par[1];
+            double c2 = par[2];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta;
-            return (1-c)*c13*correlation_functions.at("2- 1")(beta) + (1-c)*(1-c13)*correlation_functions.at("2- 3")(beta) + c*correlation_functions.at("0+ 2")(beta);
+            return (1-c2)*c1*correlation_functions.at("2- 1")(beta) + (1-c2)*(1-c1)*correlation_functions.at("2- 3")(beta) 
+                    + c2*correlation_functions.at("0+ 2")(beta);
         };
         TF1* tf0 = new TF1("mix", f0, x_bounds[0], x_bounds[1], 3);
         tf0->FixParameter(0, y);
-        tf0->FixParameter(1, c13);
-        tf0->SetParameter(2, 1);
+        tf0->SetParameter(1, c13); // c1
+        tf0->SetParameter(2, 0.1); // c2
+        tf0->SetParLimits(1, 0, 1);
         tf0->SetParLimits(2, 0, 1);
-        h1->Fit(tf0, "QRL");
+        h1->Fit(tf0, "QRLM");
+        double pars[3];
+        tf0->GetParameters(pars);
+        double c1 = pars[1], c2 = pars[2];
         double c0 = tf0->GetParameter(2);
-        cout << format("Fitted values: c0 = %1%, c1 = %2%, c3 = %3%") % c0 % ((1-c0)*c13) % ((1-c0)*(1-c13)) << endl;
+        cout << format("Fitted values: 0+ 2 = %1%, 2- 1 = %2%, 2- 3 = %3%") % c2 % ((1-c2)*c1) % ((1-c2)*(1-c1)) << endl;
 
         h1->Draw("HIST L");
         tf0->Draw("SAME");

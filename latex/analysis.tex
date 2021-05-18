@@ -231,26 +231,35 @@ Since it is somewhat hard to compare 2D histograms, it is common to look at thei
 
 The $2^-$ data used here is the exact same data used by \cite{Kuhlwein}, who found the best fit to be with $k=18.6(2)$ and $\delta=69.1(0.2)\cdot2\pi$. Where does this difference come from? \\
 
-\begin{table}
-	\begin{tabular}{l|p{0.3\textwidth}p{0.4\textwidth}}
+\begin{table}[b]
+	\begin{tabular}{l|p{0.35\textwidth}p{0.4\textwidth}}
 		& This paper & Kuhlwein \cite{Kuhlwein} \\ \hline
+		\vrule width 0pt height 2.5ex
 		$\text{abs}(\Delta E)$ & \SI{300}{keV} & \SI{200}{keV} \\
 		$p_{tot}$ & \SI{50}{MeV} & \SI{35}{MeV} \\
 		$\alpha_0$ removal & $E_{2-3}$ fit & Dalitz $y$-coordinate cut \\
-		\TDC{} cut & Frontside / backside hit time minimization & Time of arrival minimization
+		\TDC{} cut & \TDC{} difference for individual hits & \TDC{} difference for decay events \\
+		Algorithm & Genetic & Migrad \\ \hline
+		\vrule width 0pt height 2.5ex
+		$k$ & 0.274 & 0.186 \\
+		$\delta\ [2\pi]$ & 0.665 & 0.691		
 	\end{tabular}
+	\caption{The main differences in the analysis performed here and in \cite{Kuhlwein}.}
+	\label{table: analysis: dalitz: this and kuhlwein}
 \end{table}
 
-The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. See table \note{} for an overview of these differences. 
+The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. Another difference is that we fit a Gaussian to the difference in \TDC{} values between the front and backside of a detector, and perform a cut based on that. They instead look at the decay event as a whole, and fit the difference between the earliest and latest particle hit for each decay. To check whether this would cause any major changes, the peak from their approach after our cut has been applied can be found in the appendix, on figure \note{insert}. The peak shape is an almost perfect sharply peaked Gaussian. \\
 
-With an assurance that the simulations are not wrong, we are instead left wondering what else could be the problem. 
+Another important difference is that, although not written explicitly in the article, based on the code, they appear to use the Minuit Migrad fitting algorithm. This algorithm was explicitly tested and rejected during this work, since it often got stuck in local minima. Finally, a series of minor errors was also discovered in their code, which could result in undefined behaviour. Individually none of these should be able to account for the difference, but taken all together they can probably explain it. \note{maybe make a histogram of the parameter space, even test migrad vs genetic}. See table \ref{table: analysis: dalitz: this and kuhlwein} for an overview of these differences. \\
+
+Now that we are assured the simulations are not wrong, we are left wondering what else could be the problem. 
 
 \subsubsection{Checking the reduced width amplitude}
-A solution could be that the reduced width amplitude used for the excited state \ce{^8Be*} is wrong. The value used for the previous simulation is $\gamma = \SI{32.787}{\sqrt{keV}}$ \note{where from?}. We can simultaneously use this as an additional check on our simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. Thus a conversion tool based on eq (\ref{theory: r-matrix: Gamma gamma}) was made to convert between $\gamma$ and $\Gamma$, allowing us to compare the two simulation tools. \\
+A solution could be that the reduced width amplitude used for the excited state \ce{^8Be*} is wrong. We have consistently been using the value $\gamma = \SI{32.787}{\sqrt{keV}}$ as found by \cite{Bhattacharya}. While we examine the effects of changing this value, we can simultaneously use it as an additional check on our two simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. \\
 
-As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. We also derived the correlation function $W(\beta)$ (eq (\ref{theory: angular correlations: W}) for an arbitrary state. This is an excellent method of comparing our simulations with the theory, which we have used on figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, and on figure \ref{fig: analysis: ang compare simX 0} for \simX{}. The x-labels for the \simta{} panels are the reduced width amplitude $\gamma$, while they are the corresponding $\Gamma$ on the \simX{} panels. The horizontal red band on the top panels shows the area projected down onto the x-axis in the bottom panels. On the bottom panels, the red line shows the correlation function $W(\beta)$, where $\theta = \beta + \pi$ is the angle from eq (\ref{theory: dalitz: theta}). The agreement between theory and simulation for \simta{} is generally quite good, except at the point of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. The reason they do not appear to converge may be because we need even smaller $\gamma$, which are not possible with these tools due to instabilities. For larger comparison values of $\gamma$, see figure \ref{fig: appendix: ang compare all} in the appendix. \\
+As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. We also derived the correlation function $W(\beta)$ (eq (\ref{theory: angular correlations: W}) for an arbitrary state. This is an excellent method of comparing our simulations with the theory, which we have used on figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, and on figure \ref{fig: analysis: ang compare simX 0} for \simX{}. The x-labels for the \simta{} panels are the reduced width amplitude $\gamma$, while they are the corresponding $\Gamma$ on the \simX{} panels. The horizontal red band on the top panels shows the area projected down onto the x-axis in the bottom panels. On the bottom panels, the red line shows the $0^+$ correlation function $W(\beta)$, where $\theta = \beta + \pi$ is the angle from eq (\ref{theory: dalitz: theta}). The agreement between theory and simulation for \simta{} is generally quite good, except at the point of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. The reason they do not appear to converge may be because we need even smaller $\gamma$, which are not possible with these tools due to instabilities. For larger comparison values of $\gamma$, see figure \ref{fig: appendix: ang compare all} in the appendix. \\
 
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\linewidth]{figures/ang_compare_0_sim3a.pdf}
 	\caption{}
 	\label{fig: analysis: ang compare sim3a 0}
@@ -260,7 +269,7 @@ As we discussed in the theory, section \ref{section: theory}, in a consecutive t
 	\label{fig: analysis: ang compare simX 0}
 \end{figure}
 
-From figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, we see that both simulation and theory predicts that the bands vanish near the points of interference. Yet this is not what we see in our data on figure \ref{fig: analysis: dalitz: full}. One explanation for this is that our data is dominated by interference from other nearby states. To check this, we can try determining which correlation functions \textit{do} describe our data. 
+From figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, we see that both simulation and theory predicts that the bands vanish near the points of interference. Yet we see no trace of this in the data. The evidence so far seems to indicate that the data is not actually from a $0^+$ state at all, or that whatever trace amounts of it which might be present are completely overshadowed by another state. To expand upon this idea, we can try figuring out what this other state could be. One way of doing this is to continue our angular correlation analysis.
 
 \subsubsection{Checking the angular correlations}
 As a first step, we can try overlaying all correlation functions up to and including the $J = 3$ states on top of the distribution from the data. The results of this can be seen on the rather messy figure \ref{fig: analysis: ang cor fit}. \\
@@ -279,7 +288,7 @@ As a first step, we can try overlaying all correlation functions up to and inclu
 	\label{fig: analysis: ang cor fit}
 \end{figure}
 
-Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options \{1+ 2, 2- 1, 2- 3, 3+ 2\}. Neither of these is a good match by themselves, so we need a linear combination of them. Ideally we would introduce the four weights $w^{1+}_2, w^{2-}_1, w^{2-}_3, w^{3+}_2$ with the constraint $w^{1+}_2 + w^{2-}_1 + w^{2-}_3 + w^{3+}_2 = 1$, but this is not possible in \ROOT{}. Thus we are limited to fitting only two of these four options at a time. The most promising candidates are the two $2-$ states, both physically and in terms of their correlation functions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. We see that there is an excellent agreement with the data, indicating major interference from a $2-$ state. After the ratio of $w^{2-}_1$ and $w^{2-}_3$ were fixed, another fit allowing for some $0+\ 2$ were performed, but yields the same result as earlier, i.e. $w^{0+}_2 = 0$. 
+Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. 
 
 \begin{figure}
 	\centering
