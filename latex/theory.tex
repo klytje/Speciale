@@ -1,5 +1,5 @@
 \section{Theory} \label{section: theory}
-This section will introduce all of the relevant theory for this thesis. 
+Since we are dealing almost exclusively with many-body systems, one of the primary goals of nuclear physicists is to construct simplified models of nuclear systems. Although many such phenomenological models have been discovered through the years, a single overarching framework which can consistently model all phenomena has yet to be found. We will here only introduce the R-matrix model, which we will have practical use for.
 
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
@@ -111,12 +111,12 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix of dimensions equal to the number of input/output channels \note{Is this really necessary?}. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry for each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
 	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
 
-Here it is convenient to introduce the symmetric $\bm{C}$-matrix \note{what does it mean}
+Here it is convenient to introduce the symmetric $\bm{C}$-matrix
 \begin{align*}
 	\bm{C}_{ij}(E) = \langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle
 \end{align*}
@@ -136,8 +136,7 @@ To complete this definition of $R$, we thus need to invert the $C$-matrix. To do
 	\bm{C}(0)\bm{v}_{nl} = E_{nl}\bm{v}_{nl}
 \end{align*}
 
-with the orthonormality condition $\bm{v}_{nl}^T \bm{v}_{nl} = \delta_{nn'}$. The requirements listed here are exactly what we need to invert it through its eigendecomposition, where the inverse is given as \note{link to wikipedia? maybe do the actual calculations in an appendix \href{https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix\#Matrix_inverse_via_eigendecomposition}{link}} 
-
+with the orthonormality condition $\bm{v}_{nl}^T \bm{v}_{nl} = \delta_{nn'}$. The requirements listed here are exactly what we need to invert it through its eigendecomposition, where the inverse is given as
 \begin{align*}
 	\bm{C}(0)^{-1} = \sum_n^N \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl}}
 \end{align*}
@@ -158,18 +157,13 @@ where $\gamma_{nl}$ is defined as
 	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \sum_{i}^{\infty}\bm{v}_{nl, i}\varphi_i(a)
 \end{align}
 
-$\gamma_{nl}$ is known as the reduced width amplitude. It is easier to see its significance by casting (\ref{theory: r-matrix: reduced width}) into its integral form \note{citation \href{https://www.researchgate.net/publication/238973586_AZURE_An_R-matrix_code_for_nuclear_astrophysics\#pf11}{link, eq 7b}}, 
-\begin{align*}
-	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \int dS X^*_l\varphi
-\end{align*}
+$\gamma_{nl}$ is known as the reduced width amplitude. They got this name since their square is a crucial component of the formal width, as we will see in a moment. \note{ask Hans for proper terminology}\\
 
-where \note{ask Hans about this!}. \\
-
-Note that the R-matrix has an infinity of real simple poles, bounded from below. If we instead only want to deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. Since we only need a single result from this description, see e.g. \cite{Baye} for a derivation of the equation
+In general, the R-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
 \begin{align} \label{theory: r-matrix: Gamma gamma}
-	\Gamma = \frac{2 \gamma_{nl}^2 P(E_R)}{1 + \gamma_{nl}^2 S'(E_R)}
+	\Gamma = \frac{2 \gamma_{1l}^2 P(E_R)}{1 + \gamma_{1l}^2 S'(E_R)}
 \end{align}
-which relates the usual width $\Gamma$ to the reduced width $\gamma_{nl}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant when we want to compare simulations from different reaction models. 
+which relates the formal width $\Gamma$ to the reduced width $\gamma_{1\ l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
 
 \subsubsection{Applications} \label{sec: theory: r-matrix: applications}
 One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
@@ -204,12 +198,12 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
 \end{align}
 
-These two equations are useful when we want to relate the reduced width $\gamma^2$ to the \note{normal width} $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
+These two equations are useful when we want to relate the reduced width $\gamma^2$ to the formal width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
 
 \subsubsection{Three-body decays} \label{sec: theory: r-matrix: three body}
-So far, the R-matrix theory can only describe two-body decays. To extend this model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
+So far, the R-matrix theory can only describe two-body decays. To extend the model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
 
-By using these extensions, one can derive similar equations as for the two-body model, which will not be discussed here. This three-body model is used internally in some of the simulation tools which will be introduced later. 
+By using these extensions, one can derive similar equations as for the two-body model, which will not be discussed here. This sequential three-body model is used internally in some of the simulation tools which will be introduced later. 
 
 \subsection{Kinematics}
 We will later have need of some basic kinematic results for a sequential decay, which will be introduced in this section. A useful way of visualizing three-body decays will also be introduced. 

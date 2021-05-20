@@ -250,7 +250,7 @@ The $2^-$ data used here is the exact same data used by \cite{Kuhlwein}, who fou
 
 The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. Another difference is that we fit a Gaussian to the difference in \TDC{} values between the front and backside of a detector, and perform a cut based on that. They instead look at the decay event as a whole, and fit the difference between the earliest and latest particle hit for each decay. To check whether this would cause any major changes, the peak from their approach after our cut has been applied can be found in the appendix, on figure \note{insert}. The peak shape is an almost perfect sharply peaked Gaussian, indicating the difference is insignificant \note{ask Hans}. \\
 
-Another important difference is that, although not written explicitly in the article, based on the code, they appear to use \texttt{Minuit2}'s \texttt{Migrad} fitting algorithm. This algorithm was explicitly tested and rejected during this work, since it could not converge to a solution for arbitrary start parameters. Finally, a series of minor errors was also discovered in their code, which could result in undefined behaviour. Individually none of these should be able to account for the difference, but taken all together they probably can, especially since the values are fairly close. See table \ref{table: analysis: dalitz: this and kuhlwein} for an brief overview of this discussion. \\
+Another important difference is that they use \texttt{Minuit2}'s \texttt{Migrad} fitting algorithm. This algorithm was explicitly tested and rejected during this work, since it could not converge to a solution for arbitrary start parameters. Finally, a series of minor errors was also discovered in their code, which could result in undefined behaviour. Individually none of these should be able to account for the difference, but taken all together they probably can, especially since the values are fairly close. See table \ref{table: analysis: dalitz: this and kuhlwein} for an brief overview of this discussion. \\
 
 Now that we are assured the simulations are not wrong, we are left wondering what else could be the problem. 
 
@@ -288,7 +288,7 @@ As a first step, we can try overlaying all correlation functions up to and inclu
 	\label{fig: analysis: ang cor fit}
 \end{figure}
 
-Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. Finally, after the ratio of $2^-_1$ and $2^-_3$ was found, an extra $0^+_2$ component was added to the fit. The fitting algorithm found its weight $w^{0^+}_2$ to be 0. \note{specific values maybe? mention values for both mul 2 and 3} \\
+Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1^+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. \note{why?} Finally, after the ratio of $2^-_1$ and $2^-_3$ was found, an extra $0^+_2$ component was added to the fit. The fitting algorithm found its weight $w^{0^+}_2$ to be 0. \note{specific values maybe? mention values for both mul 2 and 3} \\
 
 \begin{figure}
 	\centering
@@ -307,10 +307,22 @@ Based on this figure, we can quickly rule out all of the states which peaks at $
 With an idea of what to look for, we can now try fitting it to our data.
 
 \subsection{Fitting the data}
-Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on figure 
+Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on figures 
 
 \begin{figure}[bt]
 	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/E_cm.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/rho.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/phi.pdf}
+	\end{minipage}
 	\begin{minipage}{.33\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/E_cm.pdf}
@@ -323,7 +335,7 @@ Based on the results of the previous section, it appears as if our data is domin
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/phi.pdf}
 	\end{minipage}
-	\caption{The projections of the $\{2^-_1, 2^-_3\}$ fit to all $0^+$ data. The black lines represents the data, while the orange lines are the simulation.}
+	\caption{The projections of the $\{2^-_1, 2^-_3\}$ fit to the $0^+$ data. The top row is only for multiplicity $3$ events, while the bottom row is for both multiplicity $2$ and $3$ events. The black lines represents the data, while the orange lines are the simulation. See table \note{ref} for the fit values.}
 	\label{fig: analysis: dalitz: 0+ all_events 2-_i projections}
 \end{figure}
 
