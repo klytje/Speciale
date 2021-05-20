@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
         for (int file = 0; file < 8; file++) {
             fileno++;
             cout << format("Analyzing file %1%/%2%.") % (fileno) % (argc-sim3a_start) << "\r";
-            TH2D* h = dalitz(files[file], bins);
+            TH2D* h = dalitz(files[file], bins, true, false);
 
             // this small section extracts gamma or Gamma from the file names
             string name = string(files[file]);

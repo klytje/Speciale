@@ -318,12 +318,14 @@ TH2D* dalitz(ROOT::RDF::RNode* df, const int bins = 200, const bool bounded = fa
 }
 
 // makes a complete Dalitz plot based on the input file, including various cuts
-TH2D* dalitz(const char* file, int bins = 200, bool bounded = false) {
+TH2D* dalitz(const char* file, int bins = 200, bool bounded = false, bool remove_gs = true) {
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
     filter(&df);
     setup_dataframe(&df);
     if (bounded) {
         cut_circle(&df);
+    }
+    if (remove_gs) {
         cut_gs(&df);
     }
 

@@ -1,9 +1,9 @@
 \section{Analysis}
 \note{Remember to generate all figures with the full dataset to replace the placeholders.} \\
 
-After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. The reasoning behind this is two-fold: one, to weed out any proton detections, and two, to ensure that any multi-coincidence $\alpha$ particle detections actually originates from the same decay event. \\
+After having passed through the entire \AUSAlib{} pipeline, the data is finally ready for the actual analysis. Before we perform any further calculations with the data, we first need to impose some cuts on it. The reasoning behind this is two-fold: one, to weed out any proton detections, and two, to ensure that any multi-coincidence $\alpha$ particle hits actually originate from the same decay event. \\
 
-In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. Unless stated otherwise, all figures from this section are made with only multiplicity $3$ data.
+In total we would like to perform three cuts: one on the \TDC{} values, another on the energy, and a final one on the momentum. Unless stated otherwise, all figures from this section are made with only multiplicity $3$ data. We will also often use the notation $J^{\pi}_l$ to specify specific transitions. 
 
 \subsection{TDC cut}
 The general idea with this type of cut is that a given $\alpha$-particle should hit the front and backside of a detector within some small time interval. If this interval is too large, the two hits are probably not from the same particle, and the event should be discarded. \\
@@ -19,7 +19,7 @@ It turns out that this cut is not that simple to perform, however. There are two
 
 To see the problem, look at figure \ref{fig: analysis: tdc before}. The figure contains all measured \TDC{} values by the detectors (x-axis), both for the front and backside (y-axis). Only the backside of the S3 detectors were hooked up to the \TDC{} converter, hence why the two bottom-left panels are empty. Two problems are clearly visible in this figure: one, we have too many peaks, and two, some of the peaks appear to be broken in half. We will focus on the latter problem first. \\
 
-Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which makes sense since the \note{something about the word size being equal to this}. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as one would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ are the \textit{only} possible values for the \TDC{} besides $0$ \note{check this}. Why this is the case is unclear, but since we are only interested in the \textit{differences} between \TDC{} values, we can choose to ignore the cause and simply fix the data. \\
+Such a clean split down the middle of a peak, with its two halves appearing at the very edges of the plot, looks like a classic overflow-problem, and indeed, it probably is. The right half of every broken peak stops at exactly $2^{16} = 65536$, which is coincidentally the same number of bits used for the \TDC{} data word size. This clearly indicates that the problem is a simple overflow. However, things are not that simple: the left half of every broken peak starts at exactly $65126$; i.e. the peaks are only shifted by $410$, and does not overflow back to $0$, as we would expect. Upon a closer examination of all data sets, it appears as if this range, $\{65126, 65536\}$ contains the \textit{only} possible values for the \TDC{} besides $0$. Why this is the case is unclear, but since we are only interested in the \textit{differences} between \TDC{} values, we can choose to ignore the cause and simply fix the data. \\
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/tdc_plot_after.pdf}
@@ -27,7 +27,7 @@ Such a clean split down the middle of a peak, with its two halves appearing at t
 	\label{fig: analysis: tdc after}
 \end{figure}
 
-Figure \ref{fig: analysis: tdc after} shows the data after it has been corrected. This reveals another piece of the puzzle: the two halves of the peaks does not match up exactly. It is, however, a very close match, and so, once again, we have chosen to simply accept the data as it is. \\
+Figure \ref{fig: analysis: tdc after} shows the data after it has been corrected. This reveals another piece of the puzzle: the two halves of the peaks do not match up exactly. It is, however, a very close match, and so, once again, we have chosen to simply accept the data as it is. \\
 
 \begin{figure}[tb]
 	\includegraphics[width=\linewidth]{figures/mul_compare.pdf}
@@ -39,7 +39,7 @@ With the second problem fixed, we now turn our attention to the first: we still 
 
 A detector $A$ can be activated in two ways. The first case is when $A$ itself detects a hit, after which it will immediately send a signal to the \TDC{} converter. The second case is when another detector $B$ is hit, and sends an activation signal to $A$. Due to the additional length of wiring the signal must pass through from $B$ to $A$, the second case will in general be delayed compared to the first. Since the length of wiring may be different for signals from each detector $\{B, C, D,...\}$, this may result in a unique peak for each. I will refer to these two cases as primary and secondary activations, respectively. \\
 
-These two types of activations are exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. \note{maybe discuss why this makes sense - due to downscaling and position, we expect W1 to primary activate more than S3} \\
+These two types of activations are exactly what we see on figure \ref{fig: analysis: tdc after}, which we can realize by separating the data into different sets depending on the multiplicity. For multiplicity $1$ data (we are temporarily working with the data before these events were discarded), only primary activations can occur. For higher multiplicities, both primary and secondary activations should be present, with an increasing number of secondary compared to primary as the multiplicity increases. This is exactly what we see on figure \ref{fig: analysis: mul}, showing only the \BT{} peaks. The \FT{} peaks for the W1's acts identically. This interpretation also explains why the secondary peaks for the $S3$ detectors are relatively larger than those for the $W1$s: since the upstream $SU$ only detects backscattered particles, and the downstream $SD$ is heavily downscaled, we would expect the $W1$s to be mainly primary activated, which is exactly what we see. \\
 
 This explains all but a single extra peak, which can be seen on the second top panel from the left. Some further investigation reveals that this extra peaks consists almost entirely of low-energy events, as can be seen on figure \ref{fig: appendix: multiple peaks energy} in the appendix. With the cause of every peak identified, we can now solve the problem by simply shifting all of them on top of each other, as can be seen for the \BT{} peaks on figure \ref{fig: analysis: TDC: BT peaks shifted}. 
 
@@ -58,7 +58,7 @@ This explains all but a single extra peak, which can be seen on the second top p
 \end{figure}
 
 \subsubsection{Alignment}
-Now that we have fixed the issue with multiple peaks, it is time to look at the other problem of aligning the \TDC{} values. For the remainder of this section, we are only interested in the \textit{difference} in \FT{} and \BT{} values, which is problematic for the two S3 detectors since they only measure the latter. We can get around this problem by looking only at multi-detector events, i.e. cases where the decay products were detected by at least two different detectors. As long as one of these two detectors are a W1, we can simply use its \FT{} value for the S3 as well. We can do this since this should simply be a constant offset from whatever the S3 would have measured by itself. \\
+Now that we have fixed the issue with multiple peaks, it is time to look at the other problem of aligning the \TDC{} values. For the remainder of this section, we are only interested in the \textit{difference} in \FT{} and \BT{} values, which is problematic for the two S3 detectors since they only measure the latter. We can get around this problem by looking only at their multi-detector events, i.e. cases where the decay products were detected by at least two different detectors. As long as one of these two detectors are a W1, we can simply use its \FT{} value for the S3 as well. We can do this since this should simply be a constant offset from whatever the S3 would have measured by itself. \\
 
 Now, to convince ourselves that it is actually necessary to align the \TDC{} values, take a look at the two left panels of figure \ref{fig: analysis: TDC}, which shows the difference in \FT{} and \BT{} values for the two detectors Det1 (top) and SU (bottom). As it is right now, it is impossible to fit the 1D projection with a Gaussian; hence the need for this alignment. \\
 
@@ -95,7 +95,7 @@ Now, to convince ourselves that it is actually necessary to align the \TDC{} val
 
 Before we start modifying the data, we need to discuss what we are actually allowed to do. When a strip sends a signal to the \TDC{}, it must first travel through some length of wire, which takes some time $t$. Ideally these wires would all be the same length, or the \TDC{} would be calibrated to account for the differences, which would automatically solve this alignment problem. Since this is not the case, our goal is to determine the difference in wire length, $\Delta t$. We do this by minimizing the equation
 \begin{align} \label{analysis: tdc: minimize}
-	\sum_{hits} |(t_i + \Delta_i) - (t_j + \Delta_j)|
+	\sum_{\text{hits}} |(t_i + \Delta_i) - (t_j + \Delta_j)|
 \end{align}
 where $\{i, j\}$ run over the number of strips. We use the absolute difference instead of least squares since we expect outliers from random coincidences. \\
 
@@ -200,7 +200,7 @@ The result of a \simta{} simulation can be seen on the left panel of figure \ref
 \subsubsection{Checking the simulation tools}
 Since the simulations are so different from what we see in our data, it is worthwhile to verify that they actually work as expected. Since we also have data on the $2^-$ resonance which has been the subject of several papers (see e.g. \cite{Kuhlwein}), it is an obvious target for checking the tools. \\
 
-Using the fitting algorithm introduced in section \ref{sec: datared: custom tools}, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a far better match than the $0^+$ resonance. The reason the simulation appears "grainy" is due to a low number of simulated events. \note{maybe make a small table of the numbers}. We could probably improve the fit even further by simulating even more events. The reason this is not done is due to a simple time limit: the fit already takes about an hour to perform, and if we are optimistic, scales linearly with the number of events. Since we will need quite a few more of these fits, it was limited to only a million simulated events. \note{maybe increase simulation number if there's time} \\
+Using the custom Dalitz fitter introduced in section \ref{sec: datared: custom tools} to fit all our $2^-$ data (both multiplicity $2$ and $3$) with a \simta{} simulation for both $2^-_1$ and $2^-_3$, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a far better match than the $0^+$ resonance. The reason the simulation appears "grainy" is due to a low number of simulated events. \note{maybe make a small table of the numbers}. We could probably improve the fit even further by simulating even more events. The reason this is not done is due to a simple time limit: the fit already takes about an hour to perform, and if we are optimistic, scales linearly with the number of events. Since we will need quite a few more of these fits, it was limited to only a million simulated events. \note{maybe increase simulation number if there's time} \\
 
 \begin{figure}[]
 	\centering
@@ -244,20 +244,20 @@ The $2^-$ data used here is the exact same data used by \cite{Kuhlwein}, who fou
 		$k$ & 0.274 & 0.186 \\
 		$\delta\ [2\pi]$ & 0.665 & 0.691		
 	\end{tabular}
-	\caption{The main differences in the analysis performed here and in \cite{Kuhlwein}.}
+	\caption{The main differences in the analysis performed here and in \cite{Kuhlwein}. \note{errors?}}
 	\label{table: analysis: dalitz: this and kuhlwein}
 \end{table}
 
-The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. Another difference is that we fit a Gaussian to the difference in \TDC{} values between the front and backside of a detector, and perform a cut based on that. They instead look at the decay event as a whole, and fit the difference between the earliest and latest particle hit for each decay. To check whether this would cause any major changes, the peak from their approach after our cut has been applied can be found in the appendix, on figure \note{insert}. The peak shape is an almost perfect sharply peaked Gaussian. \\
+The difference probably originates from the different preliminary cuts imposed before fitting. We have here used more liberal cuts on both the energy and momentum, and also used the $E_{2-3}$ energies to weed out $\alpha_0$ decays, while they used a simple cut on the $y$-coordinate. Another difference is that we fit a Gaussian to the difference in \TDC{} values between the front and backside of a detector, and perform a cut based on that. They instead look at the decay event as a whole, and fit the difference between the earliest and latest particle hit for each decay. To check whether this would cause any major changes, the peak from their approach after our cut has been applied can be found in the appendix, on figure \note{insert}. The peak shape is an almost perfect sharply peaked Gaussian, indicating the difference is insignificant \note{ask Hans}. \\
 
-Another important difference is that, although not written explicitly in the article, based on the code, they appear to use the Minuit Migrad fitting algorithm. This algorithm was explicitly tested and rejected during this work, since it often got stuck in local minima. Finally, a series of minor errors was also discovered in their code, which could result in undefined behaviour. Individually none of these should be able to account for the difference, but taken all together they can probably explain it. \note{maybe make a histogram of the parameter space, even test migrad vs genetic}. See table \ref{table: analysis: dalitz: this and kuhlwein} for an overview of these differences. \\
+Another important difference is that, although not written explicitly in the article, based on the code, they appear to use \texttt{Minuit2}'s \texttt{Migrad} fitting algorithm. This algorithm was explicitly tested and rejected during this work, since it could not converge to a solution for arbitrary start parameters. Finally, a series of minor errors was also discovered in their code, which could result in undefined behaviour. Individually none of these should be able to account for the difference, but taken all together they probably can, especially since the values are fairly close. See table \ref{table: analysis: dalitz: this and kuhlwein} for an brief overview of this discussion. \\
 
 Now that we are assured the simulations are not wrong, we are left wondering what else could be the problem. 
 
 \subsubsection{Checking the reduced width amplitude}
-A solution could be that the reduced width amplitude used for the excited state \ce{^8Be*} is wrong. We have consistently been using the value $\gamma = \SI{32.787}{\sqrt{keV}}$ as found by \cite{Bhattacharya}. While we examine the effects of changing this value, we can simultaneously use it as an additional check on our two simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. \\
+A solution could be that the reduced width amplitude used for the first excited state of \ce{^8Be^*} is wrong. We have consistently been using the value $\gamma = \SI{32.787}{\sqrt{keV}}$ as found by \cite{Bhattacharya}. While we examine the effects of changing this value, we can simultaneously use it as an additional check on our two simulation tools: as the width becomes smaller, interference effects becomes less relevant, and so the two simulations should converge towards each other for low $\gamma$. \\
 
-As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. We also derived the correlation function $W(\beta)$ (eq (\ref{theory: angular correlations: W}) for an arbitrary state. This is an excellent method of comparing our simulations with the theory, which we have used on figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, and on figure \ref{fig: analysis: ang compare simX 0} for \simX{}. The x-labels for the \simta{} panels are the reduced width amplitude $\gamma$, while they are the corresponding $\Gamma$ on the \simX{} panels. The horizontal red band on the top panels shows the area projected down onto the x-axis in the bottom panels. On the bottom panels, the red line shows the $0^+$ correlation function $W(\beta)$, where $\theta = \beta + \pi$ is the angle from eq (\ref{theory: dalitz: theta}). The agreement between theory and simulation for \simta{} is generally quite good, except at the point of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. The reason they do not appear to converge may be because we need even smaller $\gamma$, which are not possible with these tools due to instabilities. For larger comparison values of $\gamma$, see figure \ref{fig: appendix: ang compare all} in the appendix. \\
+As we discussed in the theory, section \ref{section: theory}, in a consecutive three-body breakup, the angle between the primary and secondary \note{ensure these terms are defined} particles are correlated. We also derived the correlation function $W(\beta)$  (\ref{theory: angular correlations: W}) for an arbitrary state. This correlation is an excellent method of comparing our simulations with the theory, which we have used on figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, and on figure \ref{fig: analysis: ang compare simX 0} for \simX{}. The $x$-labels for the \simta{} panels are the reduced width amplitude $\gamma$, while they are the corresponding $\Gamma$ as calculated by the width converter tool on the \simX{} panels. The horizontal red band on the top panels shows the area projected down onto the $x$-axis in the bottom panels. On the bottom panels, the red line shows the $0^+$ correlation function $W(\beta)$, where $\theta = \beta + \pi$ is the angle from (\ref{theory: dalitz: theta}). The agreement between theory and simulation for \simta{} is generally quite good, except at the point of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. The reason they do not appear to converge may be because we need even smaller $\gamma$, which are not possible with these tools due to instabilities. For larger comparison values of $\gamma$, see figure \ref{fig: appendix: ang compare all} in the appendix. \\
 
 \begin{figure}[h]
 	\includegraphics[width=\linewidth]{figures/ang_compare_0_sim3a.pdf}
@@ -288,7 +288,7 @@ As a first step, we can try overlaying all correlation functions up to and inclu
 	\label{fig: analysis: ang cor fit}
 \end{figure}
 
-Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. 
+Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. Finally, after the ratio of $2^-_1$ and $2^-_3$ was found, an extra $0^+_2$ component was added to the fit. The fitting algorithm found its weight $w^{0^+}_2$ to be 0. \note{specific values maybe? mention values for both mul 2 and 3} \\
 
 \begin{figure}
 	\centering
@@ -303,6 +303,31 @@ Based on this figure, we can quickly rule out all of the states which peaks at $
 	\caption{}
 	\label{fig: analysis: ang cor fitted}
 \end{figure}
+
+With an idea of what to look for, we can now try fitting it to our data.
+
+\subsection{Fitting the data}
+Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on figure 
+
+\begin{figure}[bt]
+	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/E_cm.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/rho.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/phi.pdf}
+	\end{minipage}
+	\caption{The projections of the $\{2^-_1, 2^-_3\}$ fit to all $0^+$ data. The black lines represents the data, while the orange lines are the simulation.}
+	\label{fig: analysis: dalitz: 0+ all_events 2-_i projections}
+\end{figure}
+
+
 
 \subsection{Some title}
 \subsubsection{Verifying the branching ratio}

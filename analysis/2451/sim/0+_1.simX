@@ -1,8 +1,0 @@
-beam: p
-target: B11
--> {
-    generator: PREGEN(file="/home/krelle/projects/B11/analysis/2451/sim/raw/0+_1.dat" unit="keV")
-    a
-    a
-    a
-}

@@ -86,12 +86,12 @@ Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directi
 which will then introduce interference effects in the simulation. \\
 
 A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for multiple orbital angular momentum values for the first $\alpha$ particle. This modification will allow us to simultaneously simulate decay events for both $\alpha_0$ and $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
-\begin{align}
+\begin{align} \label{datared: tools: k delta eq}
 	&|f^2| = \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2 \nonumber\\
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. $\delta$ is an arbitrary phase difference between the two states, meant to represent \note{what?}. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
 
 The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline. 
 
@@ -105,18 +105,37 @@ The output of this program is a \ROOT{} file which can simply be passed to \simX
 Besides the tools contained in these public libraries, a few custom scripts were created for this thesis. These will all be introduced here. 
 
 \subsubsection{Dalitz fitter}
-Although we are working primarily with the $0+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting algorithm which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
+Although we are working primarily with the $0^+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting tool which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
 
-Before we can perform such a fit, we have a few choices to make, the most important of which is probably the choice of minimization algorithm. Even with only a few free parameters to fit, the parameter space is filled with local minima, which the algorithm must avoid. \note{introduce the final choice of fitting algorithm} \\
+The name of the program, \textit{Dalitz fitter}, signifies that it fits the Dalitz plots themselves, and not any of its projections. This choice is made due to a discussion of the pitfalls of fitting to projections presented in \cite{Kuhlwein}. The basic idea of the program is to calculate the weights (\ref{datared: tools: k delta eq}) for every iteration and then apply them during the binning of the simulated data. \\
 
-With the choice of algorithm made, we immediately discover another problem: it does not support error estimates. This is trivially solved by performing another fit based on the output of the first with any local minimizer, such as \texttt{Minuit2}'s \texttt{Migrad}, which \textit{does} provide error estimates. \\
+We now have an important decision to make: which minimization algorithm should we use? This choice is far more important than it may appear, since even with only $2$ free parameters, most of the possible algorithms from \ROOT{} actually failed to find the global minima. They were all tested on data from the $2^-$ state, based on which the best candidate appears to be the \textit{Genetic} algorithm \cite{genetic}. The basic idea is to randomly seed a group of individual "genomes" in the possible parameter space. A fitness function is then evaluated for every genome in each iteration, based on which they are then either kept or discarded. A new generation of genomes is then generated based on the surviving population of the group. After a number of these cycles have occurred, the best genome is taken as the solution. \\
 
-Another problem is how to scale the binned output of \simta{}, such that it can be compared with the data. A simple solution would be to simply take the average of all bins. This does not work in practice, since we have too many low-count bins which inflates the scaling factor. Thus it was decided to compare the $\sqrt{\texttt{bins}}$ highest entries of each Dalitz plot instead, where \texttt{bins} is the total number of bins in the 2D histogram. \\
+Since this algorithm randomly explores a large section of the parameter space, it is excellent for finding global minima. This same randomness also makes it extremely slow to converge towards a solution, and it was by far the slowest algorithm out of the ones offered by \ROOT{} - each fit takes upwards of an hour to perform. These features are a boon for us, since it gives us more confidence in the accuracy of its results. \\
 
-Finally, we also have to decide how we want to calculate the goodness of fit. Since we are dealing with count data, the best choice is to use the standard maximum likelihood ratio
+With the choice of algorithm made, we immediately encounter another problem: it does not support error estimates. This is trivially solved by performing another fit based on the output of the first with any local minimizer which does support them, such as \texttt{Minuit2}'s \texttt{Migrad} algorithm. \\
+
+We also have to decide how we want to determine the goodness of fit. The best comparison we can perform is to bin both the data and simulation into a Dalitz plot, and then compare them bin-by-bin. Since the two plots may have very different count numbers, we must first ensure that these match. A simple solution would be to simply take the average of all bins. This does not work in practice, since we have too many low-count bins which inflates the scaling factor. Thus it was decided to compare the $n$ highest entries of each Dalitz plot instead, where $n^2$ is the total number of bins in the 2D histogram. Since we are limited to comparing histograms, the best goodness of fit test is the binned maximum likelihood method
 \begin{align*}
-	2\ln \lambda = \sum_i \mu_i - m_i + m_i\ln \frac{m_i}{\mu_i}
+-2\ln \lambda = 2\sum_i^{n^2} \mu_i - m_i + m_i\ln \frac{m_i}{\mu_i}
 \end{align*}
+which, at its minimum value, follows a $\chi^2$ distribution. With $n^2$ bins and $\theta$ fit parameters, the number of degrees of freedom for the $\chi^2$ distribution is $n^2-\theta$. \\
+
+Finally, a few words on how the tool handles simultaneously fitting multiple simulations. Any single or pair of \simta{} simulations can be fitted, but any interference beyond that provided by the simulation tool is neglected. As an example, if we fit the simulated pair $\{2^-_1, 2^-_3\}$ and $\{3^-_1, 3^-_3\}$, the simulation tool accounts for interference within each pair. The fitting tool then creates two individual Dalitz plots, and adds them based on the ratio fitting parameter, thus neglecting any additional interference between the states. See table \ref{table: datared: dalitz fitter} for an overview of its functionalities. 
+
+\begin{table}[]
+	\begin{tabular}{llccc}
+		&  & \multicolumn{3}{c}{Input} \\
+		& \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{$\{J^{\pi}_{1,\ l}, J^{\pi}_{1,\ l'}\}$} & \multicolumn{1}{l|}{$\{J^{\pi_1}_{1,\ l_1}, J^{\pi_1}_{1,\ l_1'}\}, \{J^{\pi_2}_{2,\ l_2}\}$} & \multicolumn{1}{l}{$\{J^{\pi_1}_{1,\ l_1}, J^{\pi_1}_{1,\ l_1'}\}, \{J^{\pi_2}_{2,\ l_2}, J^{\pi_2}_{2,\ l_2'}\}$} \\ \cline{2-5} \vrule width 0pt height 2.5ex
+		\multirow{5}{*}{\rotatebox[origin=c]{90}{Fit parameter}} & \multicolumn{1}{l|}{$k_1$} & x & x & x \\
+		& \multicolumn{1}{l|}{$\delta_1$} & x & x & x \\
+		& \multicolumn{1}{l|}{$c$} &  & x & x \\
+		& \multicolumn{1}{l|}{$k_2$} &  &  & x \\
+		& \multicolumn{1}{l|}{$\delta_2$} &  &  & x
+	\end{tabular}
+	\caption{Overview of the possible inputs to the Dalitz fitting tool. An input file is depicted by a pair of curly braces. The parameters $k_1$ and $\delta_1$ describes the ratio and interference within the first \simta{} input file, $c$ describes the ratio of the first input file to the second, and $k_2$ and $\delta_2$ describes the ratio and interference within the second \simta{} input file.}
+	\label{table: datared: dalitz fitter}
+\end{table}
 
 \subsubsection{Width converter}
 We will later have need of comparing simulations from \simX{} and \simta{} for a variety of different widths. Since the first uses the width $\Gamma$ and the second the reduced width $\gamma$, we will need to establish a relationship between the two. \\
@@ -149,7 +168,7 @@ The first step of the reduction is to convert it to a format \ROOT{} recognizes.
 	\label{table: analysis: calibration}
 \end{wraptable}
 
-A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{table: analysis: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
+A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{table: analysis: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0^+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
 
 After the energy calibration, the events from the front and backside of each detector is matched with the \Sorter{} tool, effectively turning the list of detector hits into a list of detected particles. To identify which particles we are dealing with, the \Identifier{} is used. This tool will also correct for the energy loss due to passage through both the target and the dead layer of the detectors. After this, the data is finally passed to the \EventBuilder{}, which deals with individual events. \\
 
