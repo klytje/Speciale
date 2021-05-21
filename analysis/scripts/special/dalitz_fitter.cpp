@@ -24,21 +24,8 @@ using namespace std;
 using namespace ROOT::Math;
 
 int bins;
-bool plot_param_space = false;
 vector<vector<double>> p_evals;
 int evals = 0;
-
-void setup_param_plot() {
-    if (plot_param_space) {
-        p_evals = vector<vector<double>>(100000, vector<double>(3, 0)); // allocate space for 100k evals
-    }
-}
-
-// add an evaluation to the history
-void save_eval(double k, double delta, double chi) {
-    p_evals[evals] = {k, delta, chi};
-    evals++;
-}
 
 // this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
 class container {
@@ -77,7 +64,6 @@ public:
         f1 = *(*sim).f;
         wU1 = *(*sim).wU;
         setup_vdat(hdata);
-        setup_param_plot();
     }
 
     // fit_type 2 constructor
@@ -130,8 +116,6 @@ public:
 
         // calculate chi
         double chi = maximum_likelihood(hsim);
-        if (plot_param_space)
-            save_eval(k, delta, chi);
         hsim->Delete();
         return chi;
     }
@@ -377,13 +361,6 @@ int main(int argc, char const *argv[]) {
             y_cut = atof(args[i+1].c_str());
             guess_pars += 2;
             cout << "\tperforming cut at y = " << y_cut << endl;
-        }
-        else if (args[i].find(".pspace") != string::npos) { // not implemented
-            if (args[i+1] == "true") {
-                plot_param_space = true;
-                cout << "\tWill make an additional plot of the evaluated parameter space." << endl;
-            }
-            guess_pars += 2;
         }
     }
     if (fix_delta) {
@@ -789,29 +766,4 @@ int main(int argc, char const *argv[]) {
     file << "Angular projection: chi2 = " << chi2 << endl;
     file << "Energy: chi2 = " << chi3 << endl;
     file.close();
-
-    // PARAM SPACE PLOT
-    if (plot_param_space) {
-        TCanvas* c6 = new TCanvas("c6", "c", 600, 600);
-        TH2D* dummy = new TH2D("dummy", "h", 2, 0, 1, 2, 0, 1);
-        dummy->GetXaxis()->SetTitle("k");
-        dummy->GetXaxis()->CenterTitle();
-        dummy->GetXaxis()->SetNdivisions(2);
-        dummy->GetYaxis()->SetTitle("\\delta");
-        dummy->GetYaxis()->CenterTitle();
-        dummy->GetYaxis()->SetNdivisions(2);
-        dummy->Draw("col");
-
-        TGraph2D* gpars = new TGraph2D(evals);
-        for (int i = 0; i < evals; i++) {
-            vector<double> e = p_evals[i];
-            gpars->SetPoint(i, e[0], e[1]/6.28, e[2]);
-        }
-        gpars->Draw("cont same");
-        string path = folder + "param_space.pdf";
-        // c6->SetLogz();
-        c6->SetRightMargin(0.15);
-        c6->SaveAs(path.c_str());
-        cout << "Created " << path << "." << endl;
-    }
 }

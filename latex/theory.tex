@@ -1,5 +1,5 @@
 \section{Theory} \label{section: theory}
-Since we are dealing almost exclusively with many-body systems, one of the primary goals of nuclear physicists is to construct simplified models of nuclear systems. Although many such phenomenological models have been discovered through the years, a single overarching framework which can consistently model all phenomena has yet to be found. We will here only introduce the R-matrix model, which we will have practical use for.
+Since we are dealing almost exclusively with many-body systems, one of the primary goals of nuclear physicists is to construct simplified models of nuclear systems. Although many such phenomenological models have been discovered through the years, a single overarching framework which can consistently model all phenomena has yet to be found. In this thesis we are mainly interested in models of nuclear interactions, which is well described by the two branches of R-matrix theory. Thus most of our effort in this chapter will go into understanding that theory.
 
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
@@ -92,7 +92,7 @@ Thus when combined with the Hamiltonian, $H_l + \mathcal{L}$, the total operator
 	(H_l + \mathcal{L} - E)u^{\text{int}}_l = \mathcal{L}u^{\text{int}}_l
 \end{align}
 
-This equation turns out to be equivalent to
+This equation turns out to be equivalent to (see e.g. \cite{Baye lecture notes})
 \begin{align*}
 	(H_l - E)u^{\text{int}}_l = 0 && u_l^{\text{int} \prime}(a) = u_l^{\text{ext} \prime}(a)
 \end{align*}
@@ -111,7 +111,7 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry for each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry relating each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
 	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
@@ -157,7 +157,7 @@ where $\gamma_{nl}$ is defined as
 	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \sum_{i}^{\infty}\bm{v}_{nl, i}\varphi_i(a)
 \end{align}
 
-$\gamma_{nl}$ is known as the reduced width amplitude. They got this name since their square is a crucial component of the formal width, as we will see in a moment. \note{ask Hans for proper terminology}\\
+$\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the formal width, as we will see in a moment. \note{ask Hans for proper terminology}\\
 
 In general, the R-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
 \begin{align} \label{theory: r-matrix: Gamma gamma}
@@ -220,12 +220,12 @@ where $\theta$ is the angle between the axis defined by the first decay and the 
 	2\cos \theta = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
 \end{align}
 
-A few other relevant properties of 3-particle reactions are presented in \cite{Ohlsen}. From this paper, especially the excitation energy of the particle 2-3 system $E_{2-3}$ is important, since it is simply the excitation energy of \ce{^8Be}. This quantity is defined as
+A few other relevant properties of 3-particle reactions are presented in \cite{Ohlsen}. From this paper, especially the excitation energy of the particle 2-3 system $E_{2-3}$ is important, since it is simply the excitation energy of \ce{^8Be}. Thus it gives us a powerful method of distinguishing decays through the $\alpha_0$ and $\alpha_1$ channels. For our triple-$\alpha$ decay, the quantity is defined as
 \begin{align} \label{theory: kinematics: E23}
 	E_{2-3} = \frac{p^2_{2-3}}{2\mu} = \frac{(\bm{p}_2 - \bm{p}_3)^2}{4m_{\alpha}}
 \end{align}
 
-Another quantity from the same paper is the breakup angle $\theta$, defined as
+Another quantity introduced in the same paper is the breakup angle $\theta$, defined as
 \begin{align} \label{theory: kinematics: theta data}
 	\cos \theta = \frac{\bm{p}_{1-23} \cdot \bm{p}_{2-3}}{p_{1-23}p_{2-3}}
 \end{align}
@@ -239,18 +239,25 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \note{https://arxiv.org/pdf/hep-ph/0507058.pdf}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen in figure \ref{fig: theory: dalitz: dalitz}. \\
+devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \note{https://arxiv.org/pdf/hep-ph/0507058.pdf}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
 
-Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Although this single slice contains all the information of the decay, since it is easier to see structure on the full plot, we will mainly be using those. \\
-
-\begin{figure}[t]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=.8\linewidth]{figures/Dalitz.eps}
 	\caption{The Dalitz plot showing both the Dalitz coordinates (\ref{theory: dalitz: xy}) and the normalized energy coordinates (\ref{theory: kinematics: E1}) to (\ref{theory: kinematics: E3}). The triangle and circle defines the regions allowed by energy and momentum conservation, respectively. By ordering the energies such that $E_1 \geq E_2 \geq E_3$, all events must fall within the hatched area. }
 	\label{fig: theory: dalitz: dalitz}
 \end{figure}
 
-Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on the nature of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \note{make fig}. Although no restrictions are imposed on our $0+$ resonance, it will be useful for some of the other resonances later.\\
+Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Although this single slice contains all the information of the decay, since it is easier to see structure on the full plot, we will mainly be using those. \\
+
+Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on the nature of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \ref{fig: theory: dalitz: zemach}. Although no restrictions are imposed on our $0^+$ resonance, it will be useful for some of the other resonances we will study later.\\
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/zemach.png}
+	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from \cite{Kuhlwein}. \note{is this ok?}}
+	\label{fig: theory: dalitz: zemach}
+\end{figure}
 
 The equation for the angle between the primary and secondary particles, $\theta$, is given in the $\{ e_1, e_2, e_3 \}$ coordinate system through (\ref{theory: kinematics: theta}). Since we will be dealing exclusively with the Dalitz coordinates, it is useful to convert this to an equation of $\{x, y\}$ instead. A simple exercise gives the solution as
 \begin{align} \label{theory: dalitz: theta}
