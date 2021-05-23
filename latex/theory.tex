@@ -212,24 +212,32 @@ We will later have need of some basic kinematic results for a sequential decay, 
 If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be
 \begin{align}
 	&E_1 = \frac{2}{3}Q_1 \label{theory: kinematics: E1}\\
-	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \theta \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
-	&E_3 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 - \cos \theta \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E3}
+	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
+	&E_3 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 - \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E3}
 \end{align}
-where $\theta$ is the angle between the axis defined by the first decay and the second $\alpha$-particle, as can be seen on figure \note{insert figure}. As this angle will be important later, it is worthwhile to write down its defining equation
+where $\alpha$ is the angle between the axis defined by the first decay and the second $\alpha$-particle, see figure \ref{fig: theory: kinematics: angles}. As this angle will be important later, it is worthwhile to write down its defining equation
 \begin{align} \label{theory: kinematics: theta}
-	2\cos \theta = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
+	2\cos \alpha = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
 \end{align}
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\linewidth]{figures/kinematics.eps}
+	\caption{Three frames of the same reaction. The left panel is the standard center-of-mass frame for \ce{^12C}. The middle panel illustrates the same frame using momentum vectors, as defined in \cite{Ohlsen}. The right panel shows the sequential decay relative coordinate $c'$ system with particle $1$ as the primary, as defined in the same paper. \note{dummy, you mixed up c' and c}.}
+	\label{fig: theory: kinematics: angles}
+\end{figure}
 
 A few other relevant properties of 3-particle reactions are presented in \cite{Ohlsen}. From this paper, especially the excitation energy of the particle 2-3 system $E_{2-3}$ is important, since it is simply the excitation energy of \ce{^8Be}. Thus it gives us a powerful method of distinguishing decays through the $\alpha_0$ and $\alpha_1$ channels. For our triple-$\alpha$ decay, the quantity is defined as
 \begin{align} \label{theory: kinematics: E23}
 	E_{2-3} = \frac{p^2_{2-3}}{2\mu} = \frac{(\bm{p}_2 - \bm{p}_3)^2}{4m_{\alpha}}
 \end{align}
 
-Another quantity introduced in the same paper is the breakup angle $\theta$, defined as
+Another quantity introduced in the same paper is the breakup angle $\beta$, defined as
 \begin{align} \label{theory: kinematics: theta data}
-	\cos \theta = \frac{\bm{p}_{1-23} \cdot \bm{p}_{2-3}}{p_{1-23}p_{2-3}}
+	\cos \beta = \frac{\bm{p}_{1-23} \cdot \bm{p}_{2-3}}{p_{1-23}p_{2-3}}
 \end{align}
-\note{difference between this and (\ref{theory: kinematics: theta})}
+
+As can be seen on figure \ref{fig: theory: kinematics: angles}, the two angles $\alpha$ and $\beta$ both describes the angle between the primary and secondary particles. The reason we have introduced two different ways of determining this angle will become clear in the next section - the explanation is basically that they are used in two different areas of the analysis. \note{remember to write something about this - alpha is useful in Dalitz plots, beta in momentum analysis} 
 
 \subsubsection{The Dalitz plot}
 The goal of this thesis is to understand the excited states of \ce{^12C} based on the three $\alpha$-particles resulting from its decay. We can describe each of these decay products with a four-vector, for a total of $12$ degrees of freedom. Conservation of energy and momentum removes four degrees, the three masses $m_{\alpha}$ removes three, and finally the orientation of each product removes another three. Thus we are left wondering how best to choose the two remaining degrees of freedom. \\
@@ -239,7 +247,7 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \note{https://arxiv.org/pdf/hep-ph/0507058.pdf}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
+devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
 
 \begin{figure}[tb]
 	\centering
@@ -282,6 +290,8 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 \note{SOMETHING ABOUT ALLOWED REGIONS, MAYBE ALSO FEYNMANN GOLDEN RULE --> BANDS}
 
 \subsection{Angular correlations} \label{sec: theory: angular correlations}
+
+
 \note{introduce the effect when you understand it} \\
 
 The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. The correlation between the two decay products can be expressed as a series of Legendre polynomials in the angle between them

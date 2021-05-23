@@ -59,11 +59,9 @@ public:
     // fit_type 1 constructor
     Dalitz_fitter(TH2D* hdata, container* sim) {
         this->hdata = hdata;
-        sim1x = *(*sim).x;
-        sim1y = *(*sim).y;
         f1 = *(*sim).f;
         wU1 = *(*sim).wU;
-        setup_vdat(hdata);
+        setup_vectors(sim);
     }
 
     // fit_type 2 constructor
@@ -104,20 +102,14 @@ public:
         }
 
         // calculate the weight
-        vector<double> w = vector<double>(sim1x.size());
+        vector<double> w = vector<double>(N[0]);
         for (int i = 0; i < w.size(); i++) {
             w[i] = calc_weight(f1[i], wU1[i], k, delta);
         }
-
-        // generate the dalitz slices
-        TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
-        double scale = calc_scale(hsim);
-        hsim->Scale(scale);
-
-        // calculate chi
-        double chi = maximum_likelihood(hsim);
-        hsim->Delete();
-        return chi;
+        vector<vector<double>> avg_w = calc_avg_w(w);
+        cout << "stadig bugget" << endl;
+        vector<double> P = {1};
+        return modified_maximum_likelihood(avg_w, P);
     }
 
     // type 2 evaluation method. we fit both a sim3a_i and sim3a data set
@@ -198,6 +190,200 @@ public:
         double chi = maximum_likelihood(hsim1);
         hsim1->Delete(); hsim2->Delete(); // clean up after ourselves
         return chi;
+    }
+
+    // calculate the average weight for each bin
+    vector<vector<double>> calc_avg_w(vector<double> weights) const {
+        vector<vector<double>> w(m, vector<double>(bins2, 0));
+        for (int j = 0; j < m; j++) {
+            vector<double> c(bins2, 0);
+            for (int n = 0; n < N[j]; n++) {
+                int i = w_bins[j][n];
+                c[i] += 1;
+                // w[j][i] = (w[j][i]*(c[i]-1) + weights[n])/c[i];
+                w[j][i] = c[i];
+            }
+        }
+        return w;
+    }
+
+    int bins2; // bins^2
+    int m; // number of simulated data sets
+    int Nd; // number of data events
+    vector<int> N; // number of simulated events
+    vector<vector<double>> a; // number of simulated counts for source j in bin i
+    vector<double> d; // expected number of events
+    vector<double> p; // normalized fractions
+    vector<TH2D*> hsim; 
+    vector<vector<int>> w_bins; // a map from entry --> bin for each source
+
+    // setup the w_bins vector for a given entry j. w_bins *must* be defined already
+    void setup_wbins(container* sim, int j) {
+        vector<double> &x = *sim->x;
+        vector<double> &y = *sim->y;
+
+        for (int j = 0; j < m; j++) {
+            w_bins[j] = vector<int>(x.size());
+            for (int i = 0; i < x.size(); i++) {
+                int binx = hsim[j]->GetXaxis()->FindFixBin(x[i]) - 1;
+                int biny = hsim[j]->GetYaxis()->FindFixBin(y[i]) - 1;
+                w_bins[j][i] = binx + biny*bins; // we must account for the underflow bin (this is honestly a terrible design choice in ROOT)
+                // w_bins[j][i] = hsim[j]->FindFixBin(x[i], y[i]);
+            }
+        }
+    }
+
+    void setup_vectors(container* sim1, container* sim2 = nullptr) {
+        m = sim2 == nullptr ? 1 : 2;
+
+        // define the other vectors needed
+        bins2 = pow(bins, 2);
+        Nd = 0; // number of data events
+        N = vector<int>(m, 0); // number of simulated events
+        a = vector<vector<double>>(m, vector<double>(bins2)); // number of simulated events for source j in bin i
+        d = vector<double>(bins2); // number of measured data events in bin i
+        hsim = vector<TH2D*>(m); // raw count histograms
+
+        // define the raw count histograms
+        hsim[0] = dalitz_slice(*(sim1->x), *(sim1->y), bins);
+        if (m == 2) {
+            hsim[1] = dalitz_slice(*(sim2->x), *(sim2->y), bins);
+        }
+
+        // extract the histogram counts into the appropriate vectors
+        for (int x = 1; x < bins; x++) {
+            for (int y = 1; y < bins; y++) {
+                int i = (x-1) + (y-1)*bins;
+                for (int j = 0; j < m; j++) {
+                    a.at(j).at(i) = hsim[j]->GetBinContent(x, y);
+                    N.at(j) += a[j][i];
+                }
+            }
+        }
+
+        // for (int i = 0; i < bins2+1; i++) {
+        //     d[i] = hdata->GetBinContent(i);
+        //     Nd += d[i];
+        //     for (int j = 0; j < m; j++) {
+        //         a[j][i] = hsim[j]->GetBinContent(i);
+        //         N[j] += a[j][i];
+        //     }
+        // }
+
+        // setup w_bins mappings
+        w_bins = vector<vector<int>>(m, vector<int>());
+        setup_wbins(sim1, 0);
+        if (m == 2) {
+            setup_wbins(sim2, 1);
+        }
+    }
+
+    double modified_maximum_likelihood(vector<vector<double>> w, vector<double> P) const {
+        // vector<double> P = {c, 1-c}; // the fraction of each source, must sum to 1
+        vector<double> p(m); // normalized fractions
+        vector<double> t(bins2);
+        vector<vector<double>> A(m, vector<double>(bins2));
+        double chi = 0;
+
+        // calculate the normalized fractions
+        for (int j = 0; j < m; j++) {
+            p[j] = P[j]*Nd/N[j];
+        }
+
+        // we want to find the value of t where fi changes sign
+        auto f = [&] (double t, int i) {
+            double val = 0;
+            for (int j = 0; j < m; j++) {
+                val += p[j]*w[j][i]*a[j][i]/(1 + p[j]*w[j][i]*t) - d[i]/(1 - t);
+            }
+            return val;
+        };
+
+        auto eval_chi = [&] (double i) {
+            double fi = d[i]/(1 - t[i]);
+            chi += d[i]*log(fi) - fi;
+            for (int j = 0; j < m; j++) {
+                chi += a[j][i]*log(A[j][i]) - A[j][i];
+            }
+        };
+
+        double tol = 1e-15; // tolerance on ti
+        int evals = log(tol/(1 + *max_element(p.begin(), p.end())))/log(0.5);
+        for (int i = 0; i < bins2; i++) {
+        //*** CASE di = 0 ***//
+            if (d[i] == 0) {
+                t[i] = 1;
+                for (int j = 0; j < m; j++) {
+                    A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
+                }
+                eval_chi(i);
+                continue;
+            }
+
+        //*** CASE a_ji = 0 ***//
+            int k = -1;
+            double pw = 0;
+            for (int j = 0; j < m; j++) {
+                if (a[j][i] == 0) {
+                    A[j][i] = 0;
+                    if (p[j]*w[j][i] > pw) {
+                        pw = p[j]*w[j][i];
+                        k = j;
+                    }
+                }
+            }
+
+            // calculate A_ki
+            if (k != -1) {
+                t[i] = -1./pw;
+                A[k][i] = d[i]/(1 + pw);
+                for (int j = 0; j < m; j++) {
+                    if (j != k) {
+                        A[k][i] -= p[j]*w[j][i]*a[j][i]/(p[k] - p[j]);
+                    }
+                }
+                eval_chi(i);
+                continue;
+            }
+
+        //*** NORMAL CASE ***//
+            if (d[i] != 0) {
+                for (int j = 0; j < m; j++) {
+                    if (p[j]*w[j][i] > pw) {
+                        pw = p[j]*w[j][i];
+                    }
+                }
+                cout << "pw is " << pw << endl;
+                cout << "aji is " << a[0][i] << endl;
+                cout << "wji is " << w[0][i] << endl; 
+                sleep(1);
+                double upper_bound = 1;
+                double lower_bound = -1./pw;
+
+                // the value of ti where fi changes sign must be between upper_bound and lower_bound
+                // we use a binary search (or bisection method, if you prefer) to find the value
+                t[i] = 0;
+                for (int n = 0; n < evals; n++) {
+                    // cout << "Function value at t: " << f(t[i], i) << ", i: " << i << endl;
+                    if (f(t[i], i) > 0) { // sign is unchanged, so we move the upper bound
+                        upper_bound = t[i];
+                        // cout << "\tupper_bound = " << t[i] << endl;
+                        // cout << "\tlower_bound = " << lower_bound << endl;
+                    } else { // sign is changed, so we move the lower bound
+                        lower_bound = t[i];
+                        // cout << "\tupper_bound = " << upper_bound << endl;
+                        // cout << "\tlower_bound = " << t[i] << endl;
+                    }
+                    t[i] = (upper_bound + lower_bound)/2;
+                }
+                for (int j = 0; j < m; j++) {
+                    A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
+                }
+                eval_chi(i);
+                continue;
+            }
+        }
+        return -2*chi;
     }
 
     // calculate the log likelihood for a given evaluation

@@ -186,7 +186,7 @@ int main(int argc, char const *argv[]) {
             guess = 0;
         }
 
-        TCanvas* c4 = new TCanvas("c4", "c4", 600, 600);
+        TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
         h1->SetMaximum(1);
         auto f13 = [] (double* x, double* par) {
             double y = par[0];
@@ -203,6 +203,14 @@ int main(int argc, char const *argv[]) {
         double c13 = tf13->GetParameter(1);
         cout << format("Fitted values: c1 = %1%, c3 = %2%") % c13 % (1-c13) << endl;
 
+        h1->Draw("HIST L");
+        tf13->Draw("SAME");
+        path = string(argv[1]) + "ang_2-_fit.pdf";
+        cout << path << endl;
+        c4->SaveAs(path.c_str());
+
+
+        TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
         auto f0 = [] (double* x, double* par) {
             double y = par[0];
             double c1 = par[1];
@@ -227,8 +235,8 @@ int main(int argc, char const *argv[]) {
 
         h1->Draw("HIST L");
         tf0->Draw("SAME");
-        path = string(argv[1]) + "ang_cor_fitted.pdf";
+        path = string(argv[1]) + "ang_2-_0+_fit.pdf";
         cout << path << endl;
-        c4->SaveAs(path.c_str());
+        c5->SaveAs(path.c_str());
     } 
 }

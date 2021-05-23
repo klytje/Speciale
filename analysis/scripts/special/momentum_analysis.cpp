@@ -9,6 +9,7 @@
 // other stuff
 #include <boost/format.hpp>
 #include <math.h>
+#include <filesystem>
 
 // my stuff
 #include "../plot_style.cpp"
@@ -45,6 +46,8 @@ int main(int argc, char const *argv[]) {
         cout << "\033[1;31m" << "Could not deduce the state based on output path. Branching ratio cannot be calculated." << "\033[0m" << endl;
     } 
     setup_style();
+    string dir = string(argv[1]) + "momentum_analysis/";
+    filesystem::create_directories(dir);
 
     // auto theta = [] (double r1x, double r1y, double r1z, double r2x, double r2y, double r2z, double r3x, double r3y, double r3z) {
     //     TVector3 p23 = {r2x-r3x, r2y-r3y, r2z-r3z};
@@ -213,6 +216,12 @@ int main(int argc, char const *argv[]) {
     h_theta.SetLineWidth(2);
     h_theta.Scale(1./h_theta.GetMaximum());
 
+    h_theta.GetXaxis()->SetTitle("cos \\theta");
+    h_theta.GetXaxis()->CenterTitle();
+    h_theta.GetXaxis()->SetNdivisions(3);
+    h_theta.GetYaxis()->SetTitle("Count");
+    h_theta.GetYaxis()->CenterTitle();
+    h_theta.GetYaxis()->SetNdivisions(3);
     h_theta.Draw("HIST L");
     h_theta_gs.Draw("SAME HIST L");
     h_theta_ex.Draw("SAME HIST L");
@@ -223,8 +232,73 @@ int main(int argc, char const *argv[]) {
     legend->AddEntry("h_theta_ex", "Excited state", "l");
     legend->Draw();
 
-    string path = string(argv[1]) + "breakup_angle_data.pdf";
+    string path = dir + "breakup_angle_data.pdf";
     c1->SaveAs(path.c_str());
+
+    TCanvas* c6 = new TCanvas("c6", "c", 600, 600);
+    h_theta_ex.GetXaxis()->SetTitle("cos \\theta");
+    h_theta_ex.GetXaxis()->CenterTitle();
+    h_theta_ex.GetXaxis()->SetNdivisions(3);
+    h_theta_ex.GetYaxis()->SetTitle("Normalized count");
+    h_theta_ex.GetYaxis()->CenterTitle();
+    h_theta_ex.GetYaxis()->SetNdivisions(3);
+
+    h_theta_ex.SetAxisRange(-1, 0, "X");
+    h_theta_ex.Scale(1./h_theta_ex.GetMaximum());
+
+    // perform fit with only 2- states (to get accurate error estimates)
+    auto f13 = [] (double* x, double* par) {
+        double theta = acos(x[0]);
+        double c = par[0];
+        double scale = par[1];
+        double v = c*correlation_functions.at("2- 1")(theta) + (1-c)*correlation_functions.at("2- 3")(theta);
+        return v*scale;
+    };
+    TF1* tf13 = new TF1("mix", f13, -1, 0, 3);
+    tf13->SetParameter(0, 0.5); // c
+    tf13->SetParameter(1, 1); // scale
+
+    tf13->SetParLimits(0, 0, 1);
+    h_theta_ex.Fit(tf13, "QRL");
+    double c13 = tf13->GetParameter(0);
+    double e13 = tf13->GetParError(0);
+    cout << format("Fitted values: 2- 1 = %1% (%2%), 2- 3 = %3% (%4%)") % c13 % e13 % (1-c13) % e13 << endl;
+
+    h_theta_ex.Draw("HIST L");
+    tf13->Draw("SAME");
+    path = dir + "breakup_angle_2-_fit.pdf";
+    cout << path << endl;
+    c6->SaveAs(path.c_str());
+
+    TCanvas* c7 = new TCanvas("c7", "c", 600, 600);
+    auto f = [] (double* x, double* par) {
+        double theta = acos(x[0]);
+        double c1 = par[0];
+        double c2 = par[1];
+        double scale = par[2];
+        double v = (1-c2)*c1*correlation_functions.at("2- 1")(theta) + (1-c2)*(1-c1)*correlation_functions.at("2- 3")(theta) 
+                    + c2*correlation_functions.at("0+ 2")(theta);
+        return v*scale;
+    };
+    TF1* tf = new TF1("mix", f, -1, 0, 3);
+    tf->SetParameter(0, 0.5); // c1
+    tf->SetParameter(1, 0.4); // c2
+    tf->SetParameter(2, 1); // scale
+
+    tf->SetParLimits(0, 0, 1); // c1
+    tf->SetParLimits(1, 0, 1); // c2
+    h_theta_ex.Fit(tf, "QRL");
+    double k1 = tf->GetParameter(0);
+    double k2 = tf->GetParameter(1);
+    double e1 = tf->GetParError(0);
+    double e2 = tf->GetParError(1);
+    cout << format("Fitted values: 0+ 2 = %1% (%2%), 2- 1 = %3% (%4%), 2- 3 = %5% (%6%)") % k2 % e2 % ((1-k2)*k1) % ((e1/k1+e2/k2)*((1-k2)*k1)) % ((1-k2)*(1-k1)) % ((e1/k1+e2/k2)*((1-k2)*k1)) << endl;
+
+    h_theta_ex.Draw("HIST L");
+    tf->Draw("SAME");
+    path = dir + "breakup_angle_2-_0+_fit.pdf";
+    cout << path << endl;
+    c7->SaveAs(path.c_str());
 
 //*** E_23 PLOT ***//
     double pleft[] = {0, 200};
@@ -269,7 +343,7 @@ int main(int argc, char const *argv[]) {
     l3->Draw("same");
     l4->Draw("same");
 
-    path = string(argv[1]) + "E23_raw.pdf";
+    path = dir + "E23_raw.pdf";
     c2->SaveAs(path.c_str());
 
 //*** PRETTY E23 ***//
@@ -347,7 +421,7 @@ int main(int argc, char const *argv[]) {
     TLine *lvleft = new TLine(0.3423165, 0.076639, 0.5143349, 0.1524797);
     lvleft->Draw();
 
-    path = string(argv[1]) + "E23.pdf";
+    path = dir + "E23.pdf";
     c3->SaveAs(path.c_str());
 
 //*** DALITZ PLOT OF EACH PEAK ***//
@@ -389,11 +463,11 @@ int main(int argc, char const *argv[]) {
 
     TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
     hgs->Draw("colz");
-    path = string(argv[1]) + "gs.pdf";
+    path = dir + "gs.pdf";
     c4->SaveAs(path.c_str());
 
     TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
     hex->Draw("colz");
-    path = string(argv[1]) + "ex.pdf";
+    path = dir + "ex.pdf";
     c5->SaveAs(path.c_str());
 }
