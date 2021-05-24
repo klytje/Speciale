@@ -25,7 +25,6 @@ using namespace ROOT::Math;
 
 int bins;
 vector<vector<double>> p_evals;
-int evals = 0;
 
 // this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
 class container {
@@ -56,226 +55,66 @@ class Dalitz_fitter {
 public:
     Dalitz_fitter() = default;
 
-    // fit_type 1 constructor
-    Dalitz_fitter(TH2D* hdata, container* sim) {
-        this->hdata = hdata;
-        f1 = *(*sim).f;
-        wU1 = *(*sim).wU;
+    Dalitz_fitter(container* cdata, vector<container*> sim) {
+        std::tie(d, std::ignore) = hist(cdata);
+        f = vector<vector<vector<vector<double>>>>(sim.size());
+        wU = vector<vector<double>>(sim.size());
+        for (int j = 0; j < sim.size(); j++) {
+            f[j] = *(*sim[j]).f;
+            wU[j] = *(*sim[j]).wU;
+        }
         setup_vectors(sim);
     }
 
-    // fit_type 2 constructor
-    Dalitz_fitter(TH2D* hdata, container* sim1, TH2D* hsim2) {
-        this->hdata = hdata;
-        this->hsim2 = hsim2;
-        sim1x = *(*sim1).x;
-        sim1y = *(*sim1).y;
-        f1 = *(*sim1).f;
-        wU1 = *(*sim1).wU;
-        setup_vdat(hdata);
-    }
-    
-    // fit_type 3 constructor
-    Dalitz_fitter(TH2D* hdata, container* sim1, container* sim2) {
-        this->hdata = hdata;
-
-        sim1x = *(*sim1).x;
-        sim1y = *(*sim1).y;
-        f1 = *(*sim1).f;
-        wU1 = *(*sim1).wU;
-
-        sim2x = *(*sim2).x;
-        sim2y = *(*sim2).y;
-        f2 = *(*sim2).f;
-        wU2 = *(*sim2).wU;
-        setup_vdat(hdata);
-    }
-
-    // type 1 evaluation method. we only fit one sim3a_i data set
     double eval_type1(const double *params) const {
-        const double k = params[0];
-        const double delta = params[1]*2*M_PI;
+        vector<double> k = {params[0]};
+        vector<double> delta = {params[1]*2*M_PI};
+        vector<double> P = {1};
+        return eval(k, delta, P);
+    }
 
+    double eval_type3(const double *params) const {
+        vector<double> k = {params[0], params[3]};
+        vector<double> delta = {params[1]*2*M_PI, params[4]*2*M_PI};
+        vector<double> P = {params[2], 1-params[2]};
+        return eval(k, delta, P);
+    }
+
+    // general evaluation function for the modified maximum likelihood
+    double eval(const vector<double> k, const vector<double> delta, const vector<double> P) const {
         // some of the minimizers do not respect our limits, which results in nan values
-        if (k > 1) { 
-            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+        for (int j = 0; j < m; j++) {
+            if (k[j] > 1) { 
+                return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+            }
         }
 
         // calculate the weight
-        vector<double> w = vector<double>(N[0]);
-        for (int i = 0; i < w.size(); i++) {
-            w[i] = calc_weight(f1[i], wU1[i], k, delta);
+        vector<vector<double>> w(m);
+        for (int j = 0; j < m; j++) {
+            w[j] = vector<double>(N[j]);
+            for (int i = 0; i < N[j]; i++) {
+                w[j][i] = calc_weight(f[j][i], wU[j][i], k[j], delta[j]);
+            }
         }
         vector<vector<double>> avg_w = calc_avg_w(w);
-        cout << "stadig bugget" << endl;
-        vector<double> P = {1};
         return modified_maximum_likelihood(avg_w, P);
     }
 
-    // type 2 evaluation method. we fit both a sim3a_i and sim3a data set
-    double eval_type2(const double *params) const {
-        const double k = params[0];
-        const double delta = params[1]*2*M_PI;
-        const double c = params[2];
-
-        // some of the minimizers do not respect our limits, which results in nan values
-        if (k > 1 || c > 1) { 
-            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
-        }
-
-        // calculate the weight
-        vector<double> w = vector<double>(sim1x.size());
-        for (int i = 0; i < w.size(); i++) {
-            w[i] = calc_weight(f1[i], wU1[i], k, delta);
-        }
-
-        // generate the dalitz slices
-        TH2D* hsim = dalitz_slice(sim1x, sim1y, bins, w);
-        TH2D* hsim2c = (TH2D*) hsim2->Clone(); // we clone the locally stored sim2 histogram to avoid modifying it
-
-        // scale & add the two simulation histograms according to their ratio c
-        // we first normalize it so we can correctly add the two simulations
-        hsim->Scale(c/hsim->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
-        hsim2c->Scale((1-c)/hsim2c->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
-        hsim->Add(hsim2c);
-
-        // we can now scale the combined product to match the data
-        double scale = calc_scale(hsim);
-        hsim->Scale(scale);
-
-        // calculate chi
-        double chi = maximum_likelihood(hsim);
-        hsim->Delete(); hsim2c->Delete(); // clean up after ourselves
-        return chi;
-    }
-
-    // type 3 evaluation method. we fit two sim3a_i datasets
-    double eval_type3(const double *params) const {
-        const double k1 = params[0];
-        const double delta1 = params[1]*2*M_PI;
-        const double c = params[2];
-        const double k2 = params[3];
-        const double delta2 = params[4]*2*M_PI;
-
-        // some of the minimizers do not respect our limits, which results in nan values
-        if (k1 > 1 || k2 > 1 || c > 1) { 
-            return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
-        }
-
-        // calculate the weights
-        vector<double> w1 = vector<double>(sim1x.size());
-        vector<double> w2 = vector<double>(sim2x.size());
-        for (int i = 0; i < w1.size(); i++) {
-            w1[i] = calc_weight(f1[i], wU1[i], k1, delta1);
-        }
-        for (int i = 0; i < w2.size(); i++) {
-            w2[i] = calc_weight(f2[i], wU2[i], k2, delta2);
-        }
-
-        // generate the dalitz slices
-        TH2D* hsim1 = dalitz_slice(sim1x, sim1y, bins, w1);
-        TH2D* hsim2 = dalitz_slice(sim2x, sim2y, bins, w2);
-
-        // scale & add the two simulation histograms according to their ratio c
-        // we first normalize it so we can correctly add the two simulations
-        hsim1->Scale(c/hsim1->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
-        hsim2->Scale((1-c)/hsim2->GetMaximum()); // since we scale the histograms, the chi2 value is meaningless
-        hsim1->Add(hsim2);
-
-        // we can now scale the combined product to match the data
-        double scale = calc_scale(hsim1);
-        hsim1->Scale(scale);
-
-        // calculate chi
-        double chi = maximum_likelihood(hsim1);
-        hsim1->Delete(); hsim2->Delete(); // clean up after ourselves
-        return chi;
-    }
-
-    // calculate the average weight for each bin
-    vector<vector<double>> calc_avg_w(vector<double> weights) const {
-        vector<vector<double>> w(m, vector<double>(bins2, 0));
-        for (int j = 0; j < m; j++) {
-            vector<double> c(bins2, 0);
-            for (int n = 0; n < N[j]; n++) {
-                int i = w_bins[j][n];
-                c[i] += 1;
-                // w[j][i] = (w[j][i]*(c[i]-1) + weights[n])/c[i];
-                w[j][i] = c[i];
+    // calculate chi^2 for a given fit result
+    double chisquare(const double* params) const {
+        double chi = eval_type1(params);
+        for (int i = 0; i < bins2; i++) {
+            if (d[i] != 0) {
+                chi += 2*(d[i]*log(d[i]) - d[i]);
             }
-        }
-        return w;
-    }
-
-    int bins2; // bins^2
-    int m; // number of simulated data sets
-    int Nd; // number of data events
-    vector<int> N; // number of simulated events
-    vector<vector<double>> a; // number of simulated counts for source j in bin i
-    vector<double> d; // expected number of events
-    vector<double> p; // normalized fractions
-    vector<TH2D*> hsim; 
-    vector<vector<int>> w_bins; // a map from entry --> bin for each source
-
-    // setup the w_bins vector for a given entry j. w_bins *must* be defined already
-    void setup_wbins(container* sim, int j) {
-        vector<double> &x = *sim->x;
-        vector<double> &y = *sim->y;
-
-        for (int j = 0; j < m; j++) {
-            w_bins[j] = vector<int>(x.size());
-            for (int i = 0; i < x.size(); i++) {
-                int binx = hsim[j]->GetXaxis()->FindFixBin(x[i]) - 1;
-                int biny = hsim[j]->GetYaxis()->FindFixBin(y[i]) - 1;
-                w_bins[j][i] = binx + biny*bins; // we must account for the underflow bin (this is honestly a terrible design choice in ROOT)
-                // w_bins[j][i] = hsim[j]->FindFixBin(x[i], y[i]);
-            }
-        }
-    }
-
-    void setup_vectors(container* sim1, container* sim2 = nullptr) {
-        m = sim2 == nullptr ? 1 : 2;
-
-        // define the other vectors needed
-        bins2 = pow(bins, 2);
-        Nd = 0; // number of data events
-        N = vector<int>(m, 0); // number of simulated events
-        a = vector<vector<double>>(m, vector<double>(bins2)); // number of simulated events for source j in bin i
-        d = vector<double>(bins2); // number of measured data events in bin i
-        hsim = vector<TH2D*>(m); // raw count histograms
-
-        // define the raw count histograms
-        hsim[0] = dalitz_slice(*(sim1->x), *(sim1->y), bins);
-        if (m == 2) {
-            hsim[1] = dalitz_slice(*(sim2->x), *(sim2->y), bins);
-        }
-
-        // extract the histogram counts into the appropriate vectors
-        for (int x = 1; x < bins; x++) {
-            for (int y = 1; y < bins; y++) {
-                int i = (x-1) + (y-1)*bins;
-                for (int j = 0; j < m; j++) {
-                    a.at(j).at(i) = hsim[j]->GetBinContent(x, y);
-                    N.at(j) += a[j][i];
+            for (int j = 0; j < m; j++) {
+                if (a[j][i] != 0) {
+                    chi += 2*(a[j][i]*log(a[j][i]) - a[j][i]);
                 }
             }
         }
-
-        // for (int i = 0; i < bins2+1; i++) {
-        //     d[i] = hdata->GetBinContent(i);
-        //     Nd += d[i];
-        //     for (int j = 0; j < m; j++) {
-        //         a[j][i] = hsim[j]->GetBinContent(i);
-        //         N[j] += a[j][i];
-        //     }
-        // }
-
-        // setup w_bins mappings
-        w_bins = vector<vector<int>>(m, vector<int>());
-        setup_wbins(sim1, 0);
-        if (m == 2) {
-            setup_wbins(sim2, 1);
-        }
+        return chi;
     }
 
     double modified_maximum_likelihood(vector<vector<double>> w, vector<double> P) const {
@@ -285,12 +124,19 @@ public:
         vector<vector<double>> A(m, vector<double>(bins2));
         double chi = 0;
 
-        // calculate the normalized fractions
-        for (int j = 0; j < m; j++) {
-            p[j] = P[j]*Nd/N[j];
+        vector<double>Nc(m);
+        for (int i = 0; i < bins2; i++) {
+            for (int j = 0; j < m; j++) {
+                Nc[j] += w[j][i]*a[j][i];
+            }
         }
 
-        // we want to find the value of t where fi changes sign
+        // calculate the normalized fractions
+        for (int j = 0; j < m; j++) {
+            p[j] = P[j]*Nd/Nc[j];
+        }
+
+        // definition of f for the bisection method
         auto f = [&] (double t, int i) {
             double val = 0;
             for (int j = 0; j < m; j++) {
@@ -299,19 +145,58 @@ public:
             return val;
         };
 
+        // evaluate chi of the ith bin and add it to the running total
         auto eval_chi = [&] (double i) {
-            double fi = d[i]/(1 - t[i]);
+            double tmp = chi;
+
+            // determine fi
+            double fi = 0;
+            if (t[i] == 1) {
+                for (int j = 0; j < m; j++) {
+                    fi += p[j]*w[j][i]*A[j][i];
+                }
+                // if fi = 0, it would imply wji or aji are also 0, which is only possible outside the boundaries of our Dalitz plot
+                if (fi == 0) { 
+                    return;
+                }
+            } else {
+                fi = d[i]/(1 - t[i]);
+            }
+
+            // calculate the contribution for this bin to L
+            // cout << "bin " << i << ":" << endl;
+            // cout << "\tti: " << t[i] << endl;
+            // cout << "\tdi: " << d[i] << endl;
+            // cout << "\tfi: " << fi << endl;
+            // cout << "\tlogfi: " << log(fi) << endl;
             chi += d[i]*log(fi) - fi;
             for (int j = 0; j < m; j++) {
+                // cout << "\tj: " << j << endl;
+                // cout << "\t\taji: " << a[j][i] << endl;
+                // cout << "\t\twji: " << w[j][i] << endl;
+                // cout << "\t\t-1/pjwj: " << -1./(p[j]*w[j][i]) << endl;
+                // cout << "\t\tpjajiwji: " << p[j]*a[j][i]*w[j][i] << endl;
+                // cout << "\t\tAji: " << A[j][i] << endl;
+                // cout << "\t\tlogAji: " << log(A[j][i]) << endl;
                 chi += a[j][i]*log(A[j][i]) - A[j][i];
+            }
+            // cout << "\tCHI: " << chi - tmp << endl;
+            // sleep(2);
+
+            // check for nan values
+            if (isnan(chi-tmp)) {
+                cout << "Critical error in bin " << i << ", change in chi is nan (old chi = -inf?)" << endl;
+                cout << "fi = " << fi << ", di = " << d[i] << ", a0i = " << a[0][i] << ", ti = " << t[i] << ", A0i = " << A[0][i] << ", w0i = " << w[0][i] << endl;
+                exit(1);
             }
         };
 
-        double tol = 1e-15; // tolerance on ti
-        int evals = log(tol/(1 + *max_element(p.begin(), p.end())))/log(0.5);
+        double tol = 1e-15; // tolerance on ti for bisection method
+        int max_evals = 100; // max evaluations before stopping the bisection method
         for (int i = 0; i < bins2; i++) {
         //*** CASE di = 0 ***//
             if (d[i] == 0) {
+                // cout << "case di == 0" << endl;
                 t[i] = 1;
                 for (int j = 0; j < m; j++) {
                     A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
@@ -322,7 +207,7 @@ public:
 
         //*** CASE a_ji = 0 ***//
             int k = -1;
-            double pw = 0;
+            double pw = -1;
             for (int j = 0; j < m; j++) {
                 if (a[j][i] == 0) {
                     A[j][i] = 0;
@@ -332,9 +217,13 @@ public:
                     }
                 }
             }
+            if (pw == 0) { // only possible if all our weights are 0, which can only happen outside the Dalitz plot
+                continue;
+            }
 
             // calculate A_ki
             if (k != -1) {
+                // cout << "case aji == 0" << endl;
                 t[i] = -1./pw;
                 A[k][i] = d[i]/(1 + pw);
                 for (int j = 0; j < m; j++) {
@@ -348,37 +237,39 @@ public:
 
         //*** NORMAL CASE ***//
             if (d[i] != 0) {
+                // cout << "normal case" << endl;
                 for (int j = 0; j < m; j++) {
                     if (p[j]*w[j][i] > pw) {
                         pw = p[j]*w[j][i];
                     }
                 }
-                cout << "pw is " << pw << endl;
-                cout << "aji is " << a[0][i] << endl;
-                cout << "wji is " << w[0][i] << endl; 
-                sleep(1);
                 double upper_bound = 1;
                 double lower_bound = -1./pw;
 
                 // the value of ti where fi changes sign must be between upper_bound and lower_bound
                 // we use a binary search (or bisection method, if you prefer) to find the value
                 t[i] = 0;
-                for (int n = 0; n < evals; n++) {
-                    // cout << "Function value at t: " << f(t[i], i) << ", i: " << i << endl;
-                    if (f(t[i], i) > 0) { // sign is unchanged, so we move the upper bound
+                for (int n = 0; n < max_evals; n++) {
+                    double val = f(t[i], i);
+                    if (abs(val) < tol) { // break when |f| < tol
+                        break;
+                    }
+                    else if (val < 0) { // sign is unchanged, so we move the upper bound
                         upper_bound = t[i];
-                        // cout << "\tupper_bound = " << t[i] << endl;
-                        // cout << "\tlower_bound = " << lower_bound << endl;
                     } else { // sign is changed, so we move the lower bound
                         lower_bound = t[i];
-                        // cout << "\tupper_bound = " << upper_bound << endl;
-                        // cout << "\tlower_bound = " << t[i] << endl;
                     }
                     t[i] = (upper_bound + lower_bound)/2;
+                    if (isnan(val)) {
+                        cout << "Critical error in bin " << i << endl;
+                        cout << "f = " << val << ", di = " << d[i] << ", a0i = " << a[0][i] << ", ti = " << t[i] << ", w0i = " << w[0][i] << endl;
+                        exit(1);
+                    }
                 }
                 for (int j = 0; j < m; j++) {
                     A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
                 }
+
                 eval_chi(i);
                 continue;
             }
@@ -386,72 +277,72 @@ public:
         return -2*chi;
     }
 
-    // calculate the log likelihood for a given evaluation
-    double maximum_likelihood(TH2D* h) const {
-        double chi = 0, eps = 1e-9;
-        for (int i = 1; i < h->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
-            for (int j = 1; j < h->GetNbinsY(); j++) {
-                if (hdata->GetBinContent(i, j) != 0) {
-                    double mu = hdata->GetBinContent(i, j); // model
-                    double m = h->GetBinContent(i, j); // observed
-                    chi += m*log(max(m, eps)/max(mu, eps)) + mu - m; // ML
-                }
-            }
-        }
-        return 2*chi;
-    }
-
-    // does not work since mu can be 0
-    double chi2(TH2D* h) {
-        double chi = 0;
-        for (int i = 1; i < h->GetNbinsX(); i++) { // start from 1 to exclude overflow bins
-            for (int j = 1; j < h->GetNbinsY(); j++) {
-                if (hdata->GetBinContent(i, j) != 0) {
-                    double mu = hdata->GetBinContent(i, j); // model
-                    double m = h->GetBinContent(i, j); // observed
-                    chi += pow(m + mu, 2)/mu;
-                }
-            }
-        }
-        return chi;
-    }
-
 private:
-    TH2D *hdata, *hsim2;
-    vector<vector<vector<double>>> f1, f2;
-    vector<double> wU1, wU2;
-    vector<double> sim1x, sim1y, sim2x, sim2y;
-    vector<double> vdat; // stores all entries of hdata, used to determine the scaling factor
+    // for calculating the weights
+    vector<vector<vector<vector<double>>>> f;
+    vector<vector<double>> wU;
 
-    // prepares the vdat vector needed for calc_scale. this is just to avoid repeating this calculation for every evaluation
-    void setup_vdat(TH2D* data) {
-        vdat = vector<double>(pow(bins, 2), 0);
-        for (int i = 1; i < bins; i++) { // skip underflow bin
-            for (int j = 1; j < bins; j++) {
-                vdat[i*bins+j] = hdata->GetBinContent(i, j);
+    // everything related to the modified_maximum_likelihood evaluation
+    int bins2 = pow(bins, 2); // bins^2
+    int m; // number of simulated data sets
+    int Nd; // number of data events
+    vector<int> N; // number of simulated events
+    vector<vector<int>> a; // number of simulated counts for source j in bin i
+    vector<int> d; // expected number of events
+    vector<double> p; // normalized fractions
+    vector<vector<int>> entry_map; // a map from entry --> bin for each source
+
+   // calculate the average weight for each bin
+    vector<vector<double>> calc_avg_w(vector<vector<double>> weights) const {
+        vector<vector<double>> w(m, vector<double>(bins2, 0));
+        for (int j = 0; j < m; j++) {
+            vector<double> counts(bins2, 0);
+            for (int n = 0; n < N[j]; n++) {
+                int i = entry_map[j][n];
+                counts[i] += 1;
+                w[j][i] = (w[j][i]*(counts[i]-1) + weights[j][n])/counts[i];
             }
         }
-        sort(vdat.begin(), vdat.end(), greater<double>());
+        return w;
     }
 
-    // calculate the scaling factor between the simulation and the data based on the cmp_bins highest values of both
-    double calc_scale(TH2D* hsim) const {
-        int cmp_bins = bins;
-        int bins2 = pow(bins, 2);
-        vector<double> vsim(bins2, 0);
-        for (int i = 1; i < bins; i++) {
-            for (int j = 1; j < bins; j++) {
-                vsim[i*bins+j] = hsim->GetBinContent(i, j);
-            }
-        }
-        sort(vsim.begin(), vsim.end(), greater<double>());
-        double scale = 0;
-        for (int i = 0; i < cmp_bins; i++) {
-            scale += vdat[i]/vsim[i];
+    void setup_vectors(vector<container*> sim) {
+        m = sim.size();
+
+        // define the other vectors needed
+        Nd = 0; // number of data events
+        N = vector<int>(m, 0); // number of simulated events
+        a = vector<vector<int>>(m); // number of simulated events for source j in bin i
+        entry_map = vector<vector<int>>(m);
+
+        // define the raw count histograms
+        for (int j = 0; j < m; j++) {
+            std::tie(a[j], entry_map[j]) = hist(sim[j]);
         }
 
-        // scale is now the sum of the differences of all bins. to get a scale factor, we divide by the number of bins
-        return abs(scale/cmp_bins); 
+        // calculate counts
+        for (int i = 0; i < bins2; i++) {
+            Nd += d.at(i);
+            for (int j = 0; j < m; j++) {
+                N[j] += a[j][i];
+            }
+        }
+    }
+
+    // a simple binning method, which also creates an index mapping each event to its bin
+    tuple<vector<int>, vector<int>> hist(container* data) {
+        vector<double> &x = *data->x, &y = *data->y;
+        vector<int> counts(bins2);
+        vector<int> entry_map(x.size());
+        double step = 1./bins; // interval between each bin
+        for (int i = 0; i < x.size(); i++) {
+            int binx = floor(x[i]/step);
+            int biny = floor(y[i]/step);
+            int bin = binx + bins*biny;
+            entry_map[i] = bin;
+            counts[bin]++;
+        }
+        return make_tuple(counts, entry_map);
     }
 };
 
@@ -589,12 +480,16 @@ int main(int argc, char const *argv[]) {
         cut_y(&sim1, y_cut);
     }
     cut_gs(&data); // cut the ground state decay events
-    TH2D *hdata = dalitz_slice(&data, bins, true);
-    TH2D *hsim2;
+
+    // extract the data and put it into a container
+    container *cdata, *csim1, *csim2;
+    vector<double> datax, datay, sim1x, sim1y, sim2x, sim2y; 
+    datax = data.Take<double>("x").GetValue();
+    datay = data.Take<double>("y").GetValue();
+    cdata = new container(&datax, &datay);
 
     // extract the data from the first simulation data set
-    container *csim1, *csim2;
-    vector<double> sim1x, sim1y, sim2x, sim2y, sim1wU, sim2wU; 
+    vector<double> sim1wU, sim2wU;
     vector<vector<vector<double>>> sim1f, sim2f;
     {
         if (!sim1.HasColumn("f")) {
@@ -617,18 +512,16 @@ int main(int argc, char const *argv[]) {
         if (y_cut != 1) {
             cut_y(&sim2, y_cut);
         }
+        sim2x = sim2.Take<double>("x").GetValue();
+        sim2y = sim2.Take<double>("y").GetValue();
         if (sim2.HasColumn("f")) { // check if we are dealing with sim3a_i data
             cout << "Second simulation data set appears to be from sim3a_i." << endl;
             fit_type = 3;
-
-            sim2x = sim2.Take<double>("x").GetValue();
-            sim2y = sim2.Take<double>("y").GetValue();
             sim2f = sim2.Take<vector<vector<double>>>("f").GetValue();
             sim2wU = sim2.Take<double>("wU").GetValue();
             csim2 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
         } else {
-            hsim2 = dalitz_slice(&sim2, bins, true);
-            hsim2->Scale(1./hdata->GetMaximum());
+            csim2 = new container(&sim1x, &sim1y);
         }
     }
 
@@ -638,16 +531,16 @@ int main(int argc, char const *argv[]) {
     int pars = 0;
     if (fit_type == 1) {
         pars = 2; // k & delta
-        fitter = new Dalitz_fitter(hdata, csim1);
+        fitter = new Dalitz_fitter(cdata, {csim1});
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, pars);
     } else if (fit_type == 2) {
         pars = 3; // k, delta, c
-        fitter = new Dalitz_fitter(hdata, csim1, hsim2);
-        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
+        // fitter = new Dalitz_fitter(hdata, csim1, hsim2);
+        // functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
     } else if (fit_type == 3) {
         pars = 5; // k1, delta1, c, k2, delta2
-        fitter = new Dalitz_fitter(hdata, csim1, csim2);
-        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
+        // fitter = new Dalitz_fitter(hdata, csim1, csim2);
+        // functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
     }
 
     // a small function to set the fitting parameters. I know it's longer than it strictly needs to be, but I think this makes it easier to read
@@ -718,8 +611,9 @@ int main(int argc, char const *argv[]) {
     };
 
     // print the result of a fit
-    auto fit_report = [&fit_type, &res, &fix_delta, &file] (ROOT::Math::Minimizer* m) {
+    auto fit_report = [&fit_type, &res, &fix_delta, &file, &fitter] (ROOT::Math::Minimizer* m) {
         file << format("        FVAL = %1%") % m->MinValue() << endl;
+        file << format("        chi2 = %1%") % fitter->chisquare(res) << endl;
         file << format("        k = %1% (FREE)") % res[0] << endl;
         file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
         if (fit_type == 2 || fit_type == 3) {
