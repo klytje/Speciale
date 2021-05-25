@@ -24,6 +24,7 @@ using namespace std;
 using namespace ROOT::Math;
 
 int bins;
+double y_cut;
 vector<vector<double>> p_evals;
 
 // this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
@@ -55,6 +56,7 @@ class Dalitz_fitter {
 public:
     Dalitz_fitter() = default;
 
+    // general constructor supporting any number of sim3a_i simulations (untested beyond 2)
     Dalitz_fitter(container* cdata, vector<container*> sim) {
         std::tie(d, std::ignore) = hist(cdata);
         f = vector<vector<vector<vector<double>>>>(sim.size());
@@ -63,7 +65,26 @@ public:
             f[j] = *(*sim[j]).f;
             wU[j] = *(*sim[j]).wU;
         }
+        if (sim.size() == 1) {
+            type = 1;
+        } else if (sim.size() == 2) {
+            type = 3;
+        } else {
+            cout << "Critical failure: more than two simulation files passed to constructor. Implement your own evaluation function to support this." << endl;
+            exit(1);
+        }
         setup_vectors(sim);
+    }
+
+    // specific constructor for 1 sim3a_i simulation, and 1 sim3a simulation
+    Dalitz_fitter(container* cdata, container* sim3ai, container* sim3a) {
+        std::tie(d, std::ignore) = hist(cdata);
+        f = vector<vector<vector<vector<double>>>>(1);
+        wU = vector<vector<double>>(1);
+        f[0] = *(*sim3ai).f;
+        wU[0] = *(*sim3ai).wU;
+        type = 2;
+        setup_vectors({sim3ai, sim3a});
     }
 
     double eval_type1(const double *params) const {
@@ -84,7 +105,7 @@ public:
     double eval(const vector<double> k, const vector<double> delta, const vector<double> P) const {
         // some of the minimizers do not respect our limits, which results in nan values
         for (int j = 0; j < m; j++) {
-            if (k[j] > 1) { 
+            if (k[j] > 1 || P[j] > 1) { 
                 return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
             }
         }
@@ -92,24 +113,50 @@ public:
         // calculate the weight
         vector<vector<double>> w(m);
         for (int j = 0; j < m; j++) {
-            w[j] = vector<double>(N[j]);
-            for (int i = 0; i < N[j]; i++) {
+            w[j] = vector<double>(entry_map[j].size());
+            for (int i = 0; i < w.size(); i++) {
                 w[j][i] = calc_weight(f[j][i], wU[j][i], k[j], delta[j]);
             }
         }
         vector<vector<double>> avg_w = calc_avg_w(w);
-        return modified_maximum_likelihood(avg_w, P);
+        return modified_maximum_likelihood(&avg_w, &P);
+    }
+
+    double eval_type2(const double *params) const {
+        double k = params[0];
+        double delta = params[1]*2*M_PI;
+        vector<double> P = {params[2], 1-params[2]};
+        
+        // calculate the weight
+        vector<vector<double>> w(m);
+        w[0] = vector<double>(entry_map[0].size());
+        w[1] = vector<double>(entry_map[1].size(), 1);
+        for (int i = 0; i < w[0].size(); i++) {
+            w[0][i] = calc_weight(f[0][i], wU[0][i], k, delta);
+        }
+        vector<vector<double>> avg_w = calc_avg_w(w);
+        return modified_maximum_likelihood(&avg_w, &P);
     }
 
     // calculate chi^2 for a given fit result
     double chisquare(const double* params) const {
-        double chi = eval_type1(params);
+        double chi = 0;
+        if (type == 1) {
+            chi = eval_type1(params);
+        } else if (type == 2) {
+            chi = eval_type2(params);
+        } else if (type == 3) {
+            chi = eval_type3(params);
+        } else {
+            cout << "Critical failure in evaluating chisquare: unknown evaluation type " << type << endl;
+            exit(1);
+        }
         for (int i = 0; i < bins2; i++) {
-            if (d[i] != 0) {
+            if (d[i] != 0 && !skip_bin[i]) {
                 chi += 2*(d[i]*log(d[i]) - d[i]);
             }
             for (int j = 0; j < m; j++) {
-                if (a[j][i] != 0) {
+                if (a[j][i] != 0 && !skip_bin[i]) {
                     chi += 2*(a[j][i]*log(a[j][i]) - a[j][i]);
                 }
             }
@@ -117,8 +164,18 @@ public:
         return chi;
     }
 
-    double modified_maximum_likelihood(vector<vector<double>> w, vector<double> P) const {
-        // vector<double> P = {c, 1-c}; // the fraction of each source, must sum to 1
+    vector<double> binwise_chisquare(const double* params) const {
+        return vector<double>();
+    }
+
+    // return the actual number of bins used, i.e. bins^2 - (all bins outside the allowed regions in the Dalitz plot)
+    int get_bins() {
+        return bins2 - skipped;
+    }
+
+    double modified_maximum_likelihood(const vector<vector<double>>* weights, const vector<double>* P_ratio) const {
+        const vector<vector<double>> &w = *weights;
+        const vector<double> &P = *P_ratio;
         vector<double> p(m); // normalized fractions
         vector<double> t(bins2);
         vector<vector<double>> A(m, vector<double>(bins2));
@@ -186,7 +243,10 @@ public:
             // check for nan values
             if (isnan(chi-tmp)) {
                 cout << "Critical error in bin " << i << ", change in chi is nan (old chi = -inf?)" << endl;
-                cout << "fi = " << fi << ", di = " << d[i] << ", a0i = " << a[0][i] << ", ti = " << t[i] << ", A0i = " << A[0][i] << ", w0i = " << w[0][i] << endl;
+                cout << format("f = %1%, d = %2%, t = %3%") % fi % d[i] % t[i] << endl;
+                for (int j = 0; j < m; j++) {
+                    cout << format("\ta%1% = %2%, A%1% = %3%, w%1% = %4%") % j % a[j][i] % A[j][i] % w[j][i] << endl;
+                }
                 exit(1);
             }
         };
@@ -281,6 +341,7 @@ private:
     // for calculating the weights
     vector<vector<vector<vector<double>>>> f;
     vector<vector<double>> wU;
+    int type = -1;
 
     // everything related to the modified_maximum_likelihood evaluation
     int bins2 = pow(bins, 2); // bins^2
@@ -291,6 +352,8 @@ private:
     vector<int> d; // expected number of events
     vector<double> p; // normalized fractions
     vector<vector<int>> entry_map; // a map from entry --> bin for each source
+    vector<bool> skip_bin; // skipped entries (outside the Dalitz plot)
+    int skipped; // number of skipped entries
 
    // calculate the average weight for each bin
     vector<vector<double>> calc_avg_w(vector<vector<double>> weights) const {
@@ -299,8 +362,10 @@ private:
             vector<double> counts(bins2, 0);
             for (int n = 0; n < N[j]; n++) {
                 int i = entry_map[j][n];
-                counts[i] += 1;
-                w[j][i] = (w[j][i]*(counts[i]-1) + weights[j][n])/counts[i];
+                if (i != -1) { // -1 means the entry is invalid (either outside the Dalitz plot or outside the y_cut)
+                    counts[i] += 1;
+                    w[j][i] = (w[j][i]*(counts[i]-1) + weights[j][n])/counts[i];
+                }
             }
         }
         return w;
@@ -314,6 +379,7 @@ private:
         N = vector<int>(m, 0); // number of simulated events
         a = vector<vector<int>>(m); // number of simulated events for source j in bin i
         entry_map = vector<vector<int>>(m);
+        skip_bin = vector<bool>(bins2, false);
 
         // define the raw count histograms
         for (int j = 0; j < m; j++) {
@@ -322,9 +388,24 @@ private:
 
         // calculate counts
         for (int i = 0; i < bins2; i++) {
-            Nd += d.at(i);
+            Nd += d[i];
             for (int j = 0; j < m; j++) {
                 N[j] += a[j][i];
+            }
+        }
+
+        // determine which bins we should skip
+        skipped = 0;
+        for (int i = 0; i < bins2; i++) {
+            int zeros = 0;
+            for (int j = 0; j < m; j++) {
+                if (a[j][i] == 0) {
+                    zeros++;
+                }
+                if (zeros == m && d[i] == 0) {
+                    skip_bin[j] = true;
+                    skipped++;
+                }
             }
         }
     }
@@ -336,11 +417,15 @@ private:
         vector<int> entry_map(x.size());
         double step = 1./bins; // interval between each bin
         for (int i = 0; i < x.size(); i++) {
-            int binx = floor(x[i]/step);
-            int biny = floor(y[i]/step);
-            int bin = binx + bins*biny;
-            entry_map[i] = bin;
-            counts[bin]++;
+            if (pow(x[i], 2) + pow(y[i], 2) < 1 || y[i] < y_cut) {
+                int binx = floor(x[i]/step);
+                int biny = floor(y[i]/step);
+                int bin = binx + bins*biny;
+                entry_map[i] = bin;
+                counts[bin]++;
+            } else {
+                entry_map[i] = -1;
+            }
         }
         return make_tuple(counts, entry_map);
     }
@@ -378,7 +463,7 @@ int main(int argc, char const *argv[]) {
     // parse arguments
     string type = "GSLSimAn", algorithm = "";
     bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT! this is the number of bins for each axis on a Dalitz *slice*, so the total plot has twice this number
-    double y_cut = 1;
+    y_cut = 1;
     int fit_type, guess_pars = 0;
     double guess[] = {0.5, 0.5, 0.2, 0.5, 0.5};
     bool fix_delta = false;
@@ -535,12 +620,12 @@ int main(int argc, char const *argv[]) {
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, pars);
     } else if (fit_type == 2) {
         pars = 3; // k, delta, c
-        // fitter = new Dalitz_fitter(hdata, csim1, hsim2);
-        // functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
+        fitter = new Dalitz_fitter(cdata, csim1, csim2);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
     } else if (fit_type == 3) {
         pars = 5; // k1, delta1, c, k2, delta2
-        // fitter = new Dalitz_fitter(hdata, csim1, csim2);
-        // functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
+        fitter = new Dalitz_fitter(cdata, {csim1, csim2});
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
     }
 
     // a small function to set the fitting parameters. I know it's longer than it strictly needs to be, but I think this makes it easier to read
@@ -569,9 +654,9 @@ int main(int argc, char const *argv[]) {
             m->SetLimitedVariable(2, "c", guess[2], 0.01, 0, 1); // c is the ratio of sim1 to sim2, i.e. c*sim1 + (1-c)*sim2
             m->SetLimitedVariable(3, "k2", guess[3], 0.01, 0, 1);
             if (fix_delta)
-                m->SetLimitedVariable(4, "delta2", guess[4], 0.01, 0, 1);
-            else 
                 m->SetFixedVariable(4, "delta2", 0);
+            else 
+                m->SetLimitedVariable(4, "delta2", guess[4], 0.01, 0, 1);
         }
     };
 
@@ -586,7 +671,6 @@ int main(int argc, char const *argv[]) {
     // prints MINOS errors
     std::ofstream file(folder + "info.txt"); // create a file to store all of the fit information
     auto minos_errs = [&fit_type, &res, &file] (ROOT::Math::Minimizer* m) {
-        // const double* res2 = m->X();
         double err_up[5], err_low[5];
         m->GetMinosError(0, err_low[0], err_up[0]);
         m->GetMinosError(1, err_low[1], err_up[1]);
@@ -637,7 +721,7 @@ int main(int argc, char const *argv[]) {
     if (fit_type == 2 || fit_type == 3) {
         file << " | " << to_string(sim2.Count().GetValue());
     }
-    file << format("\nUsing bin width: %1%") % bins << endl;
+    file << format("\nTotal number of bins: %1%, where only %2% are used.") % pow(bins, 2) % (pow(bins, 2) - fitter->get_bins()) << endl;
     if (y_cut != 1) {
         file << format("Performed a cut on y = %1%") % y_cut << endl;
     }
@@ -842,8 +926,8 @@ int main(int argc, char const *argv[]) {
             chi3 += pow(m_3 + mu_3, 2)/mu_3;
         }
     }
-    file << "Radial projection: chi2 = " << chi1 << endl;
+    file << "Radial projection:  chi2 = " << chi1 << endl;
     file << "Angular projection: chi2 = " << chi2 << endl;
-    file << "Energy: chi2 = " << chi3 << endl;
+    file << "Energy projection:  chi2 = " << chi3 << endl;
     file.close();
 }

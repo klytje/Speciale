@@ -27,8 +27,9 @@ int main(int argc, char *argv[]) {
     filter(&ddat);
     setup_dataframe(&ddat); // define Dalitz coordinates
     setup_dataframe(&dsim);
-    cut_edges(&ddat);
-    cut_edges(&dsim);
+    cut_circle(&ddat);
+    cut_circle(&dsim);
+    cut_gs(&ddat);
 
     //*** DALITZ PLOT ***//
     TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
