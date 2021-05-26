@@ -317,10 +317,46 @@ where $a_n(l)$ is given as
 	a_n(l) = \frac{2l(l+1)}{2l(l+1) - n(n+1)}
 \end{align*}
 
-and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
+and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. \\
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=\linewidth]{figures/corr_funcs.pdf}
 	\caption{The angular correlation functions for a few different states and transitions, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). In the legend, the first number denotes the resonance, while the second denotes the transition $l$. \note{definitely wrong text}}
 	\label{fig: theory: ang: ang_corr_funcs}
 \end{figure} 
+
+\subsection{Statistics} \label{section: theory: statistics}
+Suppose we have a set of statistically independent quantities $\bm{x}$, all distributed with the same probability density function $f(x, \bm{\theta})$. Here $\bm{\theta}$ is some arbitrary set of parameters on which the distribution function depends, which we would like to estimate. One way of doing this is by constructing the likelihood function
+\begin{align} \label{theory: statistics: likelihood}
+	\mathcal{L}(\bm{\theta}) = \prod_{n}^{i}f(x_i; \bm{\theta})
+\end{align}
+which, roughly speaking, describes the combined probability (or likelihood) of observing $\bm{x}$ given the density function $f(x, \bm{\theta})$ for some choice of parameters $\bm{\theta}$. The basic idea is then that by maximizing this probability, we obtain the best estimate of our parameters $\bm{\theta}$. Sometimes the number of events $n$ also depends on the parameters. If this is the case, the probability of observing exactly $n$ events should be included in the likelihood. Since we are dealing with Poisson-distributed data, (\ref{theory: statistics: likelihood}) is modified to 
+\begin{align} \label{theory: statistics: extended likelihood}
+	\mathcal{L}(\bm{\theta}) = \frac{\mu^n}{n!}e^{-\mu}\prod_{n}^{i}f(x_i; \bm{\theta})
+\end{align}
+which is often called the extended likelihood. \\
+
+When we apply this idea to our binned histogram data, the density function $f(x, \bm{\theta})$ is that of a multinomial distribution. Inserting this into (\ref{theory: statistics: extended likelihood}) and taking the natural logarithm for numerical stability, we get
+\begin{align}
+	\ln \mathcal{L}(\bm{\theta}) = \sum^n_i  \ln \frac{\mu_i}{m_i} + m_i - \mu_i
+\end{align}
+
+Here $\mu$ is the expected number of events in each bin, while $m$ is the observed number. It is thus by maximizing this equation that we obtain the maximum likelihood estimate for our parameters $\bm{\theta}$. \\
+
+To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. \note{ask Hans}. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Kuhlwein}. \\
+
+The final issue is how to deal with errors. For finite samples, the covariance matrix can result in an underestimate of the variances. A numerically equivalent approach to determine the $s$-standard deviation confidence interval is by finding the set of parameters $\bm{\theta}'$ where \note{cite https://pdg.lbl.gov/2013/reviews/rpp2013-rev-statistics.pdf}
+\begin{align*}
+	\ln \mathcal{L}(\bm{\theta}') = \ln \mathcal{L}_{max} - s^2/2
+\end{align*}
+This will in general result in asymmetrical errors on the parameters. \\
+
+When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. To account for this, the maximum likelihood statistic introduced here must be modified as seen in \cite{Kuhlwein}.
+
+\subsubsection{Finite Monte Carlo fitting}
+\note{delete?}
+This section follows the derivation given in \cite{Kuhlwein}. \\
+
+When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. The goal of this section is to modify the maximum likelihood statistic to account for this. \\
+
+The number of measured events in each bin is $m_i$. With $s$ sources of Monte Carlo simulations, we can define $a_{ji}$ as the number of counts in bin $i$ from source $j$. Similarly we can define $w_{ij}$ as the weight for each bin. If a bin consists of events with different weights, assuming the variance is low, one can approximate the total weight as the average of the individual weights. Finally we denote the number of expected events as $A_{ji}$. 
