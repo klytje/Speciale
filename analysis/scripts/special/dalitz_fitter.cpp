@@ -388,7 +388,7 @@ public:
                     }
                 }
                 if (n == max_evals) {
-                    cout << "Evaluation of t[i] did not converge. Function value at final location: " << solve_t(t[i], i) << ". If this happens often, the fit failed." << endl;
+                    cout << "Evaluation of t[i] did not converge in time. Function value at final location: " << solve_t(t[i], i) << " (should be 0). If this happens often, the fit failed." << endl;
                 }
                 // cout << "bin " << i << endl;
                 // cout << "f" << i << " = " << solve_t(t[i], i) << endl;

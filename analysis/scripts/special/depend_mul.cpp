@@ -5,7 +5,6 @@
 #include <TPad.h>
 
 // my own stuff
-#include "../plot_style.cpp"
 #include "../calibrate/utility.cpp"
 
 using namespace std;
@@ -17,7 +16,6 @@ int main(int argc, char *argv[]) {
         chain.Add(argv[i]);
     }
     ROOT::RDataFrame df(chain);
-    filter((ROOT::RDF::RNode*) &df);
 
     // change some settings
     gROOT->SetBatch(kTRUE); // no graphics display
@@ -31,18 +29,18 @@ int main(int argc, char *argv[]) {
     for (int det = 0; det < 4; det++) {
         print_title("Now plotting detector " + detector_map.at(det) + ".");
         std::cout << "Calculating mul == 1..." << endl;
-        auto top = df.Filter((format("mul==1 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 1") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x");
+        auto top = df.Filter((format("mul==1 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 1") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x");
 
         std::cout << "Calculating mul == 2..." << endl;
-        auto mid = df.Filter((format("mul==2 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 2") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x");
-        auto h1 = df.Filter((format("mul==2 && id[1]==%1%") % det).str()).Define("x", "BT[1]*1e-3").Histo1D({"legend", (format("%1%, mul == 2") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x").GetValue();
+        auto mid = df.Filter((format("mul==2 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 2") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x");
+        auto h1 = df.Filter((format("mul==2 && id[1]==%1%") % det).str()).Define("x", "BT[1]*1e-3").Histo1D({"legend", (format("%1%, mul == 2") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x").GetValue();
         mid->Add(&h1);
         h1.Reset("ICESM");
 
         std::cout << "Calculating mul == 3..." << endl;
-        auto bot = df.Filter((format("mul==3 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x");
-        h1 = df.Filter((format("mul==3 && id[1]==%1%") % det).str()).Define("x", "BT[1]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x").GetValue();
-        auto h2 = df.Filter((format("mul==3 && id[2]==%1%") % det).str()).Define("x", "BT[2]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), int(plot::x_axes::BT[0]), plot::x_axes::BT[1], plot::x_axes::BT[2]}, "x").GetValue();
+        auto bot = df.Filter((format("mul==3 && id[0]==%1%") % det).str()).Define("x", "BT[0]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x");
+        h1 = df.Filter((format("mul==3 && id[1]==%1%") % det).str()).Define("x", "BT[1]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x").GetValue();
+        auto h2 = df.Filter((format("mul==3 && id[2]==%1%") % det).str()).Define("x", "BT[2]*1e-3").Histo1D({"legend", (format("%1%, mul == 3") % detector_map.at(det)).str().c_str(), plot::x_axes::BT[0], double(plot::x_axes::BT[1]), double(plot::x_axes::BT[2])}, "x").GetValue();
         bot->Add(&h1);
         bot->Add(&h2);
         h1.Reset("ICESM");
@@ -103,7 +101,7 @@ int main(int argc, char *argv[]) {
     t->SetTextSize(0.1);
     t->SetTextAngle(90);
     t->SetTextAlign(22);
-    t->DrawClone();
+    // t->Draw();
 
     string path = plot::path + "depend_mul.pdf";
     c->SaveAs(path.c_str());
