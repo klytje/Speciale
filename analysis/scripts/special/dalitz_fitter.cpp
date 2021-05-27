@@ -107,7 +107,8 @@ public:
     double eval(const vector<double> k, const vector<double> delta, const vector<double> P) {
         // some of the minimizers do not respect our limits, which results in nan values
         for (int j = 0; j < m; j++) {
-            if (k[j] > 1 || P[j] > 1) { 
+            // I don't know why the minimizer would ever pass nan, but it sometimes does (probably when they're based on derivatives?)
+            if (k[j] > 1 || P[j] > 1 || isnan(k[j] || isnan(P[j]))) { 
                 return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
             }
         }
@@ -127,16 +128,28 @@ public:
     double eval_type2(const double *params) {
         double k = params[0];
         double delta = params[1]*2*M_PI;
-        // vector<double> P = {params[2], 1-params[2]};
-        vector<double> P = {1, 0};
+        vector<double> P = {params[2], 1-params[2]};
         
+        // some of the minimizers do not respect our limits, which results in nan values
+        for (int j = 0; j < m; j++) {
+            // I don't know why the minimizer would ever pass nan, but it sometimes does (probably when they're based on derivatives?)
+            if (k > 1 || P[j] > 1 || isnan(k) || isnan(P[j])) {
+                return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+            }
+        }
+
         // calculate the weight
         vector<vector<double>> w(m);
         w[0] = vector<double>(entry_map[0].size());
         w[1] = vector<double>(entry_map[1].size(), 1);
+        double w_avg = 0;
         for (int i = 0; i < w[0].size(); i++) {
             w[0][i] = calc_weight(f[0][i], wU[0][i], k, delta);
+            w_avg += w[0][i];
         }
+        // w[1] = vector<double>(entry_map[1].size(), w_avg/entry_map[0].size());
+        // cout << "w_avg: " << w_avg/entry_map[0].size() << endl;
+        // sleep(2);
         vector<vector<double>> avg_w = calc_avg_w(w);
         return modified_maximum_likelihood(&avg_w, &P);
     }
@@ -225,17 +238,16 @@ public:
         }
 
         // definition of f for the bisection method
-        auto f = [&] (double t, int i) {
-            double val = 0;
-            for (int j = 0; j < 1; j++) {
+        auto solve_t = [&] (double t, int i) {
+            double val = - d[i]/(1 - t);
+            for (int j = 0; j < m; j++) {
                 val += p[j]*w[j][i]*a[j][i]/(1 + p[j]*w[j][i]*t);
             }
-            val -= d[i]/(1 - t);
             return val;
         };
 
         // evaluate chi of the ith bin and add it to the running total
-        auto eval_chi = [&] (double i) {
+        function<void(double)> eval_chi = [&] (double i) {
             double prev_chi = chi;
 
             // determine fi
@@ -252,27 +264,46 @@ public:
             } else {
                 fi = d[i]/(1 - t[i]);
             }
+            // cout << format("f = %1%, d = %2%, t = %3%") % fi % d[i] % t[i] << endl;
 
             chi += d[i]*log(fi) - fi;
             for (int j = 0; j < m; j++) {
-                chi += a[j][i]*log(A[j][i]) - A[j][i];
+                if (a[j][i] != 0) {
+                    chi += a[j][i]*log(A[j][i]) - A[j][i];
+                }
             }
 
             // check for nan values
             if (isnan(chi-prev_chi)) {
                 cout << "Critical error in bin " << i << ", change in chi is nan (old chi = -inf?)" << endl;
-                cout << format("f = %1%, d = %2%, t = %3%") % fi % d[i] % t[i] << endl;
+                cout << format("bin %1% with L = %2%") % i % (chi-prev_chi) << endl;
+                cout << format("\tf = %1%, d = %2%, t = %3%") % fi % d[i] % t[i] << endl;
                 for (int j = 0; j < m; j++) {
-                    cout << format("\ta%1% = %2%, A%1% = %3%, w%1% = %4%") % j % a[j][i] % A[j][i] % w[j][i] << endl;
+                    cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][i] % A[j][i] % w[j][i] % p[j] << endl;
                 }
+
+                double fl = 0;
+                if (t[i-1] == 1) {
+                    for (int j = 0; j < m; j++) {
+                        fl += p[j]*w[j][i-1]*A[j][i-1];
+                    }
+                } else {
+                    fl = d[i-1]/(1 - t[i-1]);
+                }
+                cout << format("bin %1% with L = %2%") % (i-1) % prev_chi << endl;
+                cout << format("\tf = %1%, d = %2%, t = %3%") % fl % d[i-1] % t[i-1] << endl;
+                for (int j = 0; j < m; j++) {
+                    cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][i-1] % A[j][i-1] % w[j][i-1] % p[j] << endl;
+                }
+
                 exit(1);
             }
 
             binwise_chi[i] = -2*(chi-prev_chi);
         };
 
-        double tol = 1e-15; // tolerance on ti for bisection method
-        int max_evals = 100; // max evaluations before stopping the bisection method
+        double tol = 1e-10; // tolerance on ti for bisection method
+        int max_evals = 200; // max evaluations before stopping the bisection method
         for (int i = 0; i < bins2; i++) {
             if (skip_bin[i]) { // skips any bin outside x^2 + y^2 = 1 and with y > y_cut
                 continue;
@@ -324,6 +355,7 @@ public:
             if (d[i] != 0) {
                 // cout << "normal case" << endl;
                 for (int j = 0; j < m; j++) {
+                    // cout << "pj: " << p[j] << "wji: " << w[j][i] << "pw: " << p[j]*w[j][i] << endl;
                     if (p[j]*w[j][i] > pw) {
                         pw = p[j]*w[j][i];
                     }
@@ -334,16 +366,20 @@ public:
                 // the value of ti where fi changes sign must be between upper_bound and lower_bound
                 // we use a binary search (or bisection method, if you prefer) to find the value
                 t[i] = 0;
-                for (int n = 0; n < max_evals; n++) {
-                    double val = f(t[i], i);
+                int n = 0;
+                for (n = 0; n < max_evals; n++) {
+                    double val = solve_t(t[i], i);
                     if (abs(val) < tol) { // break when |f| < tol
                         break;
                     }
                     else if (val < 0) { // sign is unchanged, so we move the upper bound
+                        // cout << "f: " << val << ", ti: " << t[i] << ", moving upper bound " << upper_bound << " to ti." << endl;
                         upper_bound = t[i];
                     } else { // sign is changed, so we move the lower bound
+                        // cout << "f: " << val << ", ti: " << t[i] << ", moving lower bound " << lower_bound << " to ti." << endl;
                         lower_bound = t[i];
                     }
+                    // sleep(1);
                     t[i] = (upper_bound + lower_bound)/2;
                     if (isnan(val)) {
                         cout << "Critical error in bin " << i << endl;
@@ -351,8 +387,27 @@ public:
                         exit(1);
                     }
                 }
+                if (n == max_evals) {
+                    cout << "Evaluation of t[i] did not converge. Function value at final location: " << solve_t(t[i], i) << ". If this happens often, the fit failed." << endl;
+                }
+                // cout << "bin " << i << endl;
+                // cout << "f" << i << " = " << solve_t(t[i], i) << endl;
+                // for (int j = 0; j < m; j++) {
+                //     cout << "f = " << solve_t(t[i], i) << ", di = " << d[i] << ", aji = " << a[j][i] << ", ti = " << t[i] << ", wji = " << w[j][i] << endl;
+                // }
+                // sleep(1);
+                bool is_inf = false;
                 for (int j = 0; j < m; j++) {
                     A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
+                    // cout << "Calculated Aji to be " << A[j][i] << endl;
+                    if (isinf(A[j][i])) {
+                        cout << "Inf encountered, skipping bin" << endl; // we do NOT set skip_bin[i] = true, since that is a permanent action for this minimization
+                        is_inf = true;
+                        break; 
+                    }
+                }
+                if (is_inf) {
+                    continue;
                 }
 
                 eval_chi(i);
@@ -631,9 +686,9 @@ int main(int argc, char const *argv[]) {
             fit_type = 3;
             sim2f = sim2.Take<vector<vector<double>>>("f").GetValue();
             sim2wU = sim2.Take<double>("wU").GetValue();
-            csim2 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
+            csim2 = new container(&sim2x, &sim2y, &sim2f, &sim2wU);
         } else {
-            csim2 = new container(&sim1x, &sim1y);
+            csim2 = new container(&sim2x, &sim2y);
         }
     }
 
