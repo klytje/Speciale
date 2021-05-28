@@ -282,7 +282,7 @@ ang_compare/%: ../scripts/special/build/ang_compare_single output/%.root
 
 # same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
 # should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
-ang_cor_fit/%: ../scripts/special/build/ang_cor_fit sim/temp/output output/%.root
+ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root
 	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare

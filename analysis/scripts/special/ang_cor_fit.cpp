@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]) {
         cout << "File name contains \"events\", assuming real data..." << endl;
         real_data = true;
         if (state == "0+") {
-            y_bounds = {0.38, 0.54};
+            y_bounds = {0.34, 0.48};
         } else if (state == "2-") {
             y_bounds = {0.30, 0.52};
         } else if (state == "3-") {
@@ -44,11 +44,21 @@ int main(int argc, char const *argv[]) {
 
     setup_style();
     int bins = 200;
-    TCanvas* c = new TCanvas("c", "c", 600, 600);
-    TH2D* hist = dalitz(argv[4], bins, true);
+    TCanvas* c = new TCanvas("c", "c", 600, 300);
+    TH2D* hist = new TH2D("hist", "h", bins, -1, 1, bins, -1, 1);
+    TH2D* slice = dalitz_slice(argv[4], bins/2, true);
 
+    // mirror the dalitz slice across y = 0
+    for (int x = 1; x < slice->GetNbinsX()+1; x++) {
+        for (int y = 1; y < slice->GetNbinsY()+1; y++) {
+            hist->SetBinContent(bins/2 + x, bins/2 + y, slice->GetBinContent(x, y));
+            hist->SetBinContent(x, bins/2 + y, slice->GetBinContent(bins/2+1 - x, y));
+        }
+    }
+    hist->SetAxisRange(0, 1, "Y");
     hist->GetXaxis()->SetTitle("x");
     hist->GetYaxis()->SetTitle("y");
+    setup_dalitz_plot(hist);
     hist->Draw("colz");
 
     TLine* bot = new TLine(-1, y_bounds[0], 1, y_bounds[0]);
@@ -87,20 +97,20 @@ int main(int argc, char const *argv[]) {
     h1->Draw("HIST L");
 
     // we need to determine the max value of the histogram, but it cannot be at the interference point (about 0.6)
-    double maxval = 0;
-    double location = 0;
-    double width = 0.1;
-    double bad_area[4] = {-(interference_point+width), -(interference_point-width), interference_point-width, interference_point+width};
-    for (int i = 0; i < bins; i++) {
-        int count = h1->GetBinContent(i);
-        double loc = h1->GetBinCenter(i);
-        if (maxval < count) {
-            if (!(bad_area[0] < loc && loc < bad_area[1]) && !(bad_area[2] < loc && loc < bad_area[3])) {
-                maxval = count;
-                location = loc;
-            }
-        }
-    }
+    // double maxval = 0;
+    // double location = 0;
+    // double width = 0.1;
+    // double bad_area[4] = {-(interference_point+width), -(interference_point-width), interference_point-width, interference_point+width};
+    // for (int i = 0; i < bins; i++) {
+    //     int count = h1->GetBinContent(i);
+    //     double loc = h1->GetBinCenter(i);
+    //     if (maxval < count) {
+    //         if (!(bad_area[0] < loc && loc < bad_area[1]) && !(bad_area[2] < loc && loc < bad_area[3])) {
+    //             maxval = count;
+    //             location = loc;
+    //         }
+    //     }
+    // }
     double y = (y_bounds[1] + y_bounds[0])/2; // we use the middle of the bounded area as the y coordinate
     // the x bounds needs to be sliiightly smaller than one would predict due to floating point errors (theta is undefined for x-values outside this bound)
     vector<double> x_bounds = {-sqrt(1-pow(y, 2))+0.0001, sqrt(1-pow(y, 2))-0.0001};
@@ -111,7 +121,7 @@ int main(int argc, char const *argv[]) {
     vector<int> color = {kBlack, kPink-8, kOrange+1, kYellow-7, kSpring-1, kTeal+3, kCyan+1, kAzure+1, kBlue-9, kViolet+1};
     function<double(Double_t*, Double_t*)> ang_corr;
 
-    maxval = 1./h1->GetMaximum()*maxval;
+    // double maxval = 1./h1->GetMaximum();
     h1->Scale(1./h1->GetMaximum());
     h1->SetMaximum(1.2); // make space for the legend
     auto legend = new TLegend(0.1, 0.77, 0.9, 0.9);
@@ -121,7 +131,7 @@ int main(int argc, char const *argv[]) {
 
         string label = (format("%1% %2%") % states[i] % ls[i]).str();
         TF1 *corr = new TF1(label.c_str(), ang_corr, x_bounds[0], x_bounds[1], 2);
-        corr->SetParameter(0, maxval);
+        corr->SetParameter(0, 1);
         corr->SetParameter(1, y);
         corr->SetLineColor(color[i]);
         corr->DrawClone("same");
@@ -158,7 +168,7 @@ int main(int argc, char const *argv[]) {
 
             string label = (format("%1% %2%") % s % ll).str();
             TF1 *corr = new TF1(label.c_str(), ang_corr, x_bounds[0], x_bounds[1], 2);
-            corr->SetParameter(0, maxval);
+            corr->SetParameter(0, 1);
             corr->SetParameter(1, y);
             corr->SetLineColor(color[i]);
             corr->DrawClone("same");
@@ -191,17 +201,22 @@ int main(int argc, char const *argv[]) {
         auto f13 = [] (double* x, double* par) {
             double y = par[0];
             double c = par[1];
+            double scale = par[2];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta;
-            return c*correlation_functions.at("2- 1")(beta) + (1-c)*correlation_functions.at("2- 3")(beta);
+            double val = c*correlation_functions.at("2- 1")(beta) + (1-c)*correlation_functions.at("2- 3")(beta);
+            return val*scale;
         };
-        TF1* tf13 = new TF1("mix", f13, x_bounds[0], x_bounds[1], 2);
+        TF1* tf13 = new TF1("mix", f13, x_bounds[0], x_bounds[1], 3);
         tf13->FixParameter(0, y);
         tf13->SetParameter(1, guess);
+        tf13->SetParameter(2, 1); // scaling factor
         tf13->SetParLimits(1, 0, 1);
         h1->Fit(tf13, "QRL");
         double c13 = tf13->GetParameter(1);
+        const double* err = tf13->GetParErrors();
         cout << format("Fitted values: c1 = %1%, c3 = %2%") % c13 % (1-c13) << endl;
+        cout << format("Errors: c1 = %1%, c3 = %2%") % err[1] % err[1] << endl;
 
         h1->Draw("HIST L");
         tf13->Draw("SAME");
@@ -215,23 +230,29 @@ int main(int argc, char const *argv[]) {
             double y = par[0];
             double c1 = par[1];
             double c2 = par[2];
+            double scale = par[3];
             double theta = acos(x[0]/sqrt(1-pow(y, 2)));
             double beta = M_PI - theta;
-            return (1-c2)*c1*correlation_functions.at("2- 1")(beta) + (1-c2)*(1-c1)*correlation_functions.at("2- 3")(beta) 
+            double val = (1-c2)*c1*correlation_functions.at("2- 1")(beta) + (1-c2)*(1-c1)*correlation_functions.at("2- 3")(beta) 
                     + c2*correlation_functions.at("0+ 2")(beta);
+            return val*scale;
         };
-        TF1* tf0 = new TF1("mix", f0, x_bounds[0], x_bounds[1], 3);
+        TF1* tf0 = new TF1("mix", f0, x_bounds[0], x_bounds[1], 4);
         tf0->FixParameter(0, y);
         tf0->SetParameter(1, c13); // c1
         tf0->SetParameter(2, 0.1); // c2
+        tf0->SetParameter(3, 1); // scaling factor
         tf0->SetParLimits(1, 0, 1);
         tf0->SetParLimits(2, 0, 1);
         h1->Fit(tf0, "QRLM");
         double pars[3];
         tf0->GetParameters(pars);
+        const double* errs = tf13->GetParErrors();
         double c1 = pars[1], c2 = pars[2];
         double c0 = tf0->GetParameter(2);
+
         cout << format("Fitted values: 0+ 2 = %1%, 2- 1 = %2%, 2- 3 = %3%") % c2 % ((1-c2)*c1) % ((1-c2)*(1-c1)) << endl;
+        cout << format("Errors: 0+ 2 = %1%, 2- 1 = %2%, 2- 3 = %3%") % errs[2] % (errs[2] + errs[1]) % (errs[2] + errs[1]) << endl;
 
         h1->Draw("HIST L");
         tf0->Draw("SAME");

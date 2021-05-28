@@ -200,20 +200,17 @@ data = output/true_events.root
 ../scripts/basic/build/%: ../scripts/basic/%.cpp ../scripts/calibrate/* ../scripts/utility.cpp
 	make -C ../scripts/basic/build/ $*
 
-# creates a folder for a data set
-figures/%: 
-	@ mkdir -p figures/$*	
-
 # generates a single pdf file for the data source %
-figures/%.pdf: output/$$(*D).root ../scripts/basic/build/$$(*F) | figures/$$(*D)
+figures/%.pdf: output/$$(*D).root ../scripts/basic/build/$$(*F) | figures/$$(*D)/
 	@ echo "Building "$@"..."
 	../scripts/basic/build/$(*F) $< $(shell pwd)/figures/$(*D)/
 
+# creates a folder for a data set
+figures/%/: 
+	@ mkdir -p figures/$*	
+
 # contains a list of all possible pdf files
 figure_pdf = $(addsuffix .pdf,$(basename $(shell find ../scripts/basic/ -maxdepth 1 -name "*.cpp" -printf "%P ")))
-
-# concatenates all raw data in data/ and makes all combined figures for them
-figs: $(addprefix figures/data/,$(figure_pdf))
 
 # fig/X generates all figures for X. Either data/X.root, ../sim/X.simX, ../sim/X.bahamut must exist
 # this command will simulate and/or perform all necessary analysis of the data, and is thus a nice
@@ -240,35 +237,35 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 	../scripts/special/build/Dalitz_3D $<
 
 # compare a simulation with the data. Generates a variety of projection plot for easy comparison
-sim_compare/%: ../scripts/special/build/sim_compare output/%.root $(data) | figures/%
+sim_compare/%: ../scripts/special/build/sim_compare output/%.root $(data) | figures/%/
 	$< $(shell pwd)/figures/$*/ output/$*.root $(data)
 
 # plots before / after of the TDC values
-tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data)) | figures/article
+tdc_plots: ../scripts/special/build/tdc_plot $(addprefix output/,$(shell ls data)) | figures/article/
 	@ echo "Creating figures/article/tdc_plot_before.pdf and figures/article/tdc_plot_after.pdf"
 	$< $(addprefix output/,$(shell ls data)) $(shell pwd)/figures/article/
 
 # illustrates how the peaks depends on the multiplicity
-depend_mul: ../scripts/special/build/depend_mul $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) | figures/article
+depend_mul: ../scripts/special/build/depend_mul $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) | figures/article/
 	@ echo "Creating figures/article/depend_mul.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
 # illustrates how the peaks depends on the energy
-depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) | figures/article
+depend_E: ../scripts/special/build/depend_E $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) | figures/article/
 	@ echo "Creating figures/article/depend_E.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
 # shows the effect of the various cuts we can impose on the data
-cuts/%: ../scripts/special/build/cuts $(addprefix merged/,$(shell ls data)) output/%.root | figures/article
+cuts/%: ../scripts/special/build/cuts $(addprefix merged/,$(shell ls data)) output/%.root | figures/article/
 	$< output/$*.root $(addprefix merged/,$(shell ls data)) $(shell pwd)/figures/$*/
 
 # shows how theta' changes throughout the dalitz plot
-theta: ../scripts/special/build/theta | figures/article
+theta: ../scripts/special/build/theta | figures/article/
 	$< $(shell pwd)/figures/article/
 
 # performs an analysis based on the momentum vectors
 # the branching ratio is *only* valid when % = true_events
-momentum/%: ../scripts/special/build/momentum_analysis output/%.root | figures/%
+momentum/%: ../scripts/special/build/momentum_analysis output/%.root | figures/%/
 	$< $(shell pwd)/figures/$*/ output/$*.root
 
 # shows a bunch of different correlation functions. This was mainly to verify that they were correctly normalized
@@ -276,7 +273,7 @@ corr_funcs: ../scripts/special/build/corr_funcs | figures/article
 	$< $(shell pwd)/figures/article/
 
 # creates a mix of 2- and 0+ data, and compares it with the real data
-multiple_components: ../scripts/special/build/multiple_components $(data) output/0+.root output/0+_i.root | figures/article
+multiple_components: ../scripts/special/build/multiple_components $(data) output/0+.root output/0+_i.root | figures/article/
 	$< $(shell pwd)/figures/article/ output/3-.root output/0+_i.root $(data)
 
 ### Dalitz fitter ###
@@ -300,7 +297,7 @@ ifeq (dalitz_fit, $(firstword $(MAKECMDGOALS)))
 endif
 
 .PHONY: dalitz_fit
-dalitz_fit: ../scripts/special/build/dalitz_fitter | figures/article
+dalitz_fit: ../scripts/special/build/dalitz_fitter | figures/article/
 	eval $< $(RUN_ARGS)
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (and/or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.
@@ -309,16 +306,16 @@ state := 0+
 l := 2
 
 # compare multiple Dalitz plots from simX and sim3a with equivalent widths
-depend_width: ../scripts/special/build/width_compare sim/temp/output | figures/article
+depend_width: ../scripts/special/build/width_compare sim/temp/output | figures/article/
 	$< $(shell pwd)/figures/article/ $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
 
 # compare the angular correlation implicit in sim3a with the theoretical prediction for a single data source. this is useful to check if everything looks alright before doing the similar ang_compare for all data sources. 
-ang_compare/%: ../scripts/special/build/ang_compare_single output/%.root | figures/%
+ang_compare/%: ../scripts/special/build/ang_compare_single output/%.root | figures/%/
 	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare, but plots a whole bunch of correlation functions to determine which one fits best
 # should really only be used with actual data; simulated data should match ang_compare very well (otherwise something is really wrong)
-ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root | figures/%
+ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root | figures/%/
 	$< $(shell pwd)/figures/$*/ $(state) $(l) output/$*.root
 
 # same as ang_compare_single, but for all files simulated with width_compare

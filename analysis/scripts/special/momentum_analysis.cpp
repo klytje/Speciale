@@ -433,7 +433,8 @@ int main(int argc, char const *argv[]) {
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
 
-    // all events within 3 sigma of the ground state are assumed to belong to that branch. all other events are assumed to be to the first excited state. 
+    // all events within 3 sigma of the ground state are assumed to belong to that branch. likewise with the excited state. 
+    // when this cut is used practically, this same filter is used to extract only the excited state decays
     ROOT::RDF::RNode df_gs = df.Filter((format("%1% < E_23 && E_23 < %2%") % peaks[0][0] % peaks[0][1]).str());
     ROOT::RDF::RNode df_ex = df.Filter((format("%1% < E_23 && E_23 < %2%") % peaks[1][0] % peaks[1][1]).str());
     TH2D* hgs = new TH2D("hgs", "Dalitz plot", int(x_axis[0]), x_axis[1], x_axis[2], int(y_axis[0]), y_axis[1], y_axis[2]);

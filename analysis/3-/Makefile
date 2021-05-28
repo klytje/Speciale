@@ -258,8 +258,9 @@ mul_compare: ../scripts/special/build/mul_compare $(addsuffix m.root, $(addprefi
 	@ echo "Creating figures/article/mul_compare.pdf"
 	$< $(addsuffix m.root, $(addprefix match/, $(basename $(shell ls data)))) $(shell pwd)/figures/article/
 
-# calculates theta based on the data
-theta/%: ../scripts/special/build/theta_data output/%.root
+# performs an analysis based on the momentum vectors
+# the branching ratio is *only* valid when % = true_events
+momentum/%: ../scripts/special/build/momentum_analysis output/%.root | figures/%
 	$< $(shell pwd)/figures/$*/ output/$*.root
 
 # note that the next few targets depends on sim/temp/converted_widths.txt. Due to limitations of make (or my ability), this file must be created manually before any target below is executed. If you mess it up, simply delete the sim/temp folder, or make the target clean/sim_widths.

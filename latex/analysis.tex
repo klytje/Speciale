@@ -260,53 +260,95 @@ As we discussed in the theory, section \ref{section: theory}, in a consecutive t
 
 \begin{figure}[h]
 	\includegraphics[width=\linewidth]{figures/0+/sim/ang_compare_0_sim3a.pdf}
-	\caption{}
-	\label{fig: analysis: ang compare sim3a 0}
-	
 	\includegraphics[width=\linewidth]{figures/0+/sim/ang_compare_0_simX.pdf}
-	\caption{}
+	\caption{ang compare}
 	\label{fig: analysis: ang compare simX 0}
 \end{figure}
 
 From figure \ref{fig: analysis: ang compare sim3a 0} for \simta{}, we see that both simulation and theory predicts that the bands vanish near the points of interference. Yet we see no trace of this in the data. The evidence so far seems to indicate that the data is not actually from a $0^+$ state at all, or that whatever trace amounts of it which might be present are completely overshadowed by another state. To expand upon this idea, we can try figuring out what this other state could be. One way of doing this is to continue our angular correlation analysis.
 
 \subsubsection{Checking the angular correlations}
-As a first step, we can try overlaying all correlation functions up to and including the $J = 3$ states on top of the distribution from the data. The results of this can be seen on the rather messy figure \ref{fig: analysis: ang cor fit}. \\
+We have two options for extracting the correlation angle from our data. The first option is to use the angle $\alpha$ from (\ref{theory: kinematics: theta}), which depends only on the Dalitz coordinates $x$ and $y$. Since it depends also on the $y$ coordinate, we cannot simply project the whole plot down onto the $x$ axis. Instead we have chosen a small area surrounding the main horizontal band, as can be seen on the top panels of figure \ref{fig: analysis: ang cor alpha fit}. The projection itself is shown on both the bottom panels and on figure \ref{fig: analysis: ang proj corr funcs}, where we will first focus on the latter. \\
 
-\begin{figure}
+\begin{wrapfigure}[18]{r}{7cm}
+	\vspace{-16pt}
+	\centering
+	\includegraphics[width=\linewidth]{figures/0+/true_events/ang_cor_fit.pdf}
+	\caption{The correlation angle extracted from the data along with all relevant theoretical correlation functions. The $0^+$ function is a terrible fit to the data. }
+	\label{fig: analysis: ang proj corr funcs}
+\end{wrapfigure}
+
+On figure \ref{fig: analysis: ang proj corr funcs} the projection of the band along with all correlation functions up to and including the $J = 3$ states are shown. The idea with this figure is that we can visually check which correlation functions could potentially match our data. One important observation is that the shape of the $0^+$ function is completely wrong, and could never possibly explain the data. Similarly we can rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1^+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. \\
+
+Thus a fit with these two were made, which can be seen on the bottom panels of figure \ref{fig: analysis: ang cor alpha fit}. An arbitrary scaling factor was also allowed as a free fitting variable, since a linear combination of the correlation functions is not necessarily normalized. We see that the fit is in remarkably good agreement with our multiplicity $3$ data, except at the points of maximum interference. Similarly with the multiplicity $2$ data, where it appears to be even better. Overall it is rather surprising that a simple fit of just two $2^-$ transitions is in such good agreement with the data. After this first fit was made, a second fit which also allows for a $0^+_2$ component was made. In both cases the ratio of this state was vanishingly low. The fit values can be seen in table \ref{table: analysis: ang cor fit result}. \\
+
+\begin{figure}[tb]
 	\centering
 	\begin{minipage}{.5\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/true_events/ang_cor_fit.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/true_events/ang_cor_fit_cut.pdf}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/ang_cor_fit.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/ang_cor_fit_cut.pdf}
+	\end{minipage}
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/true_events/ang_2-_fit.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/ang_2-_fit.pdf}
 	\end{minipage}
 	\caption{}
-	\label{fig: analysis: ang cor fit}
+	\label{fig: analysis: ang cor alpha fit}
 \end{figure}
 
-Based on this figure, we can quickly rule out all of the states which peaks at $x = \pm 1$. We are then left with the options $\{1^+_2, 2^-_1, 2^-_3, 3^+_2\}$. Neither of these is a good match by themselves, so we need a linear combination of them. Both $2^-_1$ and $1^+_2$ "undershoots" their prediction, and would need to be partnered with one or both of $2^-_3$ and $3^+_2$, which "overshoots". Since $1^+_2$ and $3^+_2$ would both need to be partnered with another state, using those would imply our data is dominated by not only a single other state, but \textit{two} others. Physically it would thus make better sense if we allow only a linear combination of the two $2^-$ transitions. Thus a fit with these two were made, which can be seen on figure \ref{fig: analysis: ang cor fitted}. The fit is in surprisingly good agreement with our multiplicity $3$ data, but fares far worse with our multiplicity $2$ data. \note{why?} Finally, after the ratio of $2^-_1$ and $2^-_3$ was found, an extra $0^+_2$ component was added to the fit. The fitting algorithm found its weight $w^{0^+}_2$ to be 0. \note{specific values maybe? mention values for both mul 2 and 3} \\
+Instead of hand-picking a specific area to project onto the $x$ axis, we can extract the angle $\beta$ from the momentum vectors, as described by (\ref{theory: kinematics: theta data}). These two angles are simply related by $\alpha = \pi - \beta$, as can be seen on figure \ref{fig: theory: kinematics: angles}. We can then repeat the analysis we made for the other angle, except we do not have to restrict ourselves to a small area, but can instead use all of the available data. \\
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
-	\begin{minipage}{.5\textwidth}
+	\begin{minipage}{.35\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/true_events/ang_cor_fitted.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/true_events/breakup_angle_data.pdf}
 	\end{minipage}%
-	\begin{minipage}{.5\textwidth}
+	\begin{minipage}{.35\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/ang_cor_fitted.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/breakup_angle_data.pdf}
+	\end{minipage}
+	\begin{minipage}{.35\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/true_events/breakup_angle_2-_0+_fit.pdf}
+	\end{minipage}%
+	\begin{minipage}{.35\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/breakup_angle_2-_0+_fit.pdf}
 	\end{minipage}
 	\caption{}
-	\label{fig: analysis: ang cor fitted}
+	\label{fig: analysis: ang cor beta fit}
 \end{figure}
 
-With an idea of what to look for, we can now try fitting it to our data.
+The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta fit}, where the top panels shows the correlation angle for both $\alpha_0$ and $\alpha_1$ channel decays. The bottom panels then shows the actual fit, the results of which can be found in table \ref{table: analysis: ang cor fit result}. The multiplicity $3$ fit roughly agrees with what we found through the other fit. The multiplicity $2$ fit is far more interesting: it allows a substantial $0^+$ component, and also appears to be the best fit we have seen so far. Graphically this makes sense since the $2^-$ functions both goes to zero at $x=-1$, which the $0^+$ function must then make up for. The reason for this large difference between the two sets of data is unclear. Based on the earlier discussion on the differences between them \note{actually make this}, the multiplicity $3$ data should be the most trustworthy. \\
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ccccc}
+		Correlation angle & Multiplicity & $k_{2^-_1}$ & $k_{2^-_3}$ & $k_{0^+_2}$ \\ \hline
+		$\alpha$ & 3 & 0.34(15) & 0.66(15) & 0(1e-13) \\
+		$\alpha$ & 2 & 0.18(12) & 0.82(12) & 0(3e-11) \\
+		$\beta$  & 3 & 0.52(24) & 0.48(24) & 0(0.13) \\
+		$\beta$  & 2 & 0.14(22) & 0.48(22)& 0.38(20)
+	\end{tabular}
+	\caption{table}
+	\label{table: analysis: ang cor fit result}
+\end{table}
+
+Now that we have an idea of what states we are looking for, we can use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try to fit the data to simulations of them. \note{aren't 0+ decays supposed to be uncorrelated?}
 
 \subsection{Fitting the data}
-Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on figures 
+All fit results from this section can be found in table \ref{table: datared: dalitz fitter}. \\
+
+Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state, possibly with a small component of $0^+$. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on the top row of figure \ref{fig: analysis: dalitz fit 0+}. Overall the fit is decent, but by no means perfect, which would indicate the presence of another component. It would make sense if this was the missing $0^+$ component, so a fit allowing for this was made. Mirroring the results of the angular correlation fits, the fit found a vanishingly small component of $0^+$. In an attempt to figure out what else could contribute, a series of fits were made allowing for a $3^-$ component, which can be seen in the same figure on the middle row. As can be seen in table \ref{table: analysis: dalitz fit results}, this fit is slightly better, and results in a mix of about 5:1 of $2^-$ to $3^-$. If we look at the binwise $\chi^2$ contribution (bottom row of figure \ref{fig: analysis: dalitz fit 0+}), we see that this final fit is almost perfect, except for a major deviation at the very edge. If we look at the output Dalitz plots themselves, we can see that the reason for this difference is that in the data there are \textit{no} events located at the very edge - it appears as if a cut has been made. Neither the $2^-$ nor $3^-$ states shares this peculiarity, see figure \note{make fig} in the appendix.  \note{comment on this later - this combined with the relatively high chi2 values compared to 2- and 3- could mean that another state might be a better match, although that seems unlikely based on the previous analysis} \\
 
 \begin{figure}[bt]
 	\centering
@@ -324,18 +366,26 @@ Based on the results of the previous section, it appears as if our data is domin
 	\end{minipage}
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/E_cm.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/E_cm.pdf}
 	\end{minipage}%
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/rho.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/rho.pdf}
 	\end{minipage}%
 	\begin{minipage}{.33\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/0+/sim/all_events 2-_i/phi.pdf}
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/phi.pdf}
 	\end{minipage}
-	\caption{The projections of the $\{2^-_1, 2^-_3\}$ fit to the $0^+$ data. The top row is only for multiplicity $3$ events, while the bottom row is for both multiplicity $2$ and $3$ events. The black lines represents the data, while the orange lines are the simulation. See table \note{ref} for the fit values.}
-	\label{fig: analysis: dalitz: 0+ all_events 2-_i projections}
+	\begin{minipage}{.4\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/binwise_chi2.pdf}
+	\end{minipage}%
+	\begin{minipage}{.4\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/binwise_chi2.pdf}
+	\end{minipage}
+	\caption{The various projections of the $\{2^-_1, 2^-_3\}$ (top row) and $\{3^-_1, 3^-_3\}$ (middle row) fits. The bottom row shows the binwise $\chi^2$ contributions, where the left belongs to the top row and the right belongs to the middle row. For the fitted values, see table \ref{table: analysis: dalitz fit results}.}
+	\label{fig: analysis: dalitz fit 0+}
 \end{figure}
 
 \begin{landscape}
@@ -346,12 +396,12 @@ Based on the results of the previous section, it appears as if our data is domin
 		& 3 & $2^-_1, 2^-_3$ & $0^+_2$ & 29 516 & 0.0787(2) & 66.9(1)\% & 1 (1e-5) &  &  \\
 		& 3 & $2^-_1, 2^-_3$ & $3^-_1$ & 26 823 & 0.0895(3) & 66.3(1)\% & 0.916(2) &  &  \\
 		& 3 & $2^-_1, 2^-_3$ & $3^-_3$ & 29 381 & 0.0726(2) & 67.3(2)\% & 0.986(1) &  &  \\
-		& 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 25 230 & 0.220(6) & 66.2(1)\% & 0.811(4) & 0.37(1) & 0.276(3) \\
+		& 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 25 230 & 0.220(6) & 66.2(1)\% & 0.811(4) & 0.37(1) & 27.6(3)\% \\
 		& both & $2^-_1, 2^-_3$ &  & 111 408 & 0.909(1) & 8.22(8)\% &  &  &  \\
 		& both & $2^-_1, 2^-_3$ & $0^+_2$ & 31 049 & 0.5 & 63.3\% & 0.771 &  &  \\
 		& both & $2^-_1, 2^-_3$ & $3^-_1$ & 36 263 & 0.993 & 12.4\% & 0.703 &  &  \\
 		& both & $2^-_1, 2^-_3$ & $3^-_3$ & 37 344 & 0.786(4) & 83.1(2)\% & 0.574(2) &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332 & 0.974 & 1.81\% & 0.709 & 0.568 & 0.0926 \\ \hline
+		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332 & 0.974 & 1.81\% & 0.709 & 0.568 & 9.26\% \\ \hline
 		$2^-$ & 3 & $2^-_1, 2^-_3$ &  & 13 453 & 0.198(5) & 67.4(2)\% &  &  &  \\
 		& 3 & $2^-_1, 2^-_3$ &  & 15 951 & 0.140(5) & 0 (fixed) &  &  &  \\
 		& both & $2^-_1, 2^-_3$ &  & 16 205 & 0.209(3) & 67.82(8)\% &  &  &  \\
@@ -359,13 +409,25 @@ Based on the results of the previous section, it appears as if our data is domin
 		$3^-$ & 3 & $3^-_1, 3^-_3$ &  & 13 691 & 0.113(6) & 62.1(3)\% &  &  &  \\
 		& 3 & $3^-_1, 3^-_3$ & $2^-_1$ & 12 314 & 0.0681(7) & 65.9(7)\% & 0.90(1) &  &  \\
 		& 3 & $3^-_1, 3^-_3$ & $2^-_3$ & 12 375 & 0.100(6) & 63.6(3)\% & 0.865(6) &  &  \\
-		& 3 & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 13 180 & 0.151 & 63.0\% & 0.886 & 0.925 & 0.759 \\
-		& both & $3^-_1, 3^-_3$ &  & 38 573 & 0.210(4) & 15.0(1)\% &  &  &  \\
-		& both & $3^-_1, 3^-_3$ &  &  &  &  &  &  &  \\
-		& both & $3^-_1, 3^-_3$ &  &  &  &  &  &  & 
+		& 3 & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 13 180 & 0.151 & 63.0\% & 0.886 & 0.925 & 75.9\% \\
+		& 3 & $3^-_1, 3^-_3$ & $1^+_2$ & 15 915 & 0.32(1) & 3.7(3)\% & 0.613(3) &  &  \\
+		& both & $3^-_1, 3^-_3$ &  & 21 826 & 0.063(4) & 57.9(3)\% &  &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_1$ & 18 961 & 0.096(4) & 61.4(2)\% & 1(1e-4) &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_3$ & 18 901 & 0.067(4) & 64.2(2)\% & 0.804(4) &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 20 112 & 0.151 & 61.4\% & 0.848 & 0.879 & 82.9\% \\
+		& both & $3^-_1, 3^-_3$ & $1^+_2$ & 15 986 & 0.027(2) & 26.4(8)\% & 0.884(2) &  & 
 	\end{tabular}
+	\caption{The results of various fits performed with the Dalitz fitting tool. \note{1+ invalid}}
+	\label{table: analysis: dalitz fit results}
 \end{table}
 \end{landscape}
 
 \subsection{Some title}
 \subsubsection{Verifying the branching ratio}
+\begin{table}[h]
+	\begin{tabular}{l|lllll}
+		Data & $\alpha_0$ hits & $\alpha_0$ efficiency & $\alpha_1$ hits & $\alpha_1$ efficiency & Branching ratio \\ \hline
+		$0^+$ & 260 828 &  & 524 813 &  & 0.155 \\
+		$3^-$ & 87 225 &  & 96 566 &  & 0.429
+	\end{tabular}
+\end{table}

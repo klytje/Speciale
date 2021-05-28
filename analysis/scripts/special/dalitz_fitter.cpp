@@ -27,7 +27,7 @@ int bins;
 double y_cut;
 vector<vector<double>> p_evals;
 
-// this container was a good idea at the start before I refactored the code to use histograms for the data and sim2
+// small container class to avoid needlessly long argument lists
 class container {
 public:
     container() {};
