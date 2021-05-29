@@ -76,7 +76,7 @@ The output of \simX{} is an unpacked \ROOT{} file with a structure identical to 
 \subsubsection{sim3a}
 This final module is not officially part of \AUSAlib{}, but is rather a small tool written by a previous student. The tool performs Monte Carlo simulations of the specific reaction \ce{^12C -> ^8Be + \alpha} based on the following R-matrix expression, first proposed in \cite{Balamuth}:
 \begin{align} \label{datared: tools: balamuth eq}
-	f_{1,23} \propto &\sum_{m_b} (lm_a-m_bj_bm_b | j_am_a)Y_l^{m_a-m_b}(\Theta_1, \Phi_1)Y_{l'}^{m_b}(\theta_2, \varphi_2) \\
+	f_{1,23} \propto &\sum_{m_b} (lm_a-m_bj_bm_b | j_am_a)Y_l^{m_a-m_b}(\Theta_1, \Phi_1)Y_{l'}^{m_b}(\theta_2, \varphi_2) \nonumber \\
 	&\times \frac{\sqrt{\Gamma_1 \Gamma_2/\sqrt{E_1E_{2-3}}}e^{i(\delta_{l'}-\phi_{l'})}}{E_0 - \gamma_2^2[S_{l'}(E_{2-3}) - S_{l'}(E_0)] - E_{2-3} - \frac{i}{2}\Gamma_2}
 \end{align}
 Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directions for the primary and secondary particles \note{ensure these terms have been introduced} in the center-of-mass frames of \ce{^12C} and \ce{^8Be}, respectively. $j_a$ and $j_b$ are then the spins of these two states, and $\delta_{l'} - \phi_{l'}$ the Coulomb minus hard sphere phase shift, as presented in section \ref{sec: theory: r-matrix: applications}. As the indices on $f_{1,23}$ implies, this equation defines a definite order of emission. Since we are dealing with three identical bosons, we need to symmetrize it as
