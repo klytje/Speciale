@@ -460,7 +460,7 @@ private:
         a = vector<vector<int>>(m); // number of simulated events for source j in bin i
         entry_map = vector<vector<int>>(m);
         skip_bin = vector<bool>(bins2, false);
-        binwise_chi = vector<double>(bins2, 0);
+        binwise_chi = vector<double>(bins2, -1);
 
         // define the raw count histograms
         for (int j = 0; j < m; j++) {

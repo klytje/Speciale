@@ -361,10 +361,19 @@ Now that we have an idea of what states we are looking for, we can use the Dalit
 All fit results from this section can be found in table \ref{table: datared: dalitz fitter}. \\
 
 \subsubsection{$0^+$}
-Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state, possibly with a small component of $0^+$. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on the top row of figure \ref{fig: analysis: dalitz fit 0+}. \\
+Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state, possibly with a small component of $0^+$. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on the top two rows of figure \ref{fig: analysis: dalitz fit 0+}. \\
 
 \begin{figure}[H]
 	\centering
+	\begin{minipage}{.66\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/dalitz.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/binwise_chi2.pdf}
+	\end{minipage}
+
 	\begin{minipage}{.33\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/E_cm.pdf}
@@ -377,6 +386,16 @@ Based on the results of the previous section, it appears as if our data is domin
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/phi.pdf}
 	\end{minipage}
+
+	\begin{minipage}{.66\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/dalitz.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/binwise_chi2.pdf}
+	\end{minipage}
+
 	\begin{minipage}{.33\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/E_cm.pdf}
@@ -389,74 +408,102 @@ Based on the results of the previous section, it appears as if our data is domin
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/phi.pdf}
 	\end{minipage}
-	\begin{minipage}{.5\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i/binwise_chi2.pdf}
-	\end{minipage}%
-	\begin{minipage}{.5\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/binwise_chi2.pdf}
-	\end{minipage}
-	\caption{The various projections of the $\{2^-_1, 2^-_3\}$ (top row) and $\{3^-_1, 3^-_3\}$ (middle row) fits. The bottom row shows the binwise $\chi^2$ contributions, where the left belongs to the top row and the right belongs to the middle row. For the fitted values, see table \ref{table: analysis: dalitz fit results}.}
+	\caption{The top two rows shows the fit result of our multiplicity $3$ data with a simulated $\{2^-_1, 2^-_3\}$ state. The bottom two rows similarly shows the fit of a simulated $\{2^-_1, 2^-_3\}$ and $\{3^-_1, 3^-_3\}$ state. For the fit values, see table \ref{table: analysis: dalitz fit results}.}
 	\label{fig: analysis: dalitz fit 0+}
 \end{figure}
 
-Overall this fit is decent, but by no means perfect, which would indicate the presence of another component. It would make sense if this was the missing $0^+$ component, so a fit allowing for this was made. Mirroring the results of the angular correlation fits, the fit found a vanishingly small component of $0^+$. In an attempt to figure out what else could contribute, a series of fits were made allowing for a $3^-$ component, which can be seen in the same figure on the middle row. As can be seen in table \ref{table: analysis: dalitz fit results}, this fit is slightly better, and results in a mix of about 4:1 of $2^-$ to $3^-$. If we look at the binwise $\chi^2$ contribution (bottom row of figure \ref{fig: analysis: dalitz fit 0+}), we see that this final fit is almost perfect, except for a major deviation at the very edge. If we look at the output Dalitz plots themselves, we can see that the reason for this difference is that in the data there are \textit{no} events located at the very edge - it appears as if a cut has been made. Neither the $2^-$ nor $3^-$ states shares this peculiarity, see figure \note{make fig} in the appendix.  \note{comment on this later - this combined with the relatively high chi2 values compared to 2- and 3- could mean that another state might be a better match, although that seems unlikely based on the previous analysis} \\
+By visually comparing the Dalitz plots of the fit, we can already tell that this is a far better fit than the pure $0^+$ simulations from figure \ref{fig: analysis: dalitz: sim}. Based on the projections, the fit is in surprisingly good agreement with our data, as we already suspected would be the case based on the correlation angle fits. Although it is a good match, it is by no means perfect: if we look at the binwise $\chi^2$ distribution (top right corner), there are still some issues near the center and edge. The reason this plot is only a slice is because that is what the fitter actually fits internally, and the full plots are simply reconstructed based on the result of this. \\
 
-To avoid the weird structure arising from random proton coincidences (see figure \ref{fig: analysis: dalitz: full}), an aggressive cut of $y = 0.85$ is made when using multiplicity $2$ data. The same cut will be imposed on the $3^-$ data, which suffers from the same abnormalities. Due to the lower beam energy, no such issues are present in the $2^-$ data, which is left untouched. 
+Since there is still room for improvement, a series of additional fits were performed, all of which are listed in table \ref{table: analysis: dalitz fit results}. It is interesting that the fit allowing for a $0^+$ component finds no trace of the state in the data, in agreement with the correlation angle analysis. The best result which could be found is a mixture of a $2^-$ and $3^-$ states, which are also shown as the bottom two rows in figure \ref{fig: analysis: dalitz fit 0+}. Visually there is no real difference between the Dalitz plots, and similarly no real change in the projections can be seen. Only the binwise $\chi^2$ distribution can really tell us what has changed: the additional $3^-$ state corrects the low-count area near the center. Except for a major deviation near the edge, this fit would appear to be nearly perfect. We will return to the discussion of these edge deviations later. \note{do this} \note{also talk about that the fitted 2- state is very similar to Mortens} \\
+
+All of the fits were repeated for all of our available data, i.e. both multiplicity $2$ and $3$. We have earlier seen clear traces of protons in the filtered multiplicity $2$ data, and to avoid these areas in the fit, they were simply removed with an aggressive cut of $y=0.85$. Despite this, the fits are generally quite poor, which would indicate that our efforts are not enough to completely remove the proton contaminated data. Although these fits are not that informative due to their issues, it is worth noting that the fit is particularly bad when using only a $2^-$ simulation. This somewhat supports the previous result of fitting both a $2^-$ and $3^-$ simulation. 
 
 \subsubsection{$2^-$}
 We have already briefly talked about the $2^-$ fits, which will be expanded upon here. Figure \ref{fig: analysis: dalitz: 2- projections} shows its projections, which are all extremely good matches. \\
 
-As was also mentioned earlier, Kuhlwein \cite{Kuhlwein} looked at the exact same data, and found very similar results, as can be seen in table \ref{table: analysis: dalitz: this and kuhlwein}. Since Kuhlwein did not perform separate analyses on the two multiplicities of the data, the result listed in that table is for a fit using both multiplicity $2$ and $3$ data. We can do even better than that by only using the latter, as can be seen in table \ref{table: analysis: dalitz fit results}. To get even better results, we should account for the Coulomb interaction between the primary and secondary particles, which is neglected in (\ref{datared: tools: balamuth eq}). One could account for this simply by introducing extra barrier penetrabilities in the equation, one for each of the two secondary particles \cite{Fynbo}. \note{could this be the edge effect?} \\
+As was also mentioned earlier, Kuhlwein \cite{Kuhlwein} looked at the exact same data, and found very similar results, as can be seen in table \ref{table: analysis: dalitz: this and kuhlwein}. Since Kuhlwein did not perform separate analyses on the two multiplicities of the data, the result listed in that table is for a fit using both multiplicity $2$ and $3$ data. Although they used a cut on the $y$ axis, this proved to be unnecessary for us since we already filtered the ground state decays through the $E_{2-3}$ energies. No random proton coincidences can be seen on the Dalitz plot either, which was the main reason a cut was performed on the multiplicity $2$ $0^+$ data. This is most likely due to the large difference in beam energy. Despite the clean data, we can improve our fit by only using multiplicity $3$ data, as can be seen in table \ref{table: analysis: dalitz fit results}. To get even better results, we should account for the Coulomb interaction between the primary and secondary particles, which is neglected in (\ref{datared: tools: balamuth eq}). One could account for this simply by introducing extra barrier penetrabilities in the equation, one for each of the two secondary particles \cite{Fynbo}. \note{could this be the edge effect?} \\
 
 \begin{figure}[h]
 	\centering
-	\begin{minipage}{.5\textwidth}
+	\begin{minipage}{.66\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{figures/2-/sim/true_events 2-_i/binwise_chi2.pdf}
+		\includegraphics[width=\linewidth]{figures/2-/sim/true_events 2-_i/dalitz.pdf}
 	\end{minipage}%
-	\begin{minipage}{.5\textwidth}
+	\begin{minipage}{.33\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{figures/2-/sim/true_events 2-_i/binwise_chi2.pdf}
-\end{minipage}
+	\end{minipage}
+	\begin{minipage}{.66\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/sim/all_events 2-_i/dalitz.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/2-/sim/all_events 2-_i/binwise_chi2.pdf}
+	\end{minipage}
 	\caption{text}
 	\label{fig: analysis: 2- dalitz fit chi2}
 \end{figure}
 
-Kuhlweins analysis accounts for this Coulomb repulsion, which further improves their fits to a a $\chi^2$ value of just $9165$. Compare this with our best estimates in table \ref{table: analysis: dalitz fit results}. Based on Kuhlweins binwise $\chi^2$ plots, it appears as if this correction improves mainly the areas near the edges of the Dalitz plot, which is exactly the area all our fits are struggling with, see figures \ref{fig: analysis: dalitz fit 0+} and \ref{fig: analysis: 2- dalitz fit chi2} for our binwise $\chi^2$ plots. Thus it is expected that this correction would dramatically improve our fits. However, due to time constraints, this correction could not be implemented. \note{ask Hans}
+Kuhlweins analysis accounts for this Coulomb repulsion, which further improves their fits to a a $\chi^2$ value of just $9165$. Compare this with our best estimates in table \ref{table: analysis: dalitz fit results}. Based on Kuhlweins binwise $\chi^2$ plots, it appears as if this correction improves mainly the areas near the edges of the Dalitz plot, which is exactly the area all our fits are struggling with, see figures \ref{fig: analysis: dalitz fit 0+} and \ref{fig: analysis: 2- dalitz fit chi2} for our binwise $\chi^2$ plots. Thus it is expected that this correction would dramatically improve our fits. However, due to time constraints, this correction could not be implemented. \note{ask Hans} 
 
 \subsubsection{$3^-$}
-Finally, since we have the data available anyway, a fit was made to the $3^-$ data as well. The goodness-of-fit is similar to that of the $2^-$ state, as can be seen in table \ref{table: analysis: dalitz fit results}. The resulting projections and binwise $\chi^2$ values can be found in figure 
+Finally, since we have the data available anyway, a fit was made to the $3^-$ data as well. The goodness-of-fit is similar to that of the $2^-$ state, as can be seen in table \ref{table: analysis: dalitz fit results}. The results of this fit can be found in figure \ref{fig: analysis: 3- 3-_i fit}. Clearly something is not quite right with the simulated Dalitz figure - the line segments never quite merge into one, as they should. This gives rise to the large $\chi^2$ deviation near the vertex, which may also be partly due to Coulomb repulsion. The most likely explanation for this difference is that we are using a wrong reduced width amplitude $\gamma$ in our simulations. If we look back at figure \ref{fig: analysis: width effect dalitz all}, we see that as this width increases, the interference between the bands becomes stronger, especially near the vertices and in the center. This would almost perfectly account for the visual difference between the two plots. It is hard to judge what effect this would have on the projection plots. \\
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/E_cm.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/rho.pdf}
+	\end{minipage}%
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/phi.pdf}
+	\end{minipage}
+	\begin{minipage}{.66\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/dalitz.pdf}
+	\end{minipage}
+	\begin{minipage}{.33\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/binwise_chi2.pdf}
+	\end{minipage}
+	\caption{text}
+	\label{fig: analysis: 3- 3-_i fit}
+\end{figure}
+
+In an attempt to improve the fit further, a series of extra fits were made to the same data. No real improvement could be found, although quite a few different combinations results in fits that were just as good as the single $3^-$. Without any further evidence for their existence, it is hard to argue why any of these should be favored over the simpler option. Similarly to the $0^+$ data, the fits were repeated for all our data, i.e. both multiplicity $2$ and $3$. For much the same reasons, an aggressive cut of $y=0.85$ was imposed on the data, such as to avoid the most obvious proton-contaminated areas. In line with the other data sets, these fits are generally somewhat worse than when using only multiplicity $3$ data. Once again the explanation for this is probably that there is still quite a few random proton coincidences which has managed to survive our cuts. 
 
 \begin{landscape}
 \begin{table}[]
-	\begin{tabular}{cccccccccc}
-		Data & Multiplicity & Simulation 1 & Simulation 2 & $\chi^2$ & $k_1$ & $\delta_1\ [2\pi]$ & c & $k_2$ & $\delta_2\ [2\pi]$ \\ \hline
-		$0^+$ & 3 & $2^-_1, 2^-_3$ &  & 29 561 & 7.86(2)\% & 66.9(1)\% &  &  &  \\
-		& 3 & $2^-_1, 2^-_3$ & $0^+_2$ & 29 516 & 7.87(2)\% & 66.9(1)\% & 1 (1e-5) &  &  \\
-		& 3 & $2^-_1, 2^-_3$ & $3^-_1$ & 26 823 & 8.95(3)\% & 66.3(1)\% & 0.916(2) &  &  \\
-		& 3 & $2^-_1, 2^-_3$ & $3^-_3$ & 29 381 & 7.26(2)\% & 67.3(2)\% & 0.986(1) &  &  \\
-		& 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 25 230 & 22.0(6)\% & 66.2(1)\% & 0.811(4) & 37(1)\% & 27.6(3)\% \\
-		& both & $2^-_1, 2^-_3$ &  & 111 408 & 90.9(1)\% & 8.22(8)\% &  &  &  \\
-		& both & $2^-_1, 2^-_3$ & $0^+_2$ & 31 049 & 50\% & 63.3\% & 0.771 &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_1$ & 36 263 & 99.3\% & 12.4\% & 0.703 &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_3$ & 37 344 & 78.6(4)\% & 83.1(2)\% & 0.574(2) &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332 & 97.4\% & 1.81\% & 0.709 & 56.8\% & 9.26\% \\ \hline
-		$2^-$ & 3 & $2^-_1, 2^-_3$ &  & 13 453 & 19.8(5)\% & 67.4(2)\% &  &  &  \\
-		& 3 & $2^-_1, 2^-_3$ &  & 15 951 & 14.0(5)\% & 0 (fixed) &  &  &  \\
-		& both & $2^-_1, 2^-_3$ &  & 16 205 & 20.9(3)\% & 67.82(8)\% &  &  &  \\
-		& both & $2^-_1, 2^-_3$ &  & 24 075 & 15.0(3)\% & 0 (fixed) &  &  &  \\ \hline
-		$3^-$ & 3 & $3^-_1, 3^-_3$ &  & 13 691 & 11.3(6)\% & 62.1(3)\% &  &  &  \\
-		& 3 & $3^-_1, 3^-_3$ & $2^-_1$ & 12 314 & 6.81(7)\% & 65.9(7)\% & 0.90(1) &  &  \\
-		& 3 & $3^-_1, 3^-_3$ & $2^-_3$ & 12 375 & 10.0(6)\% & 63.6(3)\% & 0.865(6) &  &  \\
-		& 3 & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 13 180 & 15.1\% & 63.0\% & 0.886 & 92.5\% & 75.9\% \\
-		& 3 & $3^-_1, 3^-_3$ & $1^+_2$ & 15 915 & 32(1)\% & 3.7(3)\% & 0.613(3) &  &  \\
-		& both & $3^-_1, 3^-_3$ &  & 21 826 & 6.3(4)\% & 57.9(3)\% &  &  &  \\
-		& both & $3^-_1, 3^-_3$ & $2^-_1$ & 18 961 & 9.6(4)\% & 61.4(2)\% & 1(1e-4) &  &  \\
-		& both & $3^-_1, 3^-_3$ & $2^-_3$ & 18 901 & 6.7(4)\% & 64.2(2)\% & 0.804(4) &  &  \\
-		& both & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 20 112 & 15.1\% & 61.4\% & 0.848 & 87.9\% & 82.9\% \\
-		& both & $3^-_1, 3^-_3$ & $1^+_2$ & 15 986 & 2.7(2)\% & 26.4(8)\% & 0.884(2) &  & 
+	\begin{tabular}{ccccccccccc}
+		Data & Multiplicity & Simulation 1 & Simulation 2 & $\chi^2$ & dof & $k_1$ & $\delta_1\ [2\pi]$ & c & $k_2$ & $\delta_2\ [2\pi]$ \\ \hline
+		$0^+$ & 3 & $2^-_1, 2^-_3$ &  & 29 561 & 5341 & 7.86(2)\% & 66.9(1)\% &  &  &  \\
+		& 3 & $2^-_1, 2^-_3$ & $0^+_2$ & 29 516 & 5321 & 7.87(2)\% & 66.9(1)\% & 1 (1e-5) &  &  \\
+		& 3 & $2^-_1, 2^-_3$ & $3^-_1$ & 26 823 & 5344 & 8.95(3)\% & 66.3(1)\% & 0.916(2) &  &  \\
+		& 3 & $2^-_1, 2^-_3$ & $3^-_3$ & 29 381 & 5324 & 7.26(2)\% & 67.3(2)\% & 0.986(1) &  &  \\
+		& 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 25 230 & 5341 & 22.0(6)\% & 66.2(1)\% & 0.811(4) & 37(1)\% & 27.6(3)\% \\
+		& both & $2^-_1, 2^-_3$ &  & 111 408 & 4779 & 90.9(1)\% & 8.22(8)\% &  &  &  \\
+		& both & $2^-_1, 2^-_3$ & $0^+_2$ & 31 049 & 4748 & 50\% & 63.3\% & 0.771 &  &  \\
+		& both & $2^-_1, 2^-_3$ & $3^-_1$ & 36 263 & 4774 & 99.3\% & 12.4\% & 0.703 &  &  \\
+		& both & $2^-_1, 2^-_3$ & $3^-_3$ & 37 344 & 4750 & 78.6(4)\% & 83.1(2)\% & 0.574(2) &  &  \\
+		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332 & 4772 & 97.4\% & 1.81\% & 0.709 & 56.8\% & 9.26\% \\ \hline
+		$2^-$ & 3 & $2^-_1, 2^-_3$ &  & 13 453 & 5347 & 19.8(5)\% & 67.4(2)\% &  &  &  \\
+		& 3 & $2^-_1, 2^-_3$ &  & 15 951 & 5347 & 14.0(5)\% & 0 (fixed) &  &  &  \\
+		& both & $2^-_1, 2^-_3$ &  & 16 205 & 5347 & 20.9(3)\% & 67.82(8)\% &  &  &  \\
+		& both & $2^-_1, 2^-_3$ &  & 24 075 & 5347 & 15.0(3)\% & 0 (fixed) &  &  &  \\ \hline
+		$3^-$ & 3 & $3^-_1, 3^-_3$ &  & 13 691 & 5337 & 11.3(6)\% & 62.1(3)\% &  &  &  \\
+		& 3 & $3^-_1, 3^-_3$ & $2^-_1$ & 12 314 & 4954 & 6.81(7)\% & 65.9(7)\% & 0.90(1) &  &  \\
+		& 3 & $3^-_1, 3^-_3$ & $2^-_3$ & 12 375 & 5098 & 10.0(6)\% & 63.6(3)\% & 0.865(6) &  &  \\
+		& 3 & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 13 180 & 5339 & 15.1\% & 63.0\% & 0.886 & 92.5\% & 75.9\% \\
+		& both & $3^-_1, 3^-_3$ &  & 21 826 & 4778 & 6.3(4)\% & 57.9(3)\% &  &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_1$ & 18 961 & 4551 & 9.6(4)\% & 61.4(2)\% & 1(1e-4) &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_3$ & 18 901 & 4611 & 6.7(4)\% & 64.2(2)\% & 0.804(4) &  &  \\
+		& both & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 20 112 & 4773 & 15.1\% & 61.4\% & 0.848 & 87.9\% & 82.9\%
 	\end{tabular}
 	\caption{The results of various fits performed with the Dalitz fitting tool. \note{1+ invalid}}
 	\label{table: analysis: dalitz fit results}
