@@ -10,7 +10,14 @@ Another important type is the \texttt{RDataFrame} class, which in this context c
 
 \AUSAlib{} (\textit{Aarhus University Subatomic library}) \cite{AUSAlib} is another \CPP{} framework built on top of \ROOT{} developed here at Aarhus. Since the experimental setups are typically similar between different experiments, it would mean a rather large overlap in analysis code. Thus a common framework was created, intended primarily as a transformation tool from raw data to readily analyzable data. Since this process typically involves many distinct steps, \AUSAlib{} consists of multiple individual modules, each handling one aspect of the transformation. As is common in such frameworks, it eventually grew beyond its intended use, and now also includes a simulation library called \simX{}. The basic idea with this custom simulator is to account for the detection system, such as to allow a direct comparison with the experimental data. \\
 
-The remainder of this section is devoted to introducing these individual modules. The next section discusses the practical application of them. For a brief overview of the whole library, see figure \note{make figure}. 
+The remainder of this section is devoted to introducing these individual modules. The next section discusses the practical application of them. For a brief overview of the whole library, see figure \ref{fig: datared: ausalib pipeline}. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{figures/ausalib.eps}
+	\caption{The \AUSAlib{} pipeline. Boxes with thick lines must be either partially or fully implemented by the user.}
+	\label{fig: datared: ausalib pipeline}
+\end{figure}
 
 \subsubsection{Unpacker}
 The first module converts the raw data from the acquisition system to a \ROOT{} \texttt{TTree} format. This is done by utilizing the third-party unpacking program \ucesb{} \cite{ucesb}. The setup-files for this program defines the general \texttt{TTree} branch structure which will be used throughout the rest of this project. Some of these branches will become relevant later, and so a brief introduction to them is in order. Associated with each event are the two vectors \FT{} and \BT{}, which are the \TDC{} (time) values for the front and backside, respectively. They are vectors since they are particle properties, which each event may contain several of. Similarly \texttt{FE} and \texttt{BE} are the \ADC{} (energy) values associated with them.
@@ -42,9 +49,7 @@ The standard approach to identify particles is to place a second detector behind
 No secondary detector was used in this setup, and the second approach cannot differentiate between protons and $\alpha$-particles. Thus this functionality could not be used, and the \Identifier{} was used solely for its energy loss corrections.  
 
 \subsubsection{EventBuilder}
-\note{No longer correct.}\\
-
-The final module of the standard \AUSAlib{} pipeline is the \EventBuilder{}. The purpose of it is to remove any dependency on the experimental setup from the data, leaving only the physical events. To do this, each reaction is reconstructed, and the user must decide on some criteria to either accept or reject a given reaction. As an example relevant to this experiment, one can require that three alpha particles participated in the reaction, and remove any other unwanted particles. \\
+The final module of the standard \AUSAlib{} pipeline is the \EventBuilder{}. The purpose of it is to remove any dependency on the experimental setup from the data, leaving only the physical events. To do this, each reaction is reconstructed, and the user must decide on some criteria to either accept or reject a given reaction. As an example, one can require that at least two particles participated in the reaction. \\
 
 The module also allows the user to define new properties, such as the four-momenta of each particle, which can then be used for further analysis. The module is not meant for aggregate analysis of the data, but only of each individual decay event. Since this is quite a restriction, the tool is used mainly as a filter. Any further analysis can then be written as standalone \CPP{} scripts.
 
@@ -79,7 +84,7 @@ This final module is not officially part of \AUSAlib{}, but is rather a small to
 	f_{1,23} \propto &\sum_{m_b} (lm_a-m_bj_bm_b | j_am_a)Y_l^{m_a-m_b}(\Theta_1, \Phi_1)Y_{l'}^{m_b}(\theta_2, \varphi_2) \nonumber \\
 	&\times \frac{\sqrt{\Gamma_1 \Gamma_2/\sqrt{E_1E_{2-3}}}e^{i(\delta_{l'}-\phi_{l'})}}{E_0 - \gamma_2^2[S_{l'}(E_{2-3}) - S_{l'}(E_0)] - E_{2-3} - \frac{i}{2}\Gamma_2}
 \end{align}
-Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directions for the primary and secondary particles \note{ensure these terms have been introduced} in the center-of-mass frames of \ce{^12C} and \ce{^8Be}, respectively. $j_a$ and $j_b$ are then the spins of these two states, and $\delta_{l'} - \phi_{l'}$ the Coulomb minus hard sphere phase shift, as presented in section \ref{sec: theory: r-matrix: applications}. As the indices on $f_{1,23}$ implies, this equation defines a definite order of emission. Since we are dealing with three identical bosons, we need to symmetrize it as
+Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directions for the primary and secondary particles in the center-of-mass frames of \ce{^12C} and \ce{^8Be}, respectively. $j_a$ and $j_b$ are then the spins of these two states, and $\delta_{l'} - \phi_{l'}$ the Coulomb minus hard sphere phase shift, as presented in section \ref{sec: theory: r-matrix: applications}. As the indices on $f_{1,23}$ implies, this equation defines a definite order of emission. Since we are dealing with three identical bosons, we need to symmetrize it as
 \begin{align*}
 	f_l = f_{1,23} + f_{2,13} + f_{3,12}
 \end{align*} 

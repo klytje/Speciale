@@ -273,7 +273,7 @@ This figure consists of two separate plots: the top two rows shows the output of
 	\label{fig: analysis: width effect dalitz all}
 \end{figure}
 
-Let us first focus on the structure of the Dalitz plots. When looking at figure \ref{fig: analysis: width effect dalitz all}, the effects of changing $\gamma$ becomes very apparent. As mentioned earlier, the value used for the previous Dalitz plot, figure \ref{fig: analysis: dalitz: sim}, was $\gamma = \SI{32.787}{\sqrt{keV}}$, where only the three vertices and an abundance of events in the very center could be seen. We now see that both of these areas are the results of a large amount of interference between the connecting lines \note{better word?}: starting with no interference in the top left panel, it gradually becomes more apparent until it is the only remaining feature for $\gamma = 40$. Similarly we also see an increasing amount of interference as the lines broaden on the \simX{} panels, although no destructive interference can be seen there. Even when changing this width, none of the panels are a good match for our data. This would imply that the data may not be from a $0^+$ at all, which we will explore later. \\
+Let us first focus on the structure of the Dalitz plots. When looking at figure \ref{fig: analysis: width effect dalitz all}, the effects of changing $\gamma$ becomes very apparent. As mentioned earlier, the value used for the previous Dalitz plot, figure \ref{fig: analysis: dalitz: sim}, was $\gamma = \SI{32.787}{\sqrt{keV}}$, where only the three vertices and an abundance of events in the very center could be seen. We now see that both of these areas are the results of a large amount of interference between the connecting bands: starting from no interference in the top left panel, it gradually becomes more apparent until it is the only remaining feature for $\gamma = 40$. Similarly we also see an increasing amount of interference as the lines broaden on the \simX{} panels, although no destructive interference can be seen there. Even when changing this width, none of the panels are a good match for our data. This would imply that the data may not be from a $0^+$ at all, which we will explore later. \\
 
 The other figure, \ref{fig: appendix: ang compare all} in the appendix, shows the extracted correlation angle from each of the Dalitz plots of figure \ref{fig: analysis: width effect dalitz all}. The agreement between theory and simulation for \simta{} is generally quite good, except at the points of maximum interference. \simX{} is not quite as good, especially around the points of interference, and generally appears to be more smeared. The general shape is clearly seen in both figures, indicating that they work as expected. This also provides further evidence to the previous statement: the $0^+$ correlation function predicts the "holes" we see on the simulated \simta{} Dalitz plots, but which were not present in the data. This would then imply that the data does not follow the expected angular correlation distribution - we will take a closer look at this in the next section. Finally, the two tools does not really appear to be converging as $\gamma$ decreases. It appears that this is mainly due to the \simX{} simulations not being suppressed near the "holes", as they should. Why this is the case is unknown \note{ask Hans}. \\
 
@@ -358,9 +358,9 @@ The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta
 Now that we have an idea of what states we are looking for, we can use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try to fit the data to simulations of them. \note{aren't 0+ decays supposed to be uncorrelated?}
 
 \subsection{Fitting the data}
-All fit results from this section can be found in table \ref{table: datared: dalitz fitter}. \\
+We will in this section perform a series of fits with the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools}. All results from this section can be found in table \ref{table: analysis: dalitz fit results}. 
 
-\subsubsection{$0^+$}
+\subsubsection{$\bm{0^+}$}
 Based on the results of the previous section, it appears as if our data is dominated by a $2^-$ state, possibly with a small component of $0^+$. With this knowledge, we can attempt to fit the data with such a state. By firing up the custom Dalitz fitter with the $0^+$ data and a $2^-$ simulation, we get the result seen on the top two rows of figure \ref{fig: analysis: dalitz fit 0+}. \\
 
 \begin{figure}[H]
@@ -408,7 +408,7 @@ Based on the results of the previous section, it appears as if our data is domin
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/true_events 2-_i 3-_i/phi.pdf}
 	\end{minipage}
-	\caption{The top two rows shows the fit result of our multiplicity $3$ data with a simulated $\{2^-_1, 2^-_3\}$ state. The bottom two rows similarly shows the fit of a simulated $\{2^-_1, 2^-_3\}$ and $\{3^-_1, 3^-_3\}$ state. For the fit values, see table \ref{table: analysis: dalitz fit results}.}
+	\caption{The top two rows shows the fit result of our $0^+$ multiplicity $3$ data with a simulated $\{2^-_1, 2^-_3\}$ state. The bottom two rows similarly shows the fit of a simulated $\{2^-_1, 2^-_3\}$ and $\{3^-_1, 3^-_3\}$ state. For the fit values, see table \ref{table: analysis: dalitz fit results}.}
 	\label{fig: analysis: dalitz fit 0+}
 \end{figure}
 
@@ -418,10 +418,10 @@ Since there is still room for improvement, a series of additional fits were perf
 
 All of the fits were repeated for all of our available data, i.e. both multiplicity $2$ and $3$. We have earlier seen clear traces of protons in the filtered multiplicity $2$ data, and to avoid these areas in the fit, they were simply removed with an aggressive cut of $y=0.85$. Despite this, the fits are generally quite poor, which would indicate that our efforts are not enough to completely remove the proton contaminated data. Although these fits are not that informative due to their issues, it is worth noting that the fit is particularly bad when using only a $2^-$ simulation. This somewhat supports the previous result of fitting both a $2^-$ and $3^-$ simulation. 
 
-\subsubsection{$2^-$}
+\subsubsection{$\bm{2^-}$}
 We have already briefly talked about the $2^-$ fits, which will be expanded upon here. Figure \ref{fig: analysis: dalitz: 2- projections} shows its projections, which are all extremely good matches. \\
 
-As was also mentioned earlier, Kuhlwein \cite{Kuhlwein} looked at the exact same data, and found very similar results, as can be seen in table \ref{table: analysis: dalitz: this and kuhlwein}. Since Kuhlwein did not perform separate analyses on the two multiplicities of the data, the result listed in that table is for a fit using both multiplicity $2$ and $3$ data. Although they used a cut on the $y$ axis, this proved to be unnecessary for us since we already filtered the ground state decays through the $E_{2-3}$ energies. No random proton coincidences can be seen on the Dalitz plot either, which was the main reason a cut was performed on the multiplicity $2$ $0^+$ data. This is most likely due to the large difference in beam energy. Despite the clean data, we can improve our fit by only using multiplicity $3$ data, as can be seen in table \ref{table: analysis: dalitz fit results}. To get even better results, we should account for the Coulomb interaction between the primary and secondary particles, which is neglected in (\ref{datared: tools: balamuth eq}). One could account for this simply by introducing extra barrier penetrabilities in the equation, one for each of the two secondary particles \cite{Fynbo}. \note{could this be the edge effect?} \\
+As was also mentioned earlier, Kuhlwein \cite{Kuhlwein} looked at the exact same data, and found very similar results, as can be seen in table \ref{table: analysis: dalitz: this and kuhlwein}. Since Kuhlwein did not perform separate analyses on the two multiplicities of the data, the result listed in that table is for a fit using both multiplicity $2$ and $3$ data. Although they used a cut on the $y$ axis, this proved to be unnecessary for us since we already filtered the ground state decays through the $E_{2-3}$ energies. No random proton coincidences can be seen on the Dalitz plot either, which was the main reason a cut was performed on the multiplicity $2$ $0^+$ data. This is most likely due to the large difference in beam energy. Despite the clean data, we can improve our fit by only using multiplicity $3$ data, as can be seen in table \ref{table: analysis: dalitz fit results}. To get even better results, we should account for the Coulomb interaction between the primary and secondary particles, which is neglected in (\ref{datared: tools: balamuth eq}). The basic idea is that when a secondary particle is emitted in a similar direction as the primary, and has sufficiently high energy, it can overtake it. Due to their proximity, they will interact strongly through the Coulomb interaction. A basic way of accounting for this would be to simply introduce extra barrier penetrabilities in the equation, one for each of the two secondary particles \cite{Fynbo}. \\
 
 \begin{figure}[h]
 	\centering
@@ -441,16 +441,18 @@ As was also mentioned earlier, Kuhlwein \cite{Kuhlwein} looked at the exact same
 		\centering
 		\includegraphics[width=\linewidth]{figures/2-/sim/all_events 2-_i/binwise_chi2.pdf}
 	\end{minipage}
-	\caption{text}
+	\caption{The top row shows the fit result of our $2^-$ multiplicity $3$ data with a simulated $\{2^-_1, 2^-_3\}$ state. Similarly the bottom row shows the fit of both our multiplicity $2$ and $3$ data to the same simulation. For the projections of the former, see figure \ref{fig: analysis: dalitz: 2- projections}. For the fit values, see table \ref{table: analysis: dalitz fit results}.}
 	\label{fig: analysis: 2- dalitz fit chi2}
 \end{figure}
 
-Kuhlweins analysis accounts for this Coulomb repulsion, which further improves their fits to a a $\chi^2$ value of just $9165$. Compare this with our best estimates in table \ref{table: analysis: dalitz fit results}. Based on Kuhlweins binwise $\chi^2$ plots, it appears as if this correction improves mainly the areas near the edges of the Dalitz plot, which is exactly the area all our fits are struggling with, see figures \ref{fig: analysis: dalitz fit 0+} and \ref{fig: analysis: 2- dalitz fit chi2} for our binwise $\chi^2$ plots. Thus it is expected that this correction would dramatically improve our fits. However, due to time constraints, this correction could not be implemented. \note{ask Hans} 
+This Coulomb repulsion should affect primarily the areas of the Dalitz plot with a small angle between the primary and secondary particles. If we look back at figure \ref{fig: theory: kinematics: angles}, these are the areas near the edge of the Dalitz plot, which is exactly where our fits are struggling (see the binwise $\chi^2$ plots on figures \ref{fig: analysis: dalitz fit 0+} and \ref{fig: analysis: 2- dalitz fit chi2}). Kuhlweins analysis \textit{does} account for this effect, which dramatically improves their fits to a $\chi^2$ value of just $9165$. Compare this with our best estimates in table \ref{table: analysis: dalitz fit results}. Based on their binwise $\chi^2$ plots, it appears as if this correction primarily targets the edges of the Dalitz plots, as would be expected. Thus it is believed that a similar improvement can be made with the $0^+$ fits by accounting for the effect, but due to time constraints, this could not be implemented.
 
-\subsubsection{$3^-$}
-Finally, since we have the data available anyway, a fit was made to the $3^-$ data as well. The goodness-of-fit is similar to that of the $2^-$ state, as can be seen in table \ref{table: analysis: dalitz fit results}. The results of this fit can be found in figure \ref{fig: analysis: 3- 3-_i fit}. Clearly something is not quite right with the simulated Dalitz figure - the line segments never quite merge into one, as they should. This gives rise to the large $\chi^2$ deviation near the vertex, which may also be partly due to Coulomb repulsion. The most likely explanation for this difference is that we are using a wrong reduced width amplitude $\gamma$ in our simulations. If we look back at figure \ref{fig: analysis: width effect dalitz all}, we see that as this width increases, the interference between the bands becomes stronger, especially near the vertices and in the center. This would almost perfectly account for the visual difference between the two plots. It is hard to judge what effect this would have on the projection plots. \\
+\subsubsection{$\bm{3^-}$}
+Finally, since we have the data available anyway, a fit was made to the $3^-$ data as well. The goodness-of-fit is similar to that of the $2^-$ state, as can be seen in table \ref{table: analysis: dalitz fit results}. The results of this fit can be found in figure \ref{fig: analysis: 3- 3-_i fit}. Clearly something is not quite right with the simulated Dalitz figure - the line segments never quite merge into one, as they should. This gives rise to the large $\chi^2$ deviation near the vertex, which may also be partly due to Coulomb repulsion. To see that this is not an issue with the fit itself, the Dalitz plots of the pure simulations $3^-_1$ and $3^-_3$ can be seen on figure \ref{fig: appendix: 3- l1 l3} in the appendix. Both of these share the "hole", and is thus not capable of describing the data alone. \note{delta?} \\
 
-\begin{figure}
+A likely explanation for this difference is that we are using a wrong reduced width amplitude $\gamma$ in our simulations. If we look back at figure \ref{fig: analysis: width effect dalitz all}, we see that as this width increases, the interference between the bands becomes stronger, especially near the vertices and in the center. This would almost perfectly account for the visual difference between the two plots. It is hard to judge what effect this would have on the projection plots. As already mentioned, the area is also in the Coulomb repulsion zone, which could also be the culprit. A third explanation could be that we are seeing effects from the tail end of the second excited state of \ce{^8Be^*}. This $4^+$ state has an energy of \SI{11 350}{MeV}, but is very broad, with a width of \SI{3.5}{MeV} \cite{nudat}. \\
+
+\begin{figure}[h]
 	\centering
 	\begin{minipage}{.33\textwidth}
 		\centering
@@ -472,11 +474,11 @@ Finally, since we have the data available anyway, a fit was made to the $3^-$ da
 		\centering
 		\includegraphics[width=\linewidth]{figures/3-/sim/true_events 3-_i/binwise_chi2.pdf}
 	\end{minipage}
-	\caption{text}
+	\caption{The fit result of our $3^-$ multiplicity $3$ data with a simulated $\{3^-_1, 3^-_3\}$ state. For the fit values, see table \ref{table: analysis: dalitz fit results}.}
 	\label{fig: analysis: 3- 3-_i fit}
 \end{figure}
 
-In an attempt to improve the fit further, a series of extra fits were made to the same data. No real improvement could be found, although quite a few different combinations results in fits that were just as good as the single $3^-$. Without any further evidence for their existence, it is hard to argue why any of these should be favored over the simpler option. Similarly to the $0^+$ data, the fits were repeated for all our data, i.e. both multiplicity $2$ and $3$. For much the same reasons, an aggressive cut of $y=0.85$ was imposed on the data, such as to avoid the most obvious proton-contaminated areas. In line with the other data sets, these fits are generally somewhat worse than when using only multiplicity $3$ data. Once again the explanation for this is probably that there is still quite a few random proton coincidences which has managed to survive our cuts. 
+In an attempt to improve the fit further, a series of extra fits were made to the same data. No real improvement could be found, although quite a few different combinations results in fits that were just as good as the single $3^-$. Without any further evidence for their existence, it is hard to argue why any of these should be favored over the simpler option. Similarly to the $0^+$ data, the fits were repeated for all our data, i.e. both multiplicity $2$ and $3$. For much the same reasons, an aggressive cut of $y=0.85$ was imposed on the data, such as to avoid the most obvious proton-contaminated areas (see figure \note{make fig in appendix}). In line with the other data sets, these fits are generally somewhat worse than when using only multiplicity $3$ data. Once again the explanation for this is probably that there is still quite a few random proton coincidences which has managed to survive our cuts. 
 
 \begin{landscape}
 \begin{table}[]
@@ -510,12 +512,15 @@ In an attempt to improve the fit further, a series of extra fits were made to th
 \end{table}
 \end{landscape}
 
+\subsubsection{The $\bm{\delta}$ parameter}
+
+
 \subsection{Some title}
 \subsubsection{Verifying the branching ratio}
 \begin{table}[h]
 	\begin{tabular}{l|lllll}
 		Data & $\alpha_0$ hits & $\alpha_0$ efficiency & $\alpha_1$ hits & $\alpha_1$ efficiency & Branching ratio \\ \hline
-		$0^+$ & 260 828 &  & 524 813 &  & 0.155 \\
-		$3^-$ & 87 225 &  & 96 566 &  & 0.429
+		$0^+$ & 260 828 & 6.6(3)\% & 524 813 & 2.10(44)\% & 0.155 \\
+		$3^-$ & 87 225 & 4.32(22)\% & 96 566 & 2.12(45)\% & 0.429
 	\end{tabular}
 \end{table}

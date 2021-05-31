@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     setup_style();
 
     TCanvas* c1 = new TCanvas("c1", "c", 600, 600);
-    TH2D* h1 = dalitz(argv[1]);
+    TH2D* h1 = dalitz(argv[1], 200, false, false);
     setup_dalitz_plot(h1);
     h1->Draw("colz");
 
@@ -35,8 +35,15 @@ int main(int argc, char *argv[]) {
     c1->SaveAs(path.c_str());
 
     //*** w/ CUTS ***//
-    TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
-    TH2D* h2 = dalitz(argv[1], 200, true);
+    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", argv[1]);
+    filter(&df);
+    setup_dataframe(&df);
+    cut_circle(&df);
+    if (string(argv[1]).find("events") != string::npos) {
+        cut_gs(&df);
+    }
+    TCanvas* c2 = new TCanvas("c2", "c", 600, 600); 
+    TH2D* h2 = dalitz(&df, 200, true, false);
     setup_dalitz_plot(h2);
     h2->Draw("colz");
 

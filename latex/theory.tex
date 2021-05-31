@@ -157,13 +157,13 @@ where $\gamma_{nl}$ is defined as
 	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \sum_{i}^{\infty}\bm{v}_{nl, i}\varphi_i(a)
 \end{align}
 
-$\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the formal width, as we will see in a moment. \note{ask Hans for proper terminology}\\
+$\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the total width, as we will see in a moment. \note{ask Hans for proper terminology}\\
 
 In general, the R-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
 \begin{align} \label{theory: r-matrix: Gamma gamma}
 	\Gamma = \frac{2 \gamma_{1l}^2 P(E_R)}{1 + \gamma_{1l}^2 S'(E_R)}
 \end{align}
-which relates the formal width $\Gamma$ to the reduced width $\gamma_{1\ l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
+which relates the total width $\Gamma$ to the reduced width $\gamma_{1\ l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
 
 \subsubsection{Applications} \label{sec: theory: r-matrix: applications}
 One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
@@ -198,7 +198,7 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
 \end{align}
 
-These two equations are useful when we want to relate the reduced width $\gamma^2$ to the formal width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
+These two equations are useful when we want to relate the reduced width $\gamma^2$ to the total width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
 
 \subsubsection{Three-body decays} \label{sec: theory: r-matrix: three body}
 So far, the R-matrix theory can only describe two-body decays. To extend the model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
@@ -209,7 +209,7 @@ By using these extensions, one can derive similar equations as for the two-body 
 We will later have need of some basic kinematic results for a sequential decay, which will be introduced in this section. A useful way of visualizing three-body decays will also be introduced. 
 
 \subsubsection{Basic results}
-If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be
+If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The first $\alpha$ particle to be emitted from the \ce{^12C} decay is called the \textit{primary} particle, while those from the \ce{^8Be} decay are called \textit{secondary}. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be
 \begin{align}
 	&E_1 = \frac{2}{3}Q_1 \label{theory: kinematics: E1}\\
 	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
@@ -247,7 +247,7 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by R. H. Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
+devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
 
 \begin{figure}[tb]
 	\centering
@@ -271,7 +271,7 @@ The equation for the angle between the primary and secondary particles, $\theta$
 \begin{align} \label{theory: dalitz: theta}
 	\cos\alpha = \frac{x}{\sqrt{1 - y^2}}
 \end{align}
-Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$. \\
+Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$. This also illustrates why both equation \ref{theory: kinematics: theta} and \ref{theory: kinematics: theta data} are relevant: one can be extracted directly from the Dalitz plot through a simple projection onto the $x$ axis, while the other is independent of it. \\
 
 \begin{figure}[!htb]
 	\centering
@@ -283,27 +283,28 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 		\centering
 		\includegraphics[width=\linewidth]{figures/theta(y).pdf}
 	\end{minipage}
-	\caption{The angle $\theta$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$.}
+	\caption{The angle $\alpha$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$.}
 	\label{fig: theory: dalitz: theta}
 \end{figure}
 
 \note{SOMETHING ABOUT ALLOWED REGIONS, MAYBE ALSO FEYNMANN GOLDEN RULE --> BANDS}
 
 \subsection{Angular correlations} \label{sec: theory: angular correlations}
-
+Now that we have discussed how to extract the correlation angle from the data, it is time to discuss how we expect them to be distributed. 
 
 \note{introduce the effect when you understand it} \\
 
-The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. The correlation between the two decay products can be expressed as a series of Legendre polynomials in the angle between them
+The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. It is assumed that the beam is unpolarized, and that the nuclear levels involved have unique spin and well-defined parity. The correlation between two decay products can in general be expressed as a series of Legendre polynomials in the angle between them
 \begin{align} \label{theory: angular correlations: W}
 	W(\beta) = \frac{1}{b_0} \sum_{n=0}^{N}b_n P_n(\cos\beta)
 \end{align}
 
-Note that in this notation, the angle $\beta$ is defined in relation to the direction of motion of the primary particle, so $\beta = \pi - \theta$. Remember that we assumed that each stage of the reaction has a well-defined parity. Thus the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\beta$ as $\beta \rightarrow \pi - \beta$, since the intensity does not depend on the azimuthal angle $\phi$ for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\beta) = W(\pi - \beta)$, meaning they are all symmetric about $\beta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
+Since we assumed that each stage of the reaction has a well-defined parity, the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\beta$ as $\beta \rightarrow \pi - \beta$, since the intensity does not depend on the azimuthal angle $\phi$ for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\beta) = W(\pi - \beta)$, meaning they are all symmetric about $\beta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
 
 The $b_n$ coefficients in (\ref{theory: angular correlations: W}) depend on the quantum properties of the interacting nuclei. Biedenharn \cite{Biedenharn} calculated the related coefficients $F_n$, given as
 \begin{align*}
-	F_n(LL'jJ) \equiv (-1)^{j-J-1}\sqrt{(2L+1)(2L'+1)(2J+1)}\langle L1L'-1|n0\rangle W(JJLL';nj)
+	F_n(LL'jJ) \equiv (-1)^{j-J-1}\sqrt{(2L+1)(2L'+1)(2J+1)}\\
+	\times \langle L1L'-1|n0\rangle W(JJLL';nj)
 \end{align*}
 where $\langle L1L'-1|n0 \rangle$ and $W(JJLL';nj)$ denotes a Clebsh-Gordan and a Racah coefficient, respectively. The symmetry properties of these coefficients limit how many terms are needed in the sum, as $F_n(LLjJ) \neq 0$ only for ${0 < n \leq \min(2J, 2L)}$. \\
 
@@ -317,10 +318,10 @@ where $a_n(l)$ is given as
 	a_n(l) = \frac{2l(l+1)}{2l(l+1) - n(n+1)}
 \end{align*}
 
-and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. \\
+and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\linewidth]{figures/corr_funcs.pdf}
+	\includegraphics[width=.8\linewidth]{figures/corr_funcs.pdf}
 	\caption{The angular correlation functions for a few different states and transitions, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). In the legend, the first number denotes the resonance, while the second denotes the transition $l$. \note{definitely wrong text}}
 	\label{fig: theory: ang: ang_corr_funcs}
 \end{figure} 
@@ -345,18 +346,10 @@ Here $\mu$ is the expected number of events in each bin, while $m$ is the observ
 
 To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. \note{ask Hans}. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Kuhlwein}. \\
 
-The final issue is how to deal with errors. For finite samples, the covariance matrix can result in an underestimate of the variances. A numerically equivalent approach to determine the $s$-standard deviation confidence interval is by finding the set of parameters $\bm{\theta}'$ where \note{cite https://pdg.lbl.gov/2013/reviews/rpp2013-rev-statistics.pdf}
+The final issue is how to deal with errors. For finite samples, the covariance matrix can result in an underestimate of the variances. A numerically equivalent approach to determine the $s$-standard deviation confidence interval is by finding the set of parameters $\bm{\theta}'$ where
 \begin{align*}
 	\ln \mathcal{L}(\bm{\theta}') = \ln \mathcal{L}_{max} - s^2/2
 \end{align*}
-This will in general result in asymmetrical errors on the parameters. \\
+This will in general result in asymmetrical errors on the parameters. \cite{Cowan} \\
 
-When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. To account for this, the maximum likelihood statistic introduced here must be modified as seen in \cite{Kuhlwein}.
-
-\subsubsection{Finite Monte Carlo fitting}
-\note{delete?}
-This section follows the derivation given in \cite{Kuhlwein}. \\
-
-When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. The goal of this section is to modify the maximum likelihood statistic to account for this. \\
-
-The number of measured events in each bin is $m_i$. With $s$ sources of Monte Carlo simulations, we can define $a_{ji}$ as the number of counts in bin $i$ from source $j$. Similarly we can define $w_{ij}$ as the weight for each bin. If a bin consists of events with different weights, assuming the variance is low, one can approximate the total weight as the average of the individual weights. Finally we denote the number of expected events as $A_{ji}$. 
+When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. To account for this, the maximum likelihood statistic introduced here must be modified as seen in \cite{Kuhlwein} and \cite{Barlow}.

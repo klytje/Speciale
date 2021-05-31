@@ -52,8 +52,13 @@ int main(int argc, char *argv[]) {
             delta = 2*M_PI*0.691;
             k = 0.186;
             cout << "File name contains \"2-\" and \"_i\", assuming 2- sim3a_i data..." << endl;
+        } else if (string(argv[2]).find("3-_i_4+") != string::npos) { // 3-_i simulation for the Be 4+ state
+            delta = 0;
+            k = 0.5;
+            // cout << "File name contains \"2-\" and \"_i\", assuming 2- sim3a_i data..." << endl;
         } else {
             cout << "\033[1;31m" << "File name contains \"_i\", but not a recognized state. Correct this in ../scripts/special/sim_compare.cpp" << "\033[0m" << endl;
+            cout << "Alternatively provide k and delta values as the fourth and fifth parameters (only numbers)." << endl;
             exit(1);
         }
         auto weights = [&k, &delta] (vector<vector<double>> f, double wU) { // weights defined by eq 42 in Morten's thesis

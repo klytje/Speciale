@@ -60,7 +60,12 @@ int main(int argc, char *argv[]) {
     c1->SaveAs(path.c_str());
 
     //*** "after" plot with the cuts shown ***//
-    hist = dalitz_slice(argv[1], 100, true);
+    ROOT::RDF::RNode df = ROOT::RDataFrame("tree", argv[1]);
+    filter(&df);
+    setup_dataframe(&df);
+    cut_circle(&df);
+    cut_y(&df);
+    hist = dalitz_slice(&df, 100, true, false);
 
     TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
     hist->GetXaxis()->SetTitle("x");

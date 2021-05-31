@@ -433,10 +433,10 @@ void setup_compare_plot(TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
 // I also ended up needing this quite a bit
 void setup_dalitz_plot(TH2D* h, string draw_options = "") {
     h->GetXaxis()->SetTitle("x");
-    h->GetYaxis()->SetTitle("y");
     h->GetXaxis()->CenterTitle();
-    h->GetYaxis()->CenterTitle();
     h->GetXaxis()->SetNdivisions(2);
+    h->GetYaxis()->SetTitle("y");
+    h->GetYaxis()->CenterTitle();
     h->GetYaxis()->SetNdivisions(2);
 
     if (draw_options == "") {
