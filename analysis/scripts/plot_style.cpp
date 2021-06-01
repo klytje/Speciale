@@ -2,13 +2,14 @@
 #include <TROOT.h>
 
 void setup_style() {
-    gStyle->SetLabelSize(0.05, "X");
-    gStyle->SetLabelSize(0.05, "Y");
-    gStyle->SetLabelSize(0.05, "Z");
+    gStyle->SetLabelSize(0.06, "X");
+    gStyle->SetLabelSize(0.06, "Y");
+    gStyle->SetLabelSize(0.06, "Z");
     gStyle->SetTitleSize(0.07, "X");
     gStyle->SetTitleSize(0.07, "Y");
-    gStyle->SetTitleOffset(0.65, "X");
+    gStyle->SetTitleOffset(0.7, "X");
     gStyle->SetTitleOffset(0.65, "Y");
+    gStyle->SetPadBottomMargin(0.13);
     // gStyle->SetTitleXSize(0.04);
     // gStyle->SetTitleYSize(0.04);
     // gStyle->SetTickLength(0.04);

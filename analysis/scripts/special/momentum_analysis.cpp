@@ -219,17 +219,18 @@ int main(int argc, char const *argv[]) {
     h_theta.GetXaxis()->SetTitle("cos \\theta");
     h_theta.GetXaxis()->CenterTitle();
     h_theta.GetXaxis()->SetNdivisions(3);
-    h_theta.GetYaxis()->SetTitle("Count");
+    h_theta.GetYaxis()->SetTitle("Normalized count");
     h_theta.GetYaxis()->CenterTitle();
-    h_theta.GetYaxis()->SetNdivisions(3);
+    h_theta.GetYaxis()->SetNdivisions(2);
     h_theta.Draw("HIST L");
     h_theta_gs.Draw("SAME HIST L");
     h_theta_ex.Draw("SAME HIST L");
 
-    TLegend* legend = new TLegend(0.7, 0.65, 0.9, 0.9);
+    TLegend* legend = new TLegend(0.6, 0.65, 0.9, 0.9);
     legend->AddEntry("h_theta", "All transitions", "l");
     legend->AddEntry("h_theta_gs", "Ground state", "l");
     legend->AddEntry("h_theta_ex", "Excited state", "l");
+    legend->SetTextSize(0.04);
     legend->Draw();
 
     string path = dir + "breakup_angle_data.pdf";
@@ -241,7 +242,7 @@ int main(int argc, char const *argv[]) {
     h_theta_ex.GetXaxis()->SetNdivisions(3);
     h_theta_ex.GetYaxis()->SetTitle("Normalized count");
     h_theta_ex.GetYaxis()->CenterTitle();
-    h_theta_ex.GetYaxis()->SetNdivisions(3);
+    h_theta_ex.GetYaxis()->SetNdivisions(2);
 
     h_theta_ex.SetAxisRange(-1, 0, "X");
     h_theta_ex.Scale(1./h_theta_ex.GetMaximum());
@@ -336,6 +337,13 @@ int main(int argc, char const *argv[]) {
     h2.GetXaxis()->CenterTitle();
     h2.GetYaxis()->SetTitle("Count");
     h2.GetYaxis()->CenterTitle();
+
+    h2.SetNdivisions(205, "X");
+    h2.SetNdivisions(205, "Y");
+    h2.SetAxisRange(-1000, 5000, "X");
+    h2.GetYaxis()->SetMaxDigits(3);
+    h2.GetYaxis()->SetTickLength(0);
+    h2.GetXaxis()->SetTitleOffset(0.75);
     h2.Draw("HIST L");
     tf_both->Draw("same");
     l1->Draw("same");
@@ -349,12 +357,14 @@ int main(int argc, char const *argv[]) {
 //*** PRETTY E23 ***//
     TCanvas *c3 = new TCanvas("c3", "c3", 900, 600);
     TPad *p1 = new TPad("p1", "p1", 0.1, 0.1, 0.5, 0.9);
-    p1->SetRightMargin(0.);            
+    p1->SetRightMargin(0.); 
+    p1->SetBottomMargin(0.1);           
     p1->SetBorderMode(0);
     p1->Draw();
 
     TPad *p2 = new TPad("p2", "p2", 0.5, 0.1, 0.9, 0.9); 
     p2->SetLeftMargin(0.);   
+    p2->SetBottomMargin(0.1);           
     p2->SetBorderMode(0);
     p2->Draw();
 
@@ -374,32 +384,36 @@ int main(int argc, char const *argv[]) {
 
     TLatex* x = new TLatex(0.5, 0.08, "Energy [keV]");
     x->SetNDC();
-    x->SetTextSize(0.04);
+    x->SetTextSize(0.07);
     x->SetTextAlign(22);
     x->Draw();
 
     TLatex* yl = new TLatex(0.07, 0.5, "^{8}Be Count");
     yl->SetNDC();
     yl->SetTextAngle(90);
-    yl->SetTextSize(0.04);
+    yl->SetTextSize(0.07);
     yl->SetTextAlign(22);
     yl->Draw();
 
     TLatex* yr = new TLatex(0.93, 0.5, "^{8}Be* Count");
     yr->SetNDC();
     yr->SetTextAngle(270);
-    yr->SetTextSize(0.04);
+    yr->SetTextSize(0.07);
     yr->SetTextAlign(22);
     yr->Draw();
 
     p1->cd();
     hleft.SetNdivisions(205, "X");
     hleft.SetNdivisions(205, "Y");
+    hleft.GetYaxis()->SetMaxDigits(3);
+    // hleft.GetYaxis()->SetLabelSize(0.07); 
     hleft.Draw("HIST L");
     
     p2->cd();
     hright.SetNdivisions(205, "X");
     hright.SetNdivisions(205, "Y");
+    hright.GetYaxis()->SetMaxDigits(3);
+    // hright.GetYaxis()->SetTickLength(0.05);
     hright.Draw("HIST L Y+");
 
     // pad to cover the line separating the two panels
@@ -428,8 +442,8 @@ int main(int argc, char const *argv[]) {
     // calculate and print the ratio of gs vs ex events
     double c_gs = df.Filter("y > 0.93").Count().GetValue();
     double c_ex = df.Count().GetValue() - c_gs;
-    cout << "c_gs: " << c_gs << ", c_ex: " << c_ex << endl;
     cout << "\nRATIO BASED ON DALITZ Y=0.93 CUT:" << endl;
+    cout << "    c_gs: " << c_gs << ", c_ex: " << c_ex << endl;
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
 
@@ -457,8 +471,9 @@ int main(int argc, char const *argv[]) {
     } while (std::next_permutation(perms, perms+3)); // repeat for each of the 3! = 6 permutations of {1, 2, 3}
 
     c_gs = df_gs.Count().GetValue();
-    c_ex = df.Count().GetValue() - c_gs;
+    c_ex = df_ex.Count().GetValue();
     cout << "\nRATIO BASED ON E23 FIT (check that this looks good!):" << endl;
+    cout << "    c_gs: " << c_gs << ", c_ex: " << c_ex << endl;
     cout << "    Ratio of ground state vs excited detections: " << c_gs/c_ex << endl;
     cout << "    Ratio corrected for detection efficiency: " << (c_gs/gs_eff)/(c_ex/ex_eff) << endl;
 

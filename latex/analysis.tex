@@ -145,7 +145,7 @@ The purpose of this thesis is to test the validity of the currently established 
 	\label{fig: analysis: dalitz: slice}
 \end{figure}
 
-We can use the momentum vectors of each event to calculate $E_{2-3}$ from (\ref{theory: kinematics: E23}). The results of this can be seen on figure \ref{fig: analysis: dalitz: E23}. Here we clearly see the two peaks corresponding to the $\alpha_0$ and $\alpha_1$ channels, located at the correct energies - note the split in the $x$ axis. By now performing a simple Gaussian fit of the right peak and discarding any event outside $3\sigma$, we can extract only the excited decay events, which can be seen on the right panel of the Dalitz slice panels, figure \ref{fig: analysis: dalitz: slice}. This method is even more aggressive than the simple $y$ coordinate cut, and removes quite a lot of events - see table \note{create table}. Since it is based on the $E_{2-3}$ energies, we are confident that only irrelevant $\alpha_0$ events are removed. \\
+We can use the momentum vectors of each event to calculate $E_{2-3}$ from (\ref{theory: kinematics: E23}). The results of this can be seen on figure \ref{fig: analysis: dalitz: E23}. Here we clearly see the two peaks corresponding to the $\alpha_0$ and $\alpha_1$ channels, located at the correct energies - note the split in the $x$ axis. By now performing a simple Gaussian fit of the right peak and discarding any event outside $3\sigma$, we can extract only the excited decay events, which can be seen on the right panel of the Dalitz slice panels, figure \ref{fig: analysis: dalitz: slice}. Although this method is even more aggressive than the simple $y$ coordinate cut, since it is based on the $E_{2-3}$ energies, we can be confident that only irrelevant $\alpha_0$ channel events are removed. \\
 
 \begin{figure}
 	\centering
@@ -161,7 +161,19 @@ We can use the momentum vectors of each event to calculate $E_{2-3}$ from (\ref{
 	\label{fig: analysis: dalitz: E23}
 \end{figure}
 
-Now that we have imposed all of the necessary cuts, we are ready to start the analysis of the plot itself. Although all of the kinematic information is already stored in a single slice, it is somewhat easier to see the structure in a standard Dali´tz plot. We can reconstruct it by repeatedly mirroring the slice along one of its edges. By doing this, we obtain figure \ref{fig: analysis: dalitz: full}. The left panel shows the multiplicity three data, while the right panel shows the multiplicity two data. The general structure is clearly seen to be similar to an inverted equilateral triangle, with somewhat bent sides in the right panel. Although they both share this structure, there are also a series of important differences. Firstly, the three vertices do not extend all the way out to the edge in the left panel, while they do in the right. Secondly, the left panel has \textit{zero} events in its very center, while the right still has a few. Thirdly, we see some weird cone-shaped areas at the very top of the right panel. These cones are clearly unnatural, and probably originates from reconstructed events with random proton coincidences which has managed to survive our cuts. To see why this is the cause, the raw Dalitz plots without any cuts can be found in the appendix, figure \ref{fig: appendix: 0+ dalitz uncut}. Here the cones extends outside the inscribed circular area, meaning they do not conserve energy - a very clear indicator that they contain protons. \note{why the difference at the very edge? and center? ask hans} \\
+Since we have already fitted the $E_{2-3}$ peaks, we can quickly count the number of events in each peak to estimate the branching ratio. The number of events within $3\sigma$ of each Gaussian peak can be found in table \ref{table: analysis: branching ratio}. A previous student estimated the detector efficiencies for the two decay channels, which are also listed in the same table. This was repeated for the $3^-$ data, which is the only other set where we already know the detector efficiencies. Due to a very broad $\alpha_1$ peak, we have to restrict our counts to $2\sigma$ to avoid overlap \note{is this ok} - see figure \ref{fig: appendix: 3- E23 raw} in the appendix. \note{ask Hans what I can say about this} \\
+
+\begin{table}[h]
+	\begin{tabular}{l|lllll}
+		Data & $\alpha_0$ hits & $\alpha_0$ efficiency & $\alpha_1$ hits & $\alpha_1$ efficiency & Branching ratio \\ \hline
+		$0^+$ & 257 493 & 6.6(3)\% & 521 303 & 2.10(44)\% & 0.157 \\
+		$3^-$ & 83 136 & 4.32(22)\% & 91 340 & 2.12(45)\% & 0.445
+	\end{tabular}
+	\caption{The number of events within $3\sigma$ ($2\sigma$) of the $E_{2-3}$ peaks for $0^+$ ($3^-$). The expected branching ratio is \note{what? ask Hans for resource. } \note{errors?}}
+	\label{table: analysis: branching ratio}
+\end{table}
+
+Now that we have imposed all of the necessary cuts, we are ready to start the analysis of the plot itself. Although all of the kinematic information is already stored in a single slice, it is somewhat easier to see the structure in a standard Dali´tz plot. We can reconstruct it by repeatedly mirroring the slice along one of its edges. By doing this, we obtain figure \ref{fig: analysis: dalitz: full}. The left panel shows the multiplicity three data, while the right panel shows the multiplicity two data. The general structure is clearly seen to be similar to an inverted equilateral triangle, with somewhat bent sides in the right panel. Although they both share this structure, there are also a series of important differences. Firstly, the three vertices do not extend all the way out to the edge in the left panel, while they do in the right. Secondly, the left panel has \textit{zero} events in its very center, while the right still has a few. Thirdly, we see some weird cone-shaped areas at the very top of the right panel. These cones are clearly unnatural, and probably originates from reconstructed events with random proton coincidences which has managed to survive our cuts. To see why this is the cause, the raw Dalitz plots without any cuts can be found in the appendix, figure \ref{fig: appendix: 0+ dalitz uncut}. Here the cones extends outside the inscribed circular area, meaning they do not conserve energy - a very clear indicator that they contain protons. \\
 
 \begin{figure}[]
 	\centering
@@ -175,6 +187,22 @@ Now that we have imposed all of the necessary cuts, we are ready to start the an
 	\end{minipage}
 	\caption{The Dalitz plots for the data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data. Note the large difference in the column scale.}
 	\label{fig: analysis: dalitz: full}
+\end{figure}
+
+Since the Dalitz plots are so different, it would be interesting to see how the phase space distribution changes between multiplicity $2$ and $3$ data. As was discussed in the theory, the entire allowed region of the Dalitz plot has a constant phase space volume. The easiest way to generate a sample of this volume is through a \simta{} simulation, where each event must be weighted by equation (\ref{datared: tools: k delta eq}). The simulated data is then put through \simX{}, which simulates its interaction with the experimental setup. By then plotting the unweighted events after this step, we get the two panels in figure \ref{fig: analysis: 0+ phase space}. Here the left (right) panel is the phase space for multiplicity $3$ ($2$). There are some clear differences between these two, especially around the edges. Near the right edge, the left panel is suppressed, while the right panel is particularly dense. This makes good sense as this is the area where two of the particles are emitted in roughly the same direction, see figure \ref{fig: theory: dalitz: theta}. Since this edge coincides with a vertex in our data, it would explain why the plots looks so different in that area. The multiplicity $2$ plot is particularly good at picking up events in the area, and thus the vertex extends all the way out to the edge. On the other hand, the multiplicity $3$ data is particularly bad in that area, and thus the vertex is located further inside the borders. However, this cannot explain why the area appears to be cut completely in our multiplicity $3$ Dalitz plot. Similarly the phase space plots does not give us any hints as to why the center and general curvature are different. \\
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/phase_space_mul3.pdf}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{figures/0+/sim/phase_space_mul2.pdf}
+	\end{minipage}
+	\caption{The phase space volumes generated by a \simta{} simulation. The left (right) panel shows the multiplicity $3$ ($2$) events. }
+	\label{fig: analysis: 0+ phase space}
 \end{figure}
 
 Our next goal is to figure out what we expected to see. Although Zemach's analysis does not impose any constraints upon a $0^+$ resonance, it is curious that the center appears to be forbidden. To get further than this, we will have to perform simulations of the decay. In section \ref{section: data reduction} we discussed two possible simulation tools, \simX{} and \simta{}, both based on R-matrix theory. Only the latter accounts for our three identical bosons and the interference between them, and it is thus our preferred choice. \\
@@ -191,14 +219,14 @@ The result of a \simta{} simulation can be seen on the left panel of figure \ref
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/sim/dalitz_simX.pdf}
 	\end{minipage}
-	\caption{The Dalitz plots for the $0^+$ simulations. The left panel shows the results of the \simta{} simulation, while the right shows it for the \simX{} simulation. For a discussion on the difference between the two tools, see section \note{ref}.}
+	\caption{The Dalitz plots for the $0^+$ simulations. The left panel shows the results of the \simta{} simulation, while the right shows it for the \simX{} simulation. }
 	\label{fig: analysis: dalitz: sim}
 \end{figure}
 
 \subsubsection{Checking the simulation tools}
 Since the simulations are so different from what we see in our data, it is worthwhile to verify that they actually work as expected. Since we also have data on the $2^-$ resonance which has been the subject of several papers (see e.g. \cite{Kuhlwein}), it is an obvious target for checking the tools. \\
 
-Using the custom Dalitz fitter introduced in section \ref{sec: datared: custom tools} to fit all our $2^-$ data (both multiplicity $2$ and $3$) with a \simta{} simulation for both $2^-_1$ and $2^-_3$, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a far better match than the $0^+$ resonance. The reason the simulation appears "grainy" is due to a low number of simulated events, which cannot be increased any further due to time constraints. The fit already takes an hour to perform, and, if we are optimistic, scales linearly with the number of events. Since we will need quite a few more of these fits later, the simulated number of events was limited to those listed in table \note{make table}. \\
+Using the custom Dalitz fitter introduced in section \ref{sec: datared: custom tools} to fit all our $2^-$ data (both multiplicity $2$ and $3$) with a \simta{} simulation for both $2^-_1$ and $2^-_3$, we get figure \ref{fig: analysis: dalitz: 2-}, which we can already at a glance tell is a far better match than the $0^+$ resonance. The reason the simulation appears "grainy" is due to a low number of simulated events, which cannot be increased any further due to time constraints. The fit already takes an hour to perform, and, if we are optimistic, scales linearly with the number of events. Since we will need quite a few more of these fits later, the simulated number of events was limited to a million, from which about $20\%$ survives all the cuts and contributes to the actual fit. \\
 
 \begin{figure}[]
 	\centering
@@ -244,7 +272,7 @@ As mentioned previously, this is the exact same $2^-$ data as that used in \cite
 		$\chi^2$ & 16 205 & 14 028 \\
 		dof & 5346 & $\sim$5700
 	\end{tabular}
-	\caption{The main differences in the analysis performed here and in \cite{Kuhlwein}. We can obtain a slightly better fit by using only multiplicity $3$ data, see table \note{ref}. Kuhlwein can do even better than that by also accounting for Coulomb interaction effects; the numbers listed here are only for comparison. \note{bins or dof}}
+	\caption{The main differences in the analysis performed here and in \cite{Kuhlwein}. We can obtain a slightly better fit by using only multiplicity $3$ data, see table \ref{table: analysis: dalitz fit results}. Kuhlwein can do even better than that by also accounting for Coulomb interaction effects; the numbers listed here are only for comparison.}
 	\label{table: analysis: dalitz: this and kuhlwein}
 \end{table}
 
@@ -340,7 +368,7 @@ Instead of hand-picking a specific area to project onto the $x$ axis, we can ext
 	\label{fig: analysis: ang cor beta fit}
 \end{figure}
 
-The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta fit}, where the top panels shows the correlation angle for both $\alpha_0$ and $\alpha_1$ channel decays. The bottom panels then shows the actual fit, the results of which can be found in table \ref{table: analysis: ang cor fit result}. The multiplicity $3$ fit roughly agrees with what we found through the $\alpha$ fit. The multiplicity $2$ fit is far more interesting: it allows a substantial $0^+$ component, and also appears to be the best fit we have seen so far. Graphically this makes sense since the $2^-$ functions both goes to zero at $x=-1$, which the $0^+$ function must then make up for. The reason for this large difference between the two sets of data is unclear. Based on the earlier discussion on the differences between them \note{actually make this}, the multiplicity $3$ data should be the most trustworthy. \\
+The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta fit}, where the top panels shows the correlation angle for both $\alpha_0$ and $\alpha_1$ channel decays. The bottom panels then shows the actual fit, the results of which can be found in table \ref{table: analysis: ang cor fit result}. The multiplicity $3$ fit roughly agrees with what we found through the $\alpha$ fit. The multiplicity $2$ fit is far more interesting: it allows a substantial $0^+$ component, and also appears to be the best fit we have seen so far. Graphically this makes sense since the $2^-$ functions both goes to zero at $x=-1$, which the $0^+$ function must then make up for. The reason for this large difference between the two sets of data is unclear. Based on all the prior discussions on the differences between them, the multiplicity $3$ fits should be the most trustworthy. \\
 
 \begin{table}[h]
 	\centering
@@ -355,7 +383,7 @@ The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta
 	\label{table: analysis: ang cor fit result}
 \end{table}
 
-Now that we have an idea of what states we are looking for, we can use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try to fit the data to simulations of them. \note{aren't 0+ decays supposed to be uncorrelated?}
+Now that we have an idea of what states we are looking for, we can use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try to fit the data to simulations of them.
 
 \subsection{Fitting the data}
 We will in this section perform a series of fits with the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools}. All results from this section can be found in table \ref{table: analysis: dalitz fit results}. 
@@ -414,9 +442,9 @@ Based on the results of the previous section, it appears as if our data is domin
 
 By visually comparing the Dalitz plots of the fit, we can already tell that this is a far better fit than the pure $0^+$ simulations from figure \ref{fig: analysis: dalitz: sim}. Based on the projections, the fit is in surprisingly good agreement with our data, as we already suspected would be the case based on the correlation angle fits. Although it is a good match, it is by no means perfect: if we look at the binwise $\chi^2$ distribution (top right corner), there are still some issues near the center and edge. The reason this plot is only a slice is because that is what the fitter actually fits internally, and the full plots are simply reconstructed based on the result of this. \\
 
-Since there is still room for improvement, a series of additional fits were performed, all of which are listed in table \ref{table: analysis: dalitz fit results}. It is interesting that the fit allowing for a $0^+$ component finds no trace of the state in the data, in agreement with the correlation angle analysis. The best result which could be found is a mixture of a $2^-$ and $3^-$ states, which are also shown as the bottom two rows in figure \ref{fig: analysis: dalitz fit 0+}. Visually there is no real difference between the Dalitz plots, and similarly no real change in the projections can be seen. Only the binwise $\chi^2$ distribution can really tell us what has changed: the additional $3^-$ state corrects the low-count area near the center. Except for a major deviation near the edge, this fit would appear to be nearly perfect. We will return to the discussion of these edge deviations later. \note{do this} \note{also talk about that the fitted 2- state is very similar to Mortens} \\
+Since there is still room for improvement, a series of additional fits were performed, all of which are listed in table \ref{table: analysis: dalitz fit results}. It is interesting that the fit allowing for a $0^+$ component finds no trace of the state in the data, in agreement with the correlation angle analysis. The best result which could be found is a mixture of a $2^-$ and $3^-$ states, which are also shown as the bottom two rows in figure \ref{fig: analysis: dalitz fit 0+}. Visually there is no real difference between the Dalitz plots, and similarly no real change in the projections can be seen. Only the binwise $\chi^2$ distribution can really tell us what has changed: the additional $3^-$ state corrects the low-count area near the center. Except for a major deviation near the edge, this fit would appear to be nearly perfect. We will return to the discussion of these edge deviations later. The fitted $2^-$ parameters are drastically different from those of the other fits. What is even more interesting about them is that they are incredibly similar to those found for the nearby \SI{16.62}{MeV} $2^-$ state, whose fitted parameters can also be found in the table. It would almost appear as if it is actually this state we have been seeing all along. \note{more?} \\
 
-All of the fits were repeated for all of our available data, i.e. both multiplicity $2$ and $3$. We have earlier seen clear traces of protons in the filtered multiplicity $2$ data, and to avoid these areas in the fit, they were simply removed with an aggressive cut of $y=0.85$. Despite this, the fits are generally quite poor, which would indicate that our efforts are not enough to completely remove the proton contaminated data. Although these fits are not that informative due to their issues, it is worth noting that the fit is particularly bad when using only a $2^-$ simulation. This somewhat supports the previous result of fitting both a $2^-$ and $3^-$ simulation. 
+All of the fits were repeated for all of our available data, i.e. both multiplicity $2$ and $3$. We have earlier seen clear traces of protons in the filtered multiplicity $2$ data, and to avoid these areas in the fit, they were simply removed with an aggressive cut of $y=0.85$. Despite this, the fits are generally quite poor, which would indicate that our efforts are not enough to completely remove the proton contaminated data. Although these fits are not that informative due to their issues, it is worth noting that the fit is particularly bad when using only a $2^-$ simulation. Furthermore, it also finds the $l=3$ component to be dominating, which is unphysical due to the angular momentum barrier. Since this fit is exceedingly poor with only a $2^-$ component, but is dramatically improved by the addition af any other state, it somewhat supports our best multiplicity $3$ fit with both a $2^-$ and $3^-$ state. 
 
 \subsubsection{$\bm{2^-}$}
 We have already briefly talked about the $2^-$ fits, which will be expanded upon here. Figure \ref{fig: analysis: dalitz: 2- projections} shows its projections, which are all extremely good matches. \\
@@ -490,14 +518,14 @@ In an attempt to improve the fit further, a series of extra fits were made to th
 		& 3 & $2^-_1, 2^-_3$ & $3^-_3$ & 29 381 & 5324 & 7.26(2)\% & 67.3(2)\% & 0.986(1) &  &  \\
 		& 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 25 230 & 5341 & 22.0(6)\% & 66.2(1)\% & 0.811(4) & 37(1)\% & 27.6(3)\% \\
 		& both & $2^-_1, 2^-_3$ &  & 111 408 & 4779 & 90.9(1)\% & 8.22(8)\% &  &  &  \\
-		& both & $2^-_1, 2^-_3$ & $0^+_2$ & 31 049 & 4748 & 50\% & 63.3\% & 0.771 &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_1$ & 36 263 & 4774 & 99.3\% & 12.4\% & 0.703 &  &  \\
+		& both & $2^-_1, 2^-_3$ & $0^+_2$ & 31 049* & 4748 & 50\% & 63.3\% & 0.771 &  &  \\
+		& both & $2^-_1, 2^-_3$ & $3^-_1$ & 36 263* & 4774 & 99.3\% & 12.4\% & 0.703 &  &  \\
 		& both & $2^-_1, 2^-_3$ & $3^-_3$ & 37 344 & 4750 & 78.6(4)\% & 83.1(2)\% & 0.574(2) &  &  \\
-		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332 & 4772 & 97.4\% & 1.81\% & 0.709 & 56.8\% & 9.26\% \\ \hline
+		& both & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 39 332* & 4772 & 97.4\% & 1.81\% & 0.709 & 56.8\% & 9.26\% \\ \hline
+
 		$2^-$ & 3 & $2^-_1, 2^-_3$ &  & 13 453 & 5347 & 19.8(5)\% & 67.4(2)\% &  &  &  \\
-		& 3 & $2^-_1, 2^-_3$ &  & 15 951 & 5347 & 14.0(5)\% & 0 (fixed) &  &  &  \\
-		& both & $2^-_1, 2^-_3$ &  & 16 205 & 5347 & 20.9(3)\% & 67.82(8)\% &  &  &  \\
-		& both & $2^-_1, 2^-_3$ &  & 24 075 & 5347 & 15.0(3)\% & 0 (fixed) &  &  &  \\ \hline
+		& both & $2^-_1, 2^-_3$ &  & 16 205 & 5347 & 20.9(3)\% & 67.82(8)\% &  &  &  \\ \hline
+
 		$3^-$ & 3 & $3^-_1, 3^-_3$ &  & 13 691 & 5337 & 11.3(6)\% & 62.1(3)\% &  &  &  \\
 		& 3 & $3^-_1, 3^-_3$ & $2^-_1$ & 12 314 & 4954 & 6.81(7)\% & 65.9(7)\% & 0.90(1) &  &  \\
 		& 3 & $3^-_1, 3^-_3$ & $2^-_3$ & 12 375 & 5098 & 10.0(6)\% & 63.6(3)\% & 0.865(6) &  &  \\
@@ -505,22 +533,19 @@ In an attempt to improve the fit further, a series of extra fits were made to th
 		& both & $3^-_1, 3^-_3$ &  & 21 826 & 4778 & 6.3(4)\% & 57.9(3)\% &  &  &  \\
 		& both & $3^-_1, 3^-_3$ & $2^-_1$ & 18 961 & 4551 & 9.6(4)\% & 61.4(2)\% & 1(1e-4) &  &  \\
 		& both & $3^-_1, 3^-_3$ & $2^-_3$ & 18 901 & 4611 & 6.7(4)\% & 64.2(2)\% & 0.804(4) &  &  \\
-		& both & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 20 112 & 4773 & 15.1\% & 61.4\% & 0.848 & 87.9\% & 82.9\%
+		& both & $3^-_1, 3^-_3$ & $2^-_1, 2^-_3$ & 20 112 & 4773 & 15.1\% & 61.4\% & 0.848 & 87.9\% & 82.9\% \\ \hline
+
+		$0^+$ & 3 & $2^-_1, 2^-_3$ & $3^-_1, 3^-_3$ & 29 639 & 5340 & 0.79(6)\% & 0 (fixed) & 0.931(2) & 1.8(6) & 0 (fixed) \\
+		$2^-$ & 3 & $2^-_1, 2^-_3$ &  & 15 951 & 5347 & 14.0(5)\% & 0 (fixed) &  &  &  \\		
+		$3^-$ & 3 & $3^-_1, 3^-_3$ &  & 14 405 & 5337 & 0(2e-14)\% & 0 (fixed) &  &  &  \\
 	\end{tabular}
-	\caption{The results of various fits performed with the Dalitz fitting tool. \note{1+ invalid}}
+	\caption{The results of various fits performed with the Dalitz fitting tool. A (*) indicates the found minimum is poor, meaning the errors could not be estimated. All errors are purely statistical.}
 	\label{table: analysis: dalitz fit results}
 \end{table}
 \end{landscape}
 
 \subsubsection{The $\bm{\delta}$ parameter}
-
+So far we have let $\delta$ be a free parameter in all of the fits. However, as we already previously discussed, this parameter is not strictly necessary, and was introduced in an attempt to describe \note{what}. Thus it would be interesting to see what happens if we remove this apparently superfluous degree of freedom. Only the best fit for each data set was repeated without this parameter, and only for multiplicity $3$ data. The results are listed at the bottom of table \ref{table: analysis: dalitz fit results}. Although the difference in $\chi^2$ is not particularly large, only the ratios of the $2^-$ fit agrees with what we found previously. The other two completely removes the $l=3$ components, which does not make much physical sense - we would expect at least some small component to be present. This is supported by the visually very poor Dalitz plot fits, which can be seen in figure \note{make figure}. Based on this evidence, it would seem that the parameter is needed \note{expand on this}. 
 
 \subsection{Some title}
 \subsubsection{Verifying the branching ratio}
-\begin{table}[h]
-	\begin{tabular}{l|lllll}
-		Data & $\alpha_0$ hits & $\alpha_0$ efficiency & $\alpha_1$ hits & $\alpha_1$ efficiency & Branching ratio \\ \hline
-		$0^+$ & 260 828 & 6.6(3)\% & 524 813 & 2.10(44)\% & 0.155 \\
-		$3^-$ & 87 225 & 4.32(22)\% & 96 566 & 2.12(45)\% & 0.429
-	\end{tabular}
-\end{table}
