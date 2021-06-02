@@ -383,7 +383,7 @@ The results of doing this can be seen on figure \ref{fig: analysis: ang cor beta
 	\label{table: analysis: ang cor fit result}
 \end{table}
 
-Now that we have an idea of what states we are looking for, we can use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try to fit the data to simulations of them.
+Although we found a $2^-$ assignation to be a good fit to the data, this should not be allowed since the resonance must have natural parity \cite{Segel}\cite{Munch}. But with no other options to pursue, the best we can do is to continue following this trail and see where it leads. Thus the next step is to use the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools} to try fitting our data with a a $2^-$ simulation.
 
 \subsection{Fitting the data}
 We will in this section perform a series of fits with the Dalitz fitting tool introduced in section \ref{sec: datared: custom tools}. All results from this section can be found in table \ref{table: analysis: dalitz fit results}. 
@@ -506,7 +506,9 @@ A likely explanation for this difference is that we are using a wrong reduced wi
 	\label{fig: analysis: 3- 3-_i fit}
 \end{figure}
 
-In an attempt to improve the fit further, a series of extra fits were made to the same data. No real improvement could be found, although quite a few different combinations results in fits that were just as good as the single $3^-$. Without any further evidence for their existence, it is hard to argue why any of these should be favored over the simpler option. Similarly to the $0^+$ data, the fits were repeated for all our data, i.e. both multiplicity $2$ and $3$. For much the same reasons, an aggressive cut of $y=0.85$ was imposed on the data, such as to avoid the most obvious proton-contaminated areas (see figure \note{make fig in appendix}). In line with the other data sets, these fits are generally somewhat worse than when using only multiplicity $3$ data. Once again the explanation for this is probably that there is still quite a few random proton coincidences which has managed to survive our cuts. 
+In an attempt to improve the fit further, a series of extra fits were made to the same data. No real improvement could be found, although quite a few different combinations results in fits that were just as good as the single $3^-$. Without any further evidence for their existence, it is hard to argue why any of these should be favored over the simpler option. Similarly to the $0^+$ data, the fits were repeated for all our data, i.e. both multiplicity $2$ and $3$. For much the same reasons, an aggressive cut of $y=0.85$ was imposed on the data, such as to avoid the most obvious proton-contaminated areas (see figure \ref{fig: appendix: 3- dalitz plots} in the appendix). In line with the other data sets, these fits are generally somewhat worse than when using only multiplicity $3$ data. Once again the explanation for this is probably that there is still quite a few random proton coincidences which has managed to survive our cuts. \\
+
+There were some major issues with the $E_{2-3}$ energies for the reconstructed data. The plot can be found in figure \ref{fig: appendix: 3- E23 raw} in the appendix, where four individual peaks can be identified. Where these originate from is unknown \note{ask Hans}. Due to the presence of these extra peaks, any fit using these data becomes dubious at best. Thus, as we have already discussed several times, we should only really trust the clean multiplicity $3$ data.
 
 \begin{landscape}
 \begin{table}[]
@@ -546,6 +548,3 @@ In an attempt to improve the fit further, a series of extra fits were made to th
 
 \subsubsection{The $\bm{\delta}$ parameter}
 So far we have let $\delta$ be a free parameter in all of the fits. However, as we already previously discussed, this parameter is not strictly necessary, and was introduced in an attempt to describe \note{what}. Thus it would be interesting to see what happens if we remove this apparently superfluous degree of freedom. Only the best fit for each data set was repeated without this parameter, and only for multiplicity $3$ data. The results are listed at the bottom of table \ref{table: analysis: dalitz fit results}. Although the difference in $\chi^2$ is not particularly large, only the ratios of the $2^-$ fit agrees with what we found previously. The other two completely removes the $l=3$ components, which does not make much physical sense - we would expect at least some small component to be present. This is supported by the visually very poor Dalitz plot fits, which can be seen in figure \note{make figure}. Based on this evidence, it would seem that the parameter is needed \note{expand on this}. 
-
-\subsection{Some title}
-\subsubsection{Verifying the branching ratio}

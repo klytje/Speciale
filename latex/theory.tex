@@ -4,7 +4,7 @@ Since we are dealing almost exclusively with many-body systems, one of the prima
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
 
-Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \note{citation} of resonance absorption and subsequent emission of radiation, and through that, on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
+Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \cite{Weisskopf} of resonance absorption and subsequent emission of radiation, and through that, on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
 
 \subsection{R-matrix theory}
 This whole section on R-matrix theory follows the general steps used in the lecture notes by D. Baye \cite{Baye lecture notes}. \\ 
@@ -47,11 +47,11 @@ Defining everything on the left-hand side as the Hamiltonian $H_l$, the equation
 	(H_l - E)u_l = 0
 \end{align}
 
-We are interested in the bounded radial solutions $u_l$ of (\ref{theory: r-matrix: schrodinger}) vanishing at the origin $u_l(0) = 0$ \note{why}. The positive energy solutions to this have the asymptotic behaviour 
+We are interested in the normalizable bounded radial solutions $u_l$ of (\ref{theory: r-matrix: schrodinger}), so we must require that $u_l(0) = 0$. The positive energy solutions to this have the asymptotic behaviour 
 \begin{align} \label{theory: r-matrix: solution 1}
 	u_l(r) \xrightarrow[r\rightarrow \infty]{} F_l(\eta, \rho) \cos \delta_l  + G_l(\eta, \rho) \sin \delta_l 
 \end{align}
-where $F_l$ and $G_l$ are the regular and irregular Coulomb functions, and $\delta_l$ the phase shift. The arguments to the Coulomb functions are $\rho = kr$ and the Sommerfeld parameter $\eta = Z_1 Z_2 e^2 / 4 \pi \epsilon_0 \hbar v$, with $v = \sqrt{2E/\mu}$ the relative velocity of the interacting nuclei. It can be shown that the two Coulomb functions satisfies the Wronskian (temporarily suppressing $\rho$ and $\eta$) $F_l' G_l - G_l' F_l = 1$, which will be useful later. \\
+where $F_l$ and $G_l$ are the regular and irregular Coulomb functions, and $\delta_l$ the Coulomb phase shift. The arguments to the Coulomb functions are $\rho = kr$ and the Sommerfeld parameter $\eta = Z_1 Z_2 e^2 / 4 \pi \epsilon_0 \hbar v$, with $v = \sqrt{2E/\mu}$ the relative velocity of the interacting nuclei. It can be shown that the two Coulomb functions satisfies the Wronskian (temporarily suppressing $\rho$ and $\eta$) $F_l' G_l - G_l' F_l = 1$, which will be useful later. \\
 
 Another possible solution is given as
 \begin{align} \label{theory: r-matrix: solution 2}
@@ -113,12 +113,12 @@ Thus its inverse
 \end{align*}
 is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry relating each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
-	\sum_{j}^{N}\langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
+	\sum_{j}^{N}\langle \varphi_i | H + \mathcal{L} - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
 
-Here it is convenient to introduce the symmetric $\bm{C}$-matrix
+The right-hand side follows directly from the Bloch-Schrödinger equation along with the continuity condition. To simplify matters a bit, it is here convenient to introduce the symmetric $\bm{C}$-matrix
 \begin{align*}
-	\bm{C}_{ij}(E) = \langle \varphi_i | T_l + \mathcal{L} + V - E | \varphi_j \rangle
+	\bm{C}_{ij}(E) = \langle \varphi_i | H + \mathcal{L} - E | \varphi_j \rangle
 \end{align*}
 
 By solving equation (\ref{theory: r-matrix: r-matrix C}) for the expansion coefficients $c_j$, we get the equation
@@ -157,16 +157,16 @@ where $\gamma_{nl}$ is defined as
 	\gamma_{nl} = \sqrt{\frac{\hbar^2}{2\mu a}} \sum_{i}^{\infty}\bm{v}_{nl, i}\varphi_i(a)
 \end{align}
 
-$\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the total width, as we will see in a moment. \note{ask Hans for proper terminology}\\
+$\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the total width, as we will see in a moment.\\
 
-In general, the R-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} R-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
+In general, the $R$-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} $R$-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
 \begin{align} \label{theory: r-matrix: Gamma gamma}
 	\Gamma = \frac{2 \gamma_{1l}^2 P(E_R)}{1 + \gamma_{1l}^2 S'(E_R)}
 \end{align}
 which relates the total width $\Gamma$ to the reduced width $\gamma_{1\ l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
 
-\subsubsection{Applications} \label{sec: theory: r-matrix: applications}
-One of our first applications of the theory is to determine the phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
+\subsubsection{Determining the Coulomb phase shift} \label{sec: theory: r-matrix: applications}
+One of our first applications of the theory is to determine the Coulomb phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
 
 For the phase shift, we obtain the equation
 \begin{align*}
@@ -198,10 +198,10 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
 \end{align}
 
-These two equations are useful when we want to relate the reduced width $\gamma^2$ to the total width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
+These two equations are useful when we want to relate the reduced width amplitude $\gamma$ to the total width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
 
 \subsubsection{Three-body decays} \label{sec: theory: r-matrix: three body}
-So far, the R-matrix theory can only describe two-body decays. To extend the model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite \ce{^12C} state to all possible intermediate \ce{^8Be} states. We can then again use the standard model to describe each decay from the states of \ce{^8Be} to the definite final state \ce{$3$\alpha}. \\
+So far, the R-matrix theory can only describe two-body decays. To extend the model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite initial input \ce{^12C} channel to all possible intermediate \ce{^8Be} channels. We can then again use the standard model to describe each decay from the channels of \ce{^8Be} to the definite final output channel \ce{$3$\alpha}. \\
 
 By using these extensions, one can derive similar equations as for the two-body model, which will not be discussed here. This sequential three-body model is used internally in some of the simulation tools which will be introduced later. 
 
@@ -209,7 +209,7 @@ By using these extensions, one can derive similar equations as for the two-body 
 We will later have need of some basic kinematic results for a sequential decay, which will be introduced in this section. A useful way of visualizing three-body decays will also be introduced. 
 
 \subsubsection{Basic results}
-If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The first $\alpha$ particle to be emitted from the \ce{^12C} decay is called the \textit{primary} particle, while those from the \ce{^8Be} decay are called \textit{secondary}. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be
+If we define all our energies with respect to the ground state of \ce{^12C}, we can write the energy released in the first and second decay step as $Q_1 = E_{\ce{^12C}} - E_{\ce{^8Be}}$ and $Q_2 = E_{\ce{^8Be}} - E_{3\alpha}$, respectively. The first $\alpha$ particle to be emitted from the \ce{^12C} decay is called the \textit{primary} particle, while those from the \ce{^8Be} decay are called \textit{secondary}. The energies of the individual $\alpha$-particles can then be calculated through conservation laws to be (see appendix \ref{appendix: kinematics})
 \begin{align}
 	&E_1 = \frac{2}{3}Q_1 \label{theory: kinematics: E1}\\
 	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
@@ -223,7 +223,7 @@ where $\alpha$ is the angle between the axis defined by the first decay and the 
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=\linewidth]{figures/kinematics.eps}
-	\caption{Three frames of the same reaction. The left panel is the standard center-of-mass frame for \ce{^12C}. The middle panel illustrates the same frame using momentum vectors, as defined in \cite{Ohlsen}. The right panel shows the sequential decay relative coordinate $c'$ system with particle $1$ as the primary, as defined in the same paper. \note{dummy, you mixed up c' and c}.}
+	\caption{Three frames of the same reaction. The left panel is the standard center-of-mass frame for \ce{^12C}. The middle panel illustrates the same frame using momentum vectors. The right panel shows the sequential decay relative coordinate $c'$ system where particle $1$ is always defined as the primary. These last two frames are both defined as in \cite{Ohlsen}.}
 	\label{fig: theory: kinematics: angles}
 \end{figure}
 
@@ -237,7 +237,7 @@ Another quantity introduced in the same paper is the breakup angle $\beta$, defi
 	\cos \beta = \frac{\bm{p}_{1-23} \cdot \bm{p}_{2-3}}{p_{1-23}p_{2-3}}
 \end{align}
 
-As can be seen on figure \ref{fig: theory: kinematics: angles}, the two angles $\alpha$ and $\beta$ both describes the angle between the primary and secondary particles. The reason we have introduced two different ways of determining this angle will become clear in the next section - the explanation is basically that they are used in two different areas of the analysis. \note{remember to write something about this - alpha is useful in Dalitz plots, beta in momentum analysis} 
+As can be seen on figure \ref{fig: theory: kinematics: angles}, the two angles $\alpha$ and $\beta$ both describes the correlation angle between the primary and secondary particles. The reason we have introduced two different ways of determining this angle will become clear in the next section - the explanation is basically that they are used in two different areas of the analysis. 
 
 \subsubsection{The Dalitz plot}
 The goal of this thesis is to understand the excited states of \ce{^12C} based on the three $\alpha$-particles resulting from its decay. We can describe each of these decay products with a four-vector, for a total of $12$ degrees of freedom. Conservation of energy and momentum removes four degrees, the three masses $m_{\alpha}$ removes three, and finally the orientation of each product removes another three. Thus we are left wondering how best to choose the two remaining degrees of freedom. \\
@@ -247,7 +247,7 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts the points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
+devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts these points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
 
 \begin{figure}[tb]
 	\centering
@@ -258,20 +258,20 @@ devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of th
 
 Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Although this single slice contains all the information of the decay, since it is easier to see structure on the full plot, we will mainly be using those. \\
 
-Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on the nature of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \ref{fig: theory: dalitz: zemach}. Although no restrictions are imposed on our $0^+$ resonance, it will be useful for some of the other resonances we will study later.\\
+Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on properties of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \ref{fig: theory: dalitz: zemach}. Although no restrictions are imposed on our $0^+$ resonance, it will be useful for the other two $2^-$ and $3^-$ resonances.\\
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/zemach.png}
-	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from \cite{Kuhlwein}. \note{is this ok?}}
+	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from \cite{Kuhlwein}. \note{ask Hans: is this ok?}}
 	\label{fig: theory: dalitz: zemach}
 \end{figure}
 
-The equation for the angle between the primary and secondary particles, $\theta$, is given in the $\{ e_1, e_2, e_3 \}$ coordinate system through (\ref{theory: kinematics: theta}). Since we will be dealing exclusively with the Dalitz coordinates, it is useful to convert this to an equation of $\{x, y\}$ instead. A simple exercise gives the solution as
+The equation for the angle between the primary and secondary particles, $\alpha$, is given in the $\{ e_1, e_2, e_3 \}$ coordinate system through (\ref{theory: kinematics: theta}). Since we will be dealing exclusively with the Dalitz coordinates, it is useful to convert this to an equation of $\{x, y\}$ instead. A simple exercise (see appendix \ref{appendix: kinematics}) gives the solution as
 \begin{align} \label{theory: dalitz: theta}
 	\cos\alpha = \frac{x}{\sqrt{1 - y^2}}
 \end{align}
-Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$. This also illustrates why both equation \ref{theory: kinematics: theta} and \ref{theory: kinematics: theta data} are relevant: one can be extracted directly from the Dalitz plot through a simple projection onto the $x$ axis, while the other is independent of it. \\
+Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the particles is common to all Dalitz plots, and can be seen on the left panel in figure \ref{fig: theory: dalitz: theta}. The right panel shows the angle for a select few values of $y$. This also illustrates why both equation \ref{theory: kinematics: theta} and \ref{theory: kinematics: theta data} are relevant: one can be extracted directly from the Dalitz plot through a simple projection onto the $x$ axis, while the other is independent of it. Thus they offer two complementary methods of determining the same angle. \\
 
 \begin{figure}[!htb]
 	\centering
@@ -287,10 +287,8 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 	\label{fig: theory: dalitz: theta}
 \end{figure}
 
-\note{SOMETHING ABOUT ALLOWED REGIONS, MAYBE ALSO FEYNMANN GOLDEN RULE --> BANDS}
-
 \subsection{Angular correlations} \label{sec: theory: angular correlations}
-Now that we have discussed how to extract the correlation angle from the data, it is time to discuss how we expect them to be distributed. 
+Now that we have discussed how to extract the correlation angles from the data, it is time to discuss how we expect them to be distributed. 
 
 \note{introduce the effect when you understand it} \\
 
@@ -299,9 +297,9 @@ The formalism used in this thesis follows the work of Biedenharn \cite{Biedenhar
 	W(\beta) = \frac{1}{b_0} \sum_{n=0}^{N}b_n P_n(\cos\beta)
 \end{align}
 
-Since we assumed that each stage of the reaction has a well-defined parity, the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\beta$ as $\beta \rightarrow \pi - \beta$, since the intensity does not depend on the azimuthal angle $\phi$ for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\beta) = W(\pi - \beta)$, meaning they are all symmetric about $\beta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
+Since we assumed that each stage of the reaction has a well-defined parity, the wave function describing the exit channel must have the same parity as the intermediate state. The intensity of the emitted radiation (square of the wave function) must then always have even parity, meaning it is unchanged by the parity transformation $\textbf{r} \rightarrow -\textbf{r}$, which we can express in terms of $\beta$ as $\beta \rightarrow \pi - \beta = \alpha$, since the intensity does not depend on the azimuthal angle for unpolarized beams and randomly oriented target nuclei. This condition carries over to the Legendre polynomials, such that we require $W(\beta) = W(\alpha)$, meaning they are all symmetric about $\beta = \pi/2$. This condition is only satisfied by all even polynomials, and so the odd ones must vanish. \\
 
-The $b_n$ coefficients in (\ref{theory: angular correlations: W}) depend on the quantum properties of the interacting nuclei. Biedenharn \cite{Biedenharn} calculated the related coefficients $F_n$, given as
+The $b_n$ coefficients in (\ref{theory: angular correlations: W}) will generally depend on the quantum properties of the interacting nuclei. Biedenharn \cite{Biedenharn} calculated the related coefficients $F_n$, given as
 \begin{align*}
 	F_n(LL'jJ) \equiv (-1)^{j-J-1}\sqrt{(2L+1)(2L'+1)(2J+1)}\\
 	\times \langle L1L'-1|n0\rangle W(JJLL';nj)
@@ -318,11 +316,11 @@ where $a_n(l)$ is given as
 	a_n(l) = \frac{2l(l+1)}{2l(l+1) - n(n+1)}
 \end{align*}
 
-and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
+and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=.8\linewidth]{figures/corr_funcs.pdf}
-	\caption{The angular correlation functions for a few different states and transitions, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). In the legend, the first number denotes the resonance, while the second denotes the transition $l$. \note{definitely wrong text}}
+	\caption{The angular correlation functions for a few different nuclear states and angular momentum transfers \note{ask Hans for what $l$ is called. angular momentum transfer?}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). In the legend, the first number denotes the resonance, while the second denotes the angular momentum transfer $l$.}
 	\label{fig: theory: ang: ang_corr_funcs}
 \end{figure} 
 
@@ -352,4 +350,4 @@ The final issue is how to deal with errors. For finite samples, the covariance m
 \end{align*}
 This will in general result in asymmetrical errors on the parameters. \cite{Cowan} \\
 
-When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to expected number of events $\mu_i$ since the values from the simulation are only an approximation. To account for this, the maximum likelihood statistic introduced here must be modified as seen in \cite{Kuhlwein} and \cite{Barlow}.
+When we want to fit Monte Carlo simulations to our data, we introduce a statistical uncertainty to the expected number of events $\mu_i$ since the values from the simulation are only approximations. To account for this, the maximum likelihood statistic introduced here must be modified as done in \cite{Kuhlwein} and \cite{Barlow}.
