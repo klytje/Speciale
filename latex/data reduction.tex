@@ -8,7 +8,7 @@ Having gathered the raw data as explained in the previous section, it is now tim
 
 Another important type is the \texttt{RDataFrame} class, which in this context can be thought of as a wrapper around the \texttt{TTree}. It is then able to perform efficient and parallel operations on the underlying \texttt{TTree} structure through a simple interface. They are somewhat limited in their capabilities, however, and thus have mostly been used for generating plots. \\
 
-\AUSAlib{} (\textit{Aarhus University Subatomic library}) \cite{AUSAlib} is another \CPP{} framework built on top of \ROOT{} developed here at Aarhus. Since the experimental setups are typically similar between different experiments, it would mean a rather large overlap in analysis code. Thus a common framework was created, intended primarily as a transformation tool from raw data to readily analyzable data. Since this process typically involves many distinct steps, \AUSAlib{} consists of multiple individual modules, each handling one aspect of the transformation. As is common in such frameworks, it eventually grew beyond its intended use, and now also includes a simulation library called \simX{}. The basic idea with this custom simulator is to account for the detection system, such as to allow a direct comparison with the experimental data. \\
+\AUSAlib{} (\textit{Aarhus University Subatomic library}) \cite{AUSAlib} is another \CPP{} framework built on top of \ROOT{} developed here at Aarhus. Since the experimental setups are typically similar between different experiments, it would mean a rather large overlap in analysis code. Thus a common framework was created, intended primarily as a transformation tool from raw data to readily analyzable data. Since this process typically involves many distinct steps, \AUSAlib{} consists of multiple individual modules, each handling one aspect of the transformation. As is common in such frameworks, it eventually grew beyond its intended use, and now also includes a simulation library called \simX{}. The basic idea with this custom simulator is to account for the detection system in Monte Carlo simulations, such as to allow a direct comparison with the experimental data. \\
 
 The remainder of this section is devoted to introducing these individual modules. The next section discusses the practical application of them. For a brief overview of the whole library, see figure \ref{fig: datared: ausalib pipeline}. 
 
@@ -44,7 +44,7 @@ After this event matching has been performed, the hits on the individual sides o
 \subsubsection{Identifier}
 The \Identifier{} is, as its name suggests, meant as a tool for identifying the participating particles. As mentioned previously, it is also responsible for carrying out the energy loss corrections, not only due to the dead layers of the detectors, but also due to passage through the target. \\
 
-The standard approach to identify particles is to place a second detector behind the thin DSSD. The particles then lose some energy depending on the stopping power of the DSSD, which is particle-specific. Their remaining energy is picked up by the second detector, such that it is easy to deduce how much energy they lost in transit. Another approach is to look at the energy deposited in the DSSD, which may be too large to come from a lighter particle, which can thus be excluded. \\
+The standard approach to identify particles is to place a second detector behind the thin DSSD. The particles then lose some energy depending on the stopping power of the DSSD, which is in general particle-specific. Their remaining energy is picked up by the second detector, such that it is easy to deduce how much energy they lost in transit. Another approach is to look at the energy deposited in the DSSD, which may be too large to come from a lighter particle, which can thus be excluded. \\
 
 No secondary detector was used in this setup, and the second approach cannot differentiate between protons and $\alpha$-particles. Thus this functionality could not be used, and the \Identifier{} was used solely for its energy loss corrections.  
 
@@ -90,18 +90,18 @@ Here $(\Omega_1, \Theta_1)$ and $(\omega_2, \varphi_2)$ are the emission directi
 \end{align*} 
 which will then introduce interference effects in the simulation. \\
 
-A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for multiple orbital angular momentum values for the first $\alpha$ particle. This modification will allow us to simultaneously simulate decay events for both $\alpha_0$ and $\alpha_1$. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
+A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for multiple orbital angular momentum values for the first $\alpha$ particle. When running in this mode, the tool outputs the decay amplitudes $f_l$ and $f_{l'}$, from which the total decay amplitude can be calculated as
 \begin{align} \label{datared: tools: k delta eq}
 	&|f^2| = \sum |\sqrt{k}f_l + \sqrt{1-k}e^{i\delta}f_{l'}|^2 \nonumber\\
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. $\delta$ is an arbitrary phase difference between the two states, meant to represent \note{what?}. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. $\delta$ is then the relative phase difference between the two partial waves, meant to represent \note{what?}. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
 
-The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline. 
+The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline similarly to the experimental data. 
 
 \subsection{Custom tools} \label{sec: datared: custom tools}
-Besides the tools contained in these public libraries, a few custom scripts were created for this thesis. These will all be introduced here. 
+Besides the tools contained in these public libraries, a few custom tools were developed specifically for this thesis. These will all be introduced here. 
 
 \subsubsection{Dalitz fitter}
 Although we are working primarily with the $0^+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting tool which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
@@ -110,9 +110,9 @@ The name of the program, \textit{Dalitz fitter}, signifies that it fits the Dali
 
 We now have an important decision to make: which minimization algorithm should we use? This choice is far more important than it may appear, since even with only $2$ free parameters, most of the possible algorithms from \ROOT{} actually failed to find the global minima. They were all tested on data from the $2^-$ state, based on which the best candidate appears to be the \textit{Genetic} algorithm \cite{genetic}. The basic idea is to randomly seed a group of individual "genomes" in the possible parameter space. A fitness function is then evaluated for every genome in each iteration, based on which they are either kept or discarded. A new generation of genomes is then generated based on the surviving population of the group. After a number of these cycles have occurred, the best genome is taken as the solution. \\
 
-Since this algorithm randomly explores a large section of the parameter space, it is excellent for finding global minima. This same randomness also makes it extremely slow to converge towards a solution, and it was by far the slowest algorithm out of the ones offered by \ROOT{} - each fit takes upwards of an hour to perform. These features are a boon for us, since it gives us more confidence in the accuracy of its results. \\
+Since this algorithm randomly explores a large section of the parameter space, it is excellent for finding global minima. This same randomness also makes it extremely slow to converge towards a solution, and it was by far the slowest algorithm out of the ones offered by \ROOT{} - each fit takes more than an hour to perform. These features are a boon for us, since it gives us more confidence in the accuracy of its results. \\
 
-With the choice of algorithm made, we immediately encounter another problem: it does not support error estimates. To solve this issue, and simultaneously ensure that the errors are accurate, i.e. follows the description made in the section on statistics \ref{section: theory: statistics}, we can use the \texttt{MINOS} tool from \ROOT{} \cite{minos}. When given a good estimate of the parameters, this tool determines the 1-$\sigma$ errors by finding the set of parameters $\bm{\theta}'$ where $\ln \mathcal{L}(\bm{\theta}') - \ln \mathcal{L}_{max} = 1/2$. \\
+With the choice of algorithm made, we immediately encounter another problem: it does not support error estimates. To solve this issue, and simultaneously ensure that the errors are accurate, i.e. follows the description from section \ref{section: theory: statistics}, we can use the \texttt{MINOS} tool from \ROOT{} \cite{minos}. When given a good estimate of the parameters, this tool determines the 1-$\sigma$ errors by finding the set of parameters $\bm{\theta}'$ where $\ln \mathcal{L}(\bm{\theta}') - \ln \mathcal{L}_{max} = 1/2$. \\
 
 Finally, a few words on how the tool handles simultaneously fitting multiple simulations. Any single or pair of \simta{} simulations can be fitted, but any interference beyond that provided by the simulation tool is neglected. As an example, if we fit the simulated pair $\{2^-_1, 2^-_3\}$ and $\{3^-_1, 3^-_3\}$, the simulation tool accounts for interference within each pair. The fitting tool then creates two individual Dalitz plots, and adds them based on the ratio fitting parameter, thus neglecting any additional interference between the states. See table \ref{table: datared: dalitz fitter} for an overview of its functionalities. 
 
@@ -126,24 +126,28 @@ Finally, a few words on how the tool handles simultaneously fitting multiple sim
 		& \multicolumn{1}{l|}{$k_2$} &  &  & x \\
 		& \multicolumn{1}{l|}{$\delta_2$} &  &  & x
 	\end{tabular}
-	\caption{Overview of the possible inputs to the Dalitz fitting tool. An input file is depicted by a pair of curly braces. The parameters $k_1$ and $\delta_1$ describes the ratio and interference within the first \simta{} input file, $c$ describes the ratio of the first input file to the second, and $k_2$ and $\delta_2$ describes the ratio and interference within the second \simta{} input file.}
+	\caption{Overview of the possible inputs to the Dalitz fitting tool. An input file is depicted by a pair of curly braces. The parameters $k_1$ and $\delta_1$ describes the ratio and relative phase within the first \simta{} input file, $c$ describes the ratio of the first input file to the second, and $k_2$ and $\delta_2$ describes the ratio and relative phase within the second \simta{} input file.}
 	\label{table: datared: dalitz fitter}
 \end{table}
 
 \subsubsection{Width converter}
-We will later have need of comparing simulations from \simX{} and \simta{} for a variety of different widths. Since the first uses the width $\Gamma$ and the second the reduced width $\gamma$, we will need to establish a relationship between the two. \\
+We will later have need of comparing simulations from \simX{} and \simta{} for a variety of different widths. Since the first uses the total width $\Gamma$ and the second the reduced width amplitude $\gamma$, we will need to establish a relationship between the two. \\
 
 We already have this relationship from equation (\ref{theory: r-matrix: Gamma gamma}), with only the interaction radius $a_c$ as a free variable. Since this radius obviously depends on the strength of the Coulomb force, it will in general depend on the interacting nuclei. A popular choice for its value is to use the nuclear radii
 \begin{align*}
 a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx \SI{1.4}{fm}
 \end{align*}
-which we will also do here, with $r_0 = \SI{1.461}{fm}$ determined by roughly matching the widths \ce{\Gamma(^8Be^*)} from \cite{nudat} with \ce{\gamma(^8Be^*)} from \cite{Bhattacharya}.
+which we will also do here, with $r_0 = \SI{1.461}{fm}$ determined by roughly matching the widths \ce{\Gamma(^8Be^*)} from \cite{nudat} with \ce{\gamma(^8Be^*)} from \cite{Bhattacharya}. \\
+
+The tool is implemented in Python due to its extensive library support. Thus the regular and irregular Coulomb functions can easily be calculated by using the mpmath \cite{mpmath} library.
 
 \subsubsection{Correlation functions}
-This final tool simply calculates the correlation function $W(\beta)$ for any given input $\{j_1, j_2, j, l_1, l_2\}$ based on the theory from section \ref{sec: theory: angular correlations}. It was also used to generate the functions shown on the figures in that section. 
+This final tool simply calculates the correlation function $W(\beta)$ for any given input $\{j_1, j_2, j, l_1, l_2\}$ based on the theory from section \ref{sec: theory: angular correlations}. It was also used to generate the functions shown on the figures in that section. \\
+
+For the same reasons as the width converter tool, this was also implemented in Python. Thus the Clebsch-Gordan and Racah symbols could easily be calculated with the SymPy \cite{Sympy} library, which also defines the Legendre polynomials. 
 
 \subsection{Data reduction}
-The first step of the reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
+Here we will briefly discuss how these tools were used practically. The first step of the data reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
 
 \begin{wraptable}{r}{4.6cm}
 	\vspace{-0.5cm}
@@ -161,16 +165,16 @@ The first step of the reduction is to convert it to a format \ROOT{} recognizes.
 	\label{table: analysis: calibration}
 \end{wraptable}
 
-A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{table: analysis: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0^+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2-$ resonance, which used the same setup. \\
+A composite $\alpha$-source consisting of the three isotopes \ce{^148Gd}, \ce{^239Pu}, and \ce{^244Cm} were placed in the target position, and rotated to face each detector in turn. Thus four separate sets of calibration data were generated, which could then be used as input for the \Calibrator{}. The energies of each individual $\alpha$-source is listed in table \ref{table: analysis: calibration}. However, due to some major issues which will be discussed in the next section, the calibration data for the $0^+$ measurement could not be used. It was instead decided to reuse an older calibration from an earlier measurement of the $2^-$ resonance, which used the same setup. \\
 
-After the energy calibration, the events from the front and backside of each detector is matched with the \Sorter{} tool, effectively turning the list of detector hits into a list of detected particles. To identify which particles we are dealing with, the \Identifier{} is used. This tool will also correct for the energy loss due to passage through both the target and the dead layer of the detectors. After this, the data is finally passed to the \EventBuilder{}, which deals with individual events. \\
+After the energy calibration, the events from the front and backside of each detector is matched with the \Sorter{} tool, effectively turning the list of detector hits into a list of detected particles. The \Identifier{} is then used to correct for the energy loss due to passage through both the target and the dead layer of the detectors. After this, the data is finally passed to the \EventBuilder{}, which deals with individual events. \\
 
-The \EventBuilder{} is the first tool which requires us to write our own code. The idea with this tool is that we can now specify all of the basic properties of each event that we will need in the actual analysis. It is also an excellent opportunity to perform some filtering based on these properties. The most noteworthy definitions made here are
+The \EventBuilder{} is the first tool which requires us to write our own code. The idea with this tool is that we can now specify all of the basic properties of each event that we will need in the actual analysis. It is also an excellent opportunity to perform some filtering based on these properties. The most noteworthy operations performed here are
 \begin{itemize}
-	\item Multiplicity: The data is separated into two halves depending on their multiplicity. For events where only two particles were detected, the third is reconstructed. After this stage, multiplicity $2$ and $3$ data are then treated individually. Note that each event may very well contain protons, which will be filtered by imposing a few different cuts. 
+	\item Multiplicity filtering: The data is separated into two halves depending on their multiplicity. For events where only two particles were detected, the third is reconstructed. After this stage, multiplicity $2$ and $3$ data are then treated individually. Note that each event may very well contain protons, which will be filtered by imposing a few different cuts. 
 	
-	\item $\bm{p}_i$: The individual momentum vectors for each particle is determined. We can then use these to calculate all angles that may be relevant in the analysis, such as the correlation angle $\beta$ from (\ref{theory: kinematics: theta data}). By also calculating and defining the total momentum $p_t$, we can then require that it not be too large. 
+	\item $\bm{p}_i$ definition: The individual momentum vectors for each particle is determined. We can then use these to calculate all angles that may be relevant in the analysis, such as the correlation angle $\beta$ from (\ref{theory: kinematics: theta data}). By also calculating and defining the total momentum $p_t$, we can then require that it not be too large. 
 	
-	\item $\Delta E$: We calculate the "departure" from energy conservation for each event by subtracting the total $\alpha$ energy from the beam energy. Ideally this value would be $0$ for all events (which it automatically is for the multiplicity $2$ data), but since we are dealing with experimental data, the best we can do is require that it is at least close to $0$. 
+	\item $\Delta E$ calculation: We calculate the "departure" from energy conservation for each event by subtracting the total $\alpha$ energy from the beam energy in the center-of-mass frame. Ideally this value would be $0$ for all events (which it automatically is for the multiplicity $2$ data), but since we are dealing with experimental data, the best we can do is require that it is at least close to $0$. 
 \end{itemize}
 Since we do not know the optimal cutoff values for the momentum and energy cuts, they cannot be performed here. That will instead be delegated to the first step of the analysis, which we are finally ready for. 
