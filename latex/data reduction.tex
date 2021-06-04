@@ -96,7 +96,7 @@ A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for 
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. $\delta$ is then the relative phase difference between the two partial waves, meant to represent \note{what?}. We can then determine both $k$ and $\delta$ by fitting this equation to the data. \\
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. Since there is no reason to believe the two partial waves are coherent, a relative phase difference $\delta$ is allowed between them. We can then determine both $k$ and $\delta$ by fitting this equation to the data.\\
 
 The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline similarly to the experimental data. 
 

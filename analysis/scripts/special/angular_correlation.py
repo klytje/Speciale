@@ -32,17 +32,17 @@ if not (len(sys.argv) == 3 or len(sys.argv) == 6):
 j1, j, j2, l1, l2 = 0, 0, 0, 0, 0
 if len(sys.argv) == 3:
 	j1 = int(sys.argv[1]) # 12C
-	j = 2 # 8B
+	j = 2 # 8Be
 	j2 = 0 # final alpha
 	l1 = int(sys.argv[2]) # first alpha (from 12C -> a + 8B)
 	l2 = 2 # second alpha (from 8B -> a + a)
 
 elif len(sys.argv) == 6: 
 	j1 = int(sys.argv[1]) # 12C
-	j2 = int(sys.argv[2]) # 12C
-	j = int(sys.argv[3]) # 12C
-	l1 = int(sys.argv[4]) # 12C
-	l2 = int(sys.argv[5]) # 12C
+	j = int(sys.argv[3]) # 8Be
+	j2 = int(sys.argv[2]) # final alpha
+	l1 = int(sys.argv[4]) # primary alpha
+	l2 = int(sys.argv[5]) # secondary alpha
 
 print(f"Calculating the angular correlation for j1 = {j1}, j = {j}, j2 = {j2}, l1 = {l1}, l2 = {l2}\n")
 

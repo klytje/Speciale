@@ -263,7 +263,7 @@ Further studies on the effects of symmetries in Dalitz plots where performed by 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/zemach.png}
-	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from Kuhlwein \cite{Kuhlwein}. \note{ask Hans: is this ok?}}
+	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from Kuhlwein \cite{Kuhlwein}. \note{make your own version and cite Fynbo 2009.}}
 	\label{fig: theory: dalitz: zemach}
 \end{figure}
 
@@ -288,11 +288,9 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 \end{figure}
 
 \subsection{Angular correlations} \label{sec: theory: angular correlations}
-Now that we have discussed how to extract the correlation angles from the data, it is time to discuss how we expect them to be distributed. 
+Now that we have discussed how to extract the correlation angles from the data, it is time to discuss how we expect them to be distributed. \\
 
-\note{introduce the effect when you understand it} \\
-
-The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. It is assumed that the beam is unpolarized, and that the nuclear levels involved have unique spin and well-defined parity. The correlation between two decay products can in general be expressed as a series of Legendre polynomials in the angle between them
+The formalism used in this thesis follows the work of Biedenharn \cite{Biedenharn}, as explained in appendix D of the book \textit{Nuclear Physics of Stars} \cite{angular correlation appendix}. We assume that the beam is unpolarized, and that the nuclear levels involved have unique spin and well-defined parities. The correlation between two decay products can in general be expressed as a series of Legendre polynomials in the angle between them
 \begin{align} \label{theory: angular correlations: W}
 	W(\beta) = \frac{1}{b_0} \sum_{n=0}^{N}b_n P_n(\cos\beta)
 \end{align}
@@ -316,11 +314,11 @@ where $a_n(l)$ is given as
 	a_n(l) = \frac{2l(l+1)}{2l(l+1) - n(n+1)}
 \end{align*}
 
-and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
+and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. $l_1$ and $l_2$ are then the angular momenta of the primary and secondary $\alpha$ particles, while $j_1$, $J$, and $j_2$ are the angular momenta of the initial \ce{^12C}, the intermediate \ce{^8Be}, and the final free $\alpha$ state, respectively. Thus for decays to the first excited state of \ce{^8Be} which we will primarily be working with, $J = 2$, $j_2 = 0$ and $l_2 = 2$, leaving only $j_1$ and $l_1$ as free variables that depends on the \ce{^12C} state. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=.8\linewidth]{figures/corr_funcs.pdf}
-	\caption{The angular correlation functions for a few different nuclear states and angular momentum transfers \note{ask Hans for what $l$ is called. angular momentum transfer?}, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). In the legend, the first number denotes the resonance, while the second denotes the angular momentum transfer $l$.}
+	\caption{The angular correlation functions for a few different nuclear states and primary angular momenta, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). The legend is of the form ($j_1\pi_1\ l_1$), where $j_1$ and $\pi_1$ is the angular momentum and parity of the \ce{^12C} state, and $l_1$ is the angular momentum carried by the primary $\alpha$ particle.}
 	\label{fig: theory: ang: ang_corr_funcs}
 \end{figure} 
 
@@ -342,7 +340,7 @@ When we apply this idea to our binned histogram data, the density function $f(x,
 
 Here $\mu$ is the expected number of events in each bin, while $m$ is the observed number. It is thus by maximizing this equation that we obtain the maximum likelihood estimate for our parameters $\bm{\theta}$. \\
 
-To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. \note{ask Hans}. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Kuhlwein}. \\
+To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Kuhlwein}. \\
 
 The final issue is how to deal with errors. For finite samples, the covariance matrix can result in an underestimate of the variances. A numerically equivalent approach to determine the $s$-standard deviation confidence interval is by finding the set of parameters $\bm{\theta}'$ where
 \begin{align*}

@@ -436,6 +436,7 @@ int main(int argc, char const *argv[]) {
     lvleft->Draw();
 
     path = dir + "E23.pdf";
+    c3->SetRightMargin(0.12);
     c3->SaveAs(path.c_str());
 
 //*** DALITZ PLOT OF EACH PEAK ***//
