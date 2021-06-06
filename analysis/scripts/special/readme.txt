@@ -49,3 +49,12 @@ hardcoded a fit for my 0+ data into this file, which should only be produced for
 
 corr_funcs
 plots a whole bunch of correlation functions. I had some issues with some of them not being normalized, and this plot helped me realize which.
+
+momentum_analysis <output path> <input file>
+creates a series of plots based on the momentum vectors of the input. these include the E23 plot and a correlation angle & fit
+
+dalitz_fitter
+run it without any arguments for more information
+
+phase_space <output path> <input sim3a_i file>
+plots the phase space distribution for mul=2 and mul=3 separately

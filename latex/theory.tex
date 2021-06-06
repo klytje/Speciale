@@ -262,8 +262,8 @@ Further studies on the effects of symmetries in Dalitz plots where performed by 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\linewidth]{figures/zemach.png}
-	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Only the states relevant for this thesis are shown here. Figure reproduced from Kuhlwein \cite{Kuhlwein}. \note{make your own version and cite Fynbo 2009.}}
+	\includegraphics[width=\linewidth]{figures/zemach.eps}
+	\caption{Suppressed regions of the $3\alpha$ Dalitz plot, as required by Zemach's \cite{Zemach} analysis. Solid black lines and points indicates the suppressed areas. Only the states relevant for this thesis are shown here. The figure is based on the work of \cite{Fynbo}. \note{wrong figure - 1+ <--> 1- and 3- <--> 3+}}
 	\label{fig: theory: dalitz: zemach}
 \end{figure}
 
@@ -340,7 +340,7 @@ When we apply this idea to our binned histogram data, the density function $f(x,
 
 Here $\mu$ is the expected number of events in each bin, while $m$ is the observed number. It is thus by maximizing this equation that we obtain the maximum likelihood estimate for our parameters $\bm{\theta}$. \\
 
-To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Kuhlwein}. \\
+To obtain a goodness-of-fit test statistic, one can instead minimize the likelihood ratio $-2\lambda = -2\ln f(\bm{m}; \bm{\theta})/f(\bm{m}; \bm{\mu})$, where the denominator is to be understood as the values one would find without any errors. As per Wilk's theorem, this quantity will asymptotically approach a $\chi^2$ distribution with $\mu - \theta$ degrees of freedom. Since $\bm{\mu}$ is generally unknown, we can replace it by $\bm{m}$ \cite{Baker}. \\
 
 The final issue is how to deal with errors. For finite samples, the covariance matrix can result in an underestimate of the variances. A numerically equivalent approach to determine the $s$-standard deviation confidence interval is by finding the set of parameters $\bm{\theta}'$ where
 \begin{align*}
