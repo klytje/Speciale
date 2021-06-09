@@ -15,13 +15,20 @@ The \SI[product-units=power]{49.5x49.5}{mm} surface area of the W1 detectors are
 
 The S3 detectors are annular, such that the beam can travel through the central hole. They have an inner radius of \SI{11}{mm}, and an outer radius of \SI{35}{mm}. The front side is split into 32 radial spokes, while the back side is split into 24 rings, thus constituting $768$ pixels of varying sizes. They are \SI{322}{\mu m} thick, and have a dead layer equivalent to \SI{570(57)}{nm} of silicon. The two detectors are both placed perpendicularly with the beam axis, at a separation of \SI{36}{mm} from the target. The upstream detector is named SU(pstream), while the downstream detector is named SD(ownstream). Due to its downstream position, the inner $16$ rings of the SD are covered by a collimator. Furthermore its spokes 1, 2, 3, and 32 have not registered anything, and are most likely broken. All other strips in the other detectors appear to be working correctly. \\
 
-As can be seen on figure \note{make figure}, the setup covers a rather large solid angle, which is ideal for measuring multi-coincidence data. This will later allow us to filter the data to only the events where all three decay products were detected. To reduce the amount of data gathered, a trigger with a logical AND condition is used, thus requiring a simultaneous hit in at least two detectors. Furthermore, to reduce the number of detected Rutherford scattered protons, a downscaling is applied to each individual detector: For every four events accepted by the SU, two are accepted in each of the W3's, and only a single event is accepted by the SD due to its downstream position. \\
+As can be seen on figure \ref{fig: experiment: setup}, the setup covers a rather large solid angle, which is ideal for measuring multi-coincidence data. This will later allow us to filter the data to only the events where all three decay products were detected. To reduce the amount of data gathered, a trigger with a logical AND condition is used, thus requiring a simultaneous hit in at least two detectors. Furthermore, to reduce the number of detected Rutherford scattered protons, a downscaling is applied to each individual detector: For every four events accepted by the SU, two are accepted in each of the W3's, and only a single event is accepted by the SD due to its downstream position. \\
+
+\begin{figure}
+	\centering
+	\includegraphics[width=.7\textwidth]{figures/setup.png}
+	\caption{The experimental setup. Note the large solid angle covered by the detectors. Figure replicated from \cite{Kuhlwein}. }
+	\label{fig: experiment: setup}
+\end{figure}
 
 The analogue signals from the trigger logic are digitized by the data acquisition system, whose main components can be seen in figure \ref{fig: experiment: daq}. Since the charge is impractically small, the first step is to pass it through a preamplifier, which also shapes the signal into a fast-rising pulse with a rather long tail. The signal is then passed to the amplifier, which further amplifies and shapes the signal. The amplifier then passes the signal on to the ADC (Analogue to Digital Converter), and also notifies the TDC (Time to Digital Converter) and trigger logic that an event has been detected. The ADC determines a channel number based on the amplitude of the signal, since this value is proportional to its energy. The TDC determines the relative timing of each signal, and digitizes it for readout. Finally the trigger logic must then either accept or reject the event, and informs the ADC and TDC of its decision. The readout is only performed if the trigger logic accepts the event.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=.8\textwidth]{figures/DAQ.png}
+	\includegraphics[width=.7\textwidth]{figures/DAQ.png}
 	\caption{An overview of the main components of the data acquisition system. The figure is reproduced from Kirsebom \cite{Kirsebom}.}
 	\label{fig: experiment: daq}
 \end{figure}

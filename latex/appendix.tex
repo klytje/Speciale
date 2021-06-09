@@ -62,22 +62,22 @@ Thus we arrive at the final simple result
 	\cos\alpha = \frac{x}{\sqrt{1 - y^2}}
 \end{align*}
 
+\newpage
 \section{Figures}
-\begin{figure}[]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/0+/large_E.pdf}
-	
 	\includegraphics[width=\linewidth]{figures/0+/small_E.pdf}
-	\caption{\note{describe me}}
+	\caption{The energy dependency of the \TDC{} peaks. The $x$-axis labels are the maximum energy $E_{\alpha}$ allowed in each panel in \si{keV}. Note how the middle peak contains primarily low-energy particles, and only starts to disappear around $E_{\alpha} \sim 300$.}
 	\label{fig: appendix: multiple peaks energy}
 \end{figure}
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\linewidth]{figures/0+/sim/ang_compare_2.pdf}
-	\includegraphics[width=\linewidth]{figures/0+/sim/ang_compare_1.pdf}
-	\includegraphics[width=\linewidth]{figures/0+/sim/ang_compare_0.pdf}
-	\caption{\note{describe me}}
+	\includegraphics[width=.93\linewidth]{figures/0+/sim/ang_compare_0.pdf}
+	\includegraphics[width=.93\linewidth]{figures/0+/sim/ang_compare_1.pdf}
+	\includegraphics[width=.93\linewidth]{figures/0+/sim/ang_compare_2.pdf}
+	\caption{The angular correlation extracted from the Dalitz plots (see figure \ref{fig: analysis: width effect dalitz all}). Note how \simta{} is almost perfectly described by the theory up to around $\gamma = 25$. At this stage interference effects becomes prevalent, which means that it is hard to estimate what the correct scaling for the theoretical expression is - the difference is most likely due to this. \simX{} never quite seems to match the expected, which we in the text attributed to an implementation error in the tool itself. }
 	\label{fig: appendix: ang compare all}
 \end{figure}
 
@@ -91,7 +91,7 @@ Thus we arrive at the final simple result
 		\centering
 		\includegraphics[width=\linewidth]{figures/0+/reconstructed_events/dalitz_no_cuts.pdf}
 	\end{minipage}
-	\caption{The raw, uncut Dalitz plots for the data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data.}
+	\caption{The raw, uncut Dalitz plots for the $0^+$ data. The left panel shows the plot for our multiplicity three data, while the right shows it for the multiplicity two data. Note how the weird cones on the right panel extends well outside the energetically allowed region, which indicates that they are due to protons. }
 	\label{fig: appendix: 0+ dalitz uncut}
 \end{figure}
 
@@ -105,7 +105,7 @@ Thus we arrive at the final simple result
 		\centering
 		\includegraphics[width=\linewidth]{figures/3-/sim/3-_l3/dalitz.pdf}
 	\end{minipage}
-	\caption{The Dalitz plots for a pure $3^-_1$ (left) and $3^-_3$ (bottom) simulation. .}
+	\caption{The Dalitz plots for a pure $3^-_1$ (left) and $3^-_3$ (bottom) simulation. Note the small area near the edge which is suppressed in both figures. Since our data does not share this feature, it means that these two simulations could never possibly describe it perfectly. In the text we attributed this to a wrong choice of R-matrix parameter values. }
 	\label{fig: appendix: 3- l1 l3}
 \end{figure}
 
@@ -133,6 +133,6 @@ Thus we arrive at the final simple result
 		\centering
 		\includegraphics[width=\linewidth]{figures/3-/reconstructed_events/dalitz.pdf}
 	\end{minipage}
-	\caption{The Dalitz plots for the multiplicity $3$ (left) and $2$ (right) $3^-$ data. }
+	\caption{The Dalitz plots for the multiplicity $3$ (left) and $2$ (right) $3^-$ data. Note the similarity on the right panel to the cones on figure \ref{fig: appendix: 0+ dalitz uncut}.}
 	\label{fig: appendix: 3- dalitz plots}
 \end{figure}

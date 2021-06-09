@@ -65,12 +65,12 @@ which is the foundation of this simulation tool. In this equation, $\Gamma_1$ an
 \begin{wraptable}[9]{r}{7cm}
 	\vspace{-16pt}
 	\begin{tabular}{ll}
-		State       & $W(\theta)$ \\ \hline \vrule width 0pt height 2.5ex
-		$0^+$, $l=2$ & $\frac{45}{4}\cos^4\theta$ \\[3pt]
-		$2^-$, $l=1$ & $\frac{3}{2}\sin^2\theta$ \\[3pt]
-		$2^-$, $l=3$ & $-\frac{45}{8}\cos^4\theta + \frac{21}{4}\cos^2\theta + \frac{3}{8}$ \\[3pt]
-		$3^-$, $l=1$ & $\frac{3}{7}\cos^2\theta + \frac{6}{7}$ \\[3pt]
-		$3^-$, $l=3$ & $\frac{15}{4}\cos^4 - 4\cos^2\theta + \frac{19}{12}$
+		State       & $W(\beta)$ \\ \hline \vrule width 0pt height 2.5ex
+		$0^+$, $l=2$ & $\frac{45}{4}\cos^4\beta$ \\[3pt]
+		$2^-$, $l=1$ & $\frac{3}{2}\sin^2\beta$ \\[3pt]
+		$2^-$, $l=3$ & $-\frac{45}{8}\cos^4\beta + \frac{21}{4}\cos^2\beta + \frac{3}{8}$ \\[3pt]
+		$3^-$, $l=1$ & $\frac{3}{7}\cos^2\beta + \frac{6}{7}$ \\[3pt]
+		$3^-$, $l=3$ & $\frac{15}{4}\cos^4\beta - 4\cos^2\beta + \frac{19}{12}$
 	\end{tabular}
 	\caption{The relevant correlation functions calculated with my own tool.}
 	\label{table: datared: Wtheta}
@@ -96,7 +96,7 @@ A trivial generalization of (\ref{datared: tools: balamuth eq}) is to allow for 
 	&= \sum \big[k|f_l|^2 + (1-k)|f_{l'}|^2 + 2\sqrt{k(1-k)}\big(\text{Re}(f_lf_{l'}^*)\cos\delta + \text{Im}(f_lf_{l'}^*)\sin\delta\big) \big]
 \end{align}
 
-where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. Since there is no reason to believe the two partial waves are coherent, a relative phase difference $\delta$ is allowed between them. We can then determine both $k$ and $\delta$ by fitting this equation to the data.\\
+where $l$ and $l'$ are the two possible angular momentum values, and $k$ is the mixing ratio of the two states. We have in this equation also introduced the phase $\delta$, which is an additional relative phase difference between the two partial waves. The reasoning behind this is that the theoretical expression (\ref{datared: tools: k delta eq}) paints a strictly sequential picture. This additional phase difference is then an attempt to allow for a possible divergence from this picture. Principally we would expect this additional parameter to vanish, but we will let the fitting algorithm be the judge of that. \\
 
 The output of this program is a \ROOT{} file which can simply be passed to \simX{}, after which it can be pulled through the entire \AUSAlib{} pipeline similarly to the experimental data. 
 
@@ -139,12 +139,12 @@ a_c = r_0 (A^{1/3}_1 + A^{1/3}_2) && r_0 \approx \SI{1.4}{fm}
 \end{align*}
 which we will also do here, with $r_0 = \SI{1.461}{fm}$ determined by roughly matching the widths \ce{\Gamma(^8Be^*)} from \cite{nudat} with \ce{\gamma(^8Be^*)} from \cite{Bhattacharya}. \\
 
-The tool is implemented in Python due to its extensive library support. Thus the regular and irregular Coulomb functions can easily be calculated by using the mpmath \cite{mpmath} library.
+The tool is implemented in Python due to its extensive library support. Thus the regular and irregular Coulomb functions can easily be calculated by using the mpmath library \cite{mpmath}.
 
 \subsubsection{Correlation functions}
 This final tool simply calculates the correlation function $W(\beta)$ for any given input $\{j_1, j_2, j, l_1, l_2\}$ based on the theory from section \ref{sec: theory: angular correlations}. It was also used to generate the functions shown on the figures in that section. \\
 
-For the same reasons as the width converter tool, this was also implemented in Python. Thus the Clebsch-Gordan and Racah symbols could easily be calculated with the SymPy \cite{Sympy} library, which also defines the Legendre polynomials. 
+For the same reasons as the width converter tool, this was also implemented in Python. Thus the Clebsch-Gordan and Racah symbols could easily be calculated with the SymPy library \cite{Sympy}, which also defines the Legendre polynomials. 
 
 \subsection{Data reduction}
 Here we will briefly discuss how these tools were used practically. The first step of the data reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\

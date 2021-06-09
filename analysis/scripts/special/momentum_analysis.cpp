@@ -436,6 +436,7 @@ int main(int argc, char const *argv[]) {
     lvleft->Draw();
 
     path = dir + "E23.pdf";
+    p2->SetRightMargin(0.12);
     c3->SetRightMargin(0.12);
     c3->SaveAs(path.c_str());
 

@@ -1,5 +1,7 @@
 \section{Theory} \label{section: theory}
-Since we are dealing almost exclusively with many-body systems, one of the primary goals of nuclear physicists is to construct simplified models of nuclear systems. Although many such phenomenological models have been discovered through the years, a single overarching framework which can consistently model all phenomena has yet to be found. In this thesis we are mainly interested in models of nuclear interactions, which is well described by the two branches of R-matrix theory. Thus most of our effort in this chapter will go into understanding that theory.
+Atomic nuclei are bound systems of protons and neutrons which, in our current understanding, are built of quarks and gluons interacting through the laws of quantum chromodynamics. Thus we already have the recipe to describe any nuclear reaction: simply use QCD to calculate the interaction. It is, however, only a select few observables in very specific cases which can be described at such a fundamental level. Thus one of the primary goals of nuclear physics is to develop approximate models which captures the essence of these subatomic interactions, and are applicable to a more general collection of reactions. Some of the primary observables these models should account for are the masses, shapes, spectra, and decay modes of bound states. This thesis deals exclusively with the last part, i.e. the decay modes of resonances populated by nuclear reactions. \\
+
+One of the more successful models of these interactions is the R-matrix theory, which will be introduced here in this section. We will also devote some time to discussing the kinematics of a sequential decay, and how the correlation angle factors into this. 
 
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
@@ -62,12 +64,12 @@ where $I_l = G_l - iF_l$ and $O_l = G_l + iF_l$ are the incoming and outgoing Co
 	U_l = e^{2i\delta_l}
 \end{align*}
 
-As per the base assumption of R-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\phi_j$:
+As per the base assumption of R-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\varphi_j$:
 \begin{align} \label{theory: r-matrix: internal expansion}
 	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \varphi_j(r)
 \end{align}
 
-To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\phi_j$. Although they are not strictly required to be orthogonal at this stage, we will assume they are for later use. Neither are they required to satisfy any specific boundary condition at $r = a$. Instead, continuity of the total wave function $u_l$ and its first derivative across the boundary will be used to connect the internal and external wave functions. 
+To ensure that the total wave function $u_l$ vanishes at the origin, so too must all $\varphi_j$. Although they are not strictly required to be orthogonal at this stage, we will assume they are for later use. Neither are they required to satisfy any specific boundary condition at $r = a$. Instead, continuity of the total wave function $u_l$ and its first derivative across the boundary will be used to connect the internal and external wave functions. 
 
 \subsubsection{Bloch operator}
 At this stage, a major issue becomes apparent: the Hamiltonian $H_l$ is not Hermitian in the internal region:
@@ -215,7 +217,7 @@ If we define all our energies with respect to the ground state of \ce{^12C}, we 
 	&E_2 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 + \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E2}\\
 	&E_3 = \frac{1}{6}Q_1 + \frac{1}{2}Q_2 - \cos \alpha \sqrt{\frac{Q_1 Q_2}{3}} \label{theory: kinematics: E3}
 \end{align}
-where $\alpha$ is the angle between the axis defined by the first decay and the second $\alpha$-particle, see figure \ref{fig: theory: kinematics: angles}. As this angle will be important later, it is worthwhile to write down its defining equation
+where $\alpha$ is the angle between the axis defined by the first decay and the second $\alpha$-particle, see figure \ref{fig: theory: kinematics: angles}. As this angle will be important later, it is worthwhile to isolate this quantity:
 \begin{align} \label{theory: kinematics: theta}
 	2\cos \alpha = \sqrt{\frac{3}{Q_1 Q_2}}(E_2 - E_3)
 \end{align}
@@ -247,7 +249,7 @@ A popular choice in nuclear and particle physics are the Dalitz coordinates
 	x = \sqrt{3}\frac{E_2 - E_3}{E_{tot}} && y = \frac{3E_1}{E_{tot}} - 1
 \end{align}
 
-devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point. Energy and momentum conservation restricts these points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
+devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of the measured three-body final states are represented by a single point in a 2D histogram. Energy and momentum conservation restricts these points to fall within an equilateral triangle and an inscribed circle, respectively. It can be shown that within these areas, the phase space volume is constant \cite{Wuethrich}, such that any structure which may arise is due to properties of the reaction itself. An illustration of this type of plot can be seen on figure \ref{fig: theory: dalitz: dalitz}. \\
 
 \begin{figure}[tb]
 	\centering
@@ -258,7 +260,7 @@ devised by Dalitz back in 1953 \cite{Dalitz}. With these coordinates, each of th
 
 Since we are dealing with three identical bosons, we are free to label them however we please. This introduces a six-fold symmetry to our Dalitz plots, which can be realized by defining one specific order, e.g. $E_1 \geq E_2 \geq E_3$. This ordering makes all events fall within the hatched area on figure \ref{fig: theory: dalitz: dalitz}. Although this single slice contains all the information of the decay, since it is easier to see structure on the full plot, we will mainly be using those. \\
 
-Further studies on the effects of symmetries in Dalitz plots where performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on properties of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \ref{fig: theory: dalitz: zemach}. Although no restrictions are imposed on our $0^+$ resonance, it will be useful for the other two $2^-$ and $3^-$ resonances.\\
+Further studies on the effects of symmetries in Dalitz plots were performed by Zemach in 1964 \cite{Zemach}, where it was shown that some areas of the plot are suppressed, depending on properties of the parent state. Although the study was for triple pion decay, it is just as applicable for our $\alpha$ decay. The suppressed regions are shown on figure \ref{fig: theory: dalitz: zemach}. Although no restrictions are imposed on our $0^+$ resonance, it will be useful for the other two $2^-$ and $3^-$ resonances.\\
 
 \begin{figure}[h]
 	\centering
@@ -283,7 +285,7 @@ Since it depends on neither $Q_1$ nor $Q_2$, the angular distribution of the par
 		\centering
 		\includegraphics[width=\linewidth]{figures/theta(y).pdf}
 	\end{minipage}
-	\caption{The angle $\alpha$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$.}
+	\caption{The angle $\alpha$ between the primary and secondary particles. The left panel shows the angle for all points in the Dalitz plot. The right panel shows the projection for a select few values of $y$, to more clearly show how the angle varies across the plot.}
 	\label{fig: theory: dalitz: theta}
 \end{figure}
 

@@ -42,9 +42,15 @@ int main(int argc, char const *argv[]) {
     hist->GetZaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, "0");
     hist->GetZaxis()->ChangeLabel(2, -1, -1, -1, -1, -1, "#pi/2");
     hist->GetZaxis()->ChangeLabel(3, -1, -1, -1, -1, -1, "#pi");
+
+    hist->GetXaxis()->SetTitle("x");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetYaxis()->SetTitle("y");
+    hist->GetYaxis()->CenterTitle();
     hist->Draw("colz");
 
     string path = string(argv[1]) + "theta.pdf";
+    c->SetRightMargin(0.15);
     c->SaveAs(path.c_str());
 
     //*** theta(y) PLOT ***//
@@ -60,11 +66,15 @@ int main(int argc, char const *argv[]) {
     dummy->SetLineColor(kBlack);
 
     dummy->GetXaxis()->SetNdivisions(-2);
-    dummy->GetYaxis()->SetNdivisions(-2);
-    dummy->GetYaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, "-1");
+    dummy->GetYaxis()->SetNdivisions(-1);
     dummy->GetYaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, "0");
-    dummy->GetYaxis()->ChangeLabel(2, -1, -1, -1, -1, -1, "#pi/2");
-    dummy->GetYaxis()->ChangeLabel(3, -1, -1, -1, -1, -1, "#pi");
+    // dummy->GetYaxis()->ChangeLabel(2, -1, -1, -1, -1, -1, "#pi/2");
+    dummy->GetYaxis()->ChangeLabel(2, -1, -1, -1, -1, -1, "#pi");
+
+    dummy->GetXaxis()->SetTitle("x");
+    dummy->GetXaxis()->CenterTitle();
+    dummy->GetYaxis()->SetTitle("\\theta");
+    dummy->GetYaxis()->CenterTitle();
     dummy->Draw();
 
     auto legend = new TLegend(0.2, 0.4);
