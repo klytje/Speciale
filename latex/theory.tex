@@ -6,12 +6,12 @@ One of the more successful models of these interactions is the R-matrix theory, 
 \subsection{The compound nucleus}
 One of the early theories of nuclear reactions is the idea of a compound nucleus as proposed by Bohr in 1936 \cite{Bohr}. The basic idea is that the incident nucleus is momentarily captured by the target, thus creating an intermediate compound state. The energy of the incident nucleus is then redistributed throughout this compound state due to internal interactions. Central to this description is the idea that the formation and decay of the compound nucleus occurs \textit{independently} of each other. \\
 
-Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory \cite{Weisskopf} of resonance absorption and subsequent emission of radiation, and through that, on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the R-matrix theory, which is the topic of the next section. 
+Further work on the model proved to be very successful, yet also unsatisfactory: it depends on the Weisskopf-Wigner theory of resonance absorption and subsequent emission of radiation \cite{Weisskopf}, and through that, on time-dependent perturbation theory. This is problematic as the nuclear forces can certainly not be treated as mere perturbations. The solution to this problem eventually led to the development of the $R$-matrix theory, which is the topic of the next section. 
 
-\subsection{R-matrix theory}
-This whole section on R-matrix theory follows the general steps used in the lecture notes by Baye \cite{Baye lecture notes}. \\ 
+\subsection{$R$-matrix theory}
+This whole section on $R$-matrix theory follows the general steps used in the lecture notes by Baye \cite{Baye lecture notes}. \\ 
 
-Consider the potential scattering of some arbitrary partial wave. A core assumption of R-matrix theory is that the potential $V$ only differs from the Coulomb potential $V_C$ by a short-range term, such that
+Consider the potential scattering of some arbitrary partial wave. A core assumption of $R$-matrix theory is that the potential $V$ only differs from the Coulomb potential $V_C$ by a short-range term, such that
 \begin{align*}
 	V(r) \xrightarrow[r \rightarrow \infty]{} V_C(r) = \frac{Z_1 Z_2 e^2}{4\pi\epsilon_0 r}
 \end{align*}
@@ -64,7 +64,7 @@ where $I_l = G_l - iF_l$ and $O_l = G_l + iF_l$ are the incoming and outgoing Co
 	U_l = e^{2i\delta_l}
 \end{align*}
 
-As per the base assumption of R-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\varphi_j$:
+As per the base assumption of $R$-matrix theory, we can approximate the radial wave function $u^{\text{ext}}_l$ in the external region with the two solutions (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}). The other base assumption allows us to expand the radial wave function $u^{\text{int}}_l$ for the internal region over some finite basis of linearly independent functions $\varphi_j$:
 \begin{align} \label{theory: r-matrix: internal expansion}
 	u^{\text{int}}_l(r) = \sum^{N}_{j} c_j \varphi_j(r)
 \end{align}
@@ -89,7 +89,7 @@ The operator is specifically designed to cancel (\ref{theory: r-matrix: hamilton
 	&= \frac{\hbar^2}{2\mu}\bigg(f(a)g'(a) - g(a)f'(a)\bigg)
 \end{align*}
 
-Thus when combined with the Hamiltonian, $H_l + \mathcal{L}$, the total operator \textit{is} Hermitian. This new combined operator allows us to approximate the Schrödinger equation for the internal region by the Bloch-Schrödinger equation
+Thus when combined with the Hamiltonian, the total operator $H_l + \mathcal{L}$ \textit{is} Hermitian. This new combined operator allows us to approximate the Schrödinger equation for the internal region by the Bloch-Schrödinger equation
 \begin{align} \label{theory: r-matrix: Bloch-Schrödinger}
 	(H_l + \mathcal{L} - E)u^{\text{int}}_l = \mathcal{L}u^{\text{int}}_l
 \end{align}
@@ -104,7 +104,7 @@ that is, the original Schrödinger equation (\ref{theory: r-matrix: schrodinger}
 \end{align*}
 the Bloch operator guarantees continuity of the total wave function and its first derivative across the boundary. 
 
-\subsubsection{The calculable R-matrix}
+\subsubsection{The calculable $R$-matrix}
 The namesake of the theory is defined by the equation
 \begin{align} \label{theory: r-matrix: r-matrix}
 	u_l(a) = R_l(a, E)au'_l(a)
@@ -113,7 +113,7 @@ Thus its inverse
 \begin{align*}
 	R_l^{-1}(a, E) = a\frac{u'_l(a)}{u_l(a)}
 \end{align*}
-is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of R-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The R-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry relating each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
+is the logarithmic derivative of the radial wave function evaluated at the boundary. So far, we have completely avoided one of the core concepts of $R$-matrix theory: channels. These channels corresponds to different projectile-target combinations, channel spins, and relative angular momenta. The $R$-matrix in the above equation is just a number; it relates one input channel to one output channel. In general, it will be a matrix containing an entry relating each pair of input and output channels. To obtain another representation of the matrix, the basis expansion of the internal wave function (\ref{theory: r-matrix: internal expansion}) is applied to the Bloch-Schrödinger equation (\ref{theory: r-matrix: Bloch-Schrödinger}), and subsequently projected onto the basis $\varphi_i(r)$:
 \begin{align} \label{theory: r-matrix: r-matrix C}
 	\sum_{j}^{N}\langle \varphi_i | H + \mathcal{L} - E | \varphi_j \rangle c_j = \frac{\hbar^2}{2\mu} \varphi_i(a)u^{\text{ext}\prime}_l(a)
 \end{align}
@@ -128,10 +128,10 @@ By solving equation (\ref{theory: r-matrix: r-matrix C}) for the expansion coeff
 	c_j = \frac{\hbar^2}{2\mu}u_l^{\text{ext}\prime}(a)\sum_{i}^{N}(\bm{C}^{-1})_{ij}\varphi_i(a)
 \end{align*}
 
-We can insert them back into the expansion equation (\ref{theory: r-matrix: internal expansion}) and compare with the first equation for the R-matrix (\ref{theory: r-matrix: r-matrix}) to get an equation for the calculable $R$-matrix
-\begin{align*}
+We can insert them back into the expansion equation (\ref{theory: r-matrix: internal expansion}) and compare with the first equation for the $R$-matrix (\ref{theory: r-matrix: r-matrix}) to get an equation for the calculable $R$-matrix
+\begin{align} \label{theory: r-matrix: r-matrix intermediate step}
 	R_l(a, E) = \frac{\hbar^2}{2\mu a}\sum_{i, j}^{N}\varphi_i(a)(\bm{C}^{-1})_{ij}\varphi_j(a)
-\end{align*}
+\end{align}
 
 To complete this definition of $R$, we thus need to invert the $C$-matrix. To do this, we will finally need the orthonormality of the basis functions $\varphi_i(r)$. Remember that $\bm{C}$ implicitly depends on the energy $E$. Consider its non-zero eigenvalues $E_{nl}$ and corresponding eigenvectors $\bm{v}_{nl}$ evaluated for $E = 0$
 \begin{align*}
@@ -148,9 +148,9 @@ This can easily be modified to work for any non-zero energy $E$: simply subtract
 	\bm{C}(E)^{-1} = \sum_n^N \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl} - E}
 \end{align}
 
-Before we get to one of the primary results of R-matrix theory, there is a minor detail that should be corrected. So far we have worked with a finite basis, and thus everything is only approximately correct. To fix this issue, we can simply let $N$ tend toward infinity in all our sums. Going on with the derivation, we can now insert (\ref{theory: r-matrix: C-inverse}) into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix C}) to get the equation
+Before we get to one of the primary results of $R$-matrix theory, there is a minor detail that should be corrected. So far we have worked with a finite basis, and thus everything is only approximately correct. To fix this issue, we can simply let $N$ tend toward infinity in all our sums. Going on with the derivation, we can now insert (\ref{theory: r-matrix: C-inverse}) into our previous equation for the $R$-matrix (\ref{theory: r-matrix: r-matrix intermediate step}) to get the equation
 \begin{align*}
-	R_l(E) &= \frac{\hbar^2}{2\mu a} \sum_{i, j}^{\infty} \phi_i(a)\bigg(\sum_n^\infty \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl} - E}\bigg)_{ij}\phi_j(a) \\
+	R_l(E) &= \frac{\hbar^2}{2\mu a} \sum_{i, j}^{\infty} \varphi_i(a)\bigg(\sum_n^\infty \frac{\bm{v}_{nl}\bm{v}_{nl}^T}{E_{nl} - E}\bigg)_{ij}\varphi_j(a) \\
 	&= \sum_{n}^{\infty} \frac{\gamma^2_{nl}}{E_{nl} - E}
 \end{align*}
 
@@ -161,11 +161,11 @@ where $\gamma_{nl}$ is defined as
 
 $\gamma_{nl}$ is known as the reduced width amplitude. It received this name since its square is a crucial component of the total width, as we will see in a moment.\\
 
-In general, the $R$-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} $R$-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1,\ l}^2$, one can derive the equation (see e.g. \cite{Baye})
+In general, the $R$-matrix has an infinity of real simple poles. If we instead approximate the solution, such that we only deal with a small number of poles, we will eventually arrive at the \textit{phenomenological} $R$-matrix. More specifically, if we approximate the matrix by a single pole with energy $E_1$ and reduced width $\gamma_{1l}^2$, one can derive the equation (see e.g. \cite{Baye})
 \begin{align} \label{theory: r-matrix: Gamma gamma}
 	\Gamma = \frac{2 \gamma_{1l}^2 P(E_R)}{1 + \gamma_{1l}^2 S'(E_R)}
 \end{align}
-which relates the total width $\Gamma$ to the reduced width $\gamma_{1\ l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
+which relates the total width $\Gamma$ to the reduced width $\gamma_{1l}^2$. Here $P(E_R)$ and $S'(E_R)$ are the penetrability and shift function, which will both be introduced in the next section. This equation will be relevant later when we want to compare simulations from different reaction models. 
 
 \subsubsection{Determining the Coulomb phase shift} \label{sec: theory: r-matrix: applications}
 One of our first applications of the theory is to determine the Coulomb phase shift $\delta_l$ and the collision matrix $U_l$ from (\ref{theory: r-matrix: solution 1}) and (\ref{theory: r-matrix: solution 2}), respectively. Since we have already derived all of the necessary tools, this is simply a matter of substituting the two equations into the definition of the $R$-matrix (\ref{theory: r-matrix: r-matrix}). Throughout this section, all function dependencies will be suppressed for clarity, so remember that all of the Coulomb functions are evaluated at the boundary $\rho = ak$. \\
@@ -200,7 +200,7 @@ where $S_l$ and $P_l$ are called the shift and penetrability factors. Through th
 	P_l = \frac{\rho}{F_l^2 + G_l^2} && S_l = \rho\frac{F_l F_l' + G_l G_l'}{F_l^2 + G_l^2}	
 \end{align}
 
-These two equations are useful when we want to relate the reduced width amplitude $\gamma$ to the total width $\Gamma$ through equation (\ref{theory: r-matrix: Gamma gamma}). 
+These two equations are used internally in our width converter tool, which will be introduced later. 
 
 \subsubsection{Three-body decays} \label{sec: theory: r-matrix: three body}
 So far, the R-matrix theory can only describe two-body decays. To extend the model to also cover three-body decays, we assume that the decay occurs sequentially, i.e. \ce{^12C \rightarrow ^8Be + \alpha \rightarrow $3$\alpha}. The idea is then that we can use the standard R-matrix model to describe the first decay of a definite initial input \ce{^12C} channel to all possible intermediate \ce{^8Be} channels. We can then again use the standard model to describe each decay from the channels of \ce{^8Be} to the definite final output channel \ce{$3$\alpha}. \\
@@ -316,11 +316,11 @@ where $a_n(l)$ is given as
 	a_n(l) = \frac{2l(l+1)}{2l(l+1) - n(n+1)}
 \end{align*}
 
-and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. $l_1$ and $l_2$ are then the angular momenta of the primary and secondary $\alpha$ particles, while $j_1$, $J$, and $j_2$ are the angular momenta of the initial \ce{^12C}, the intermediate \ce{^8Be}, and the final free $\alpha$ state, respectively. Thus for decays to the first excited state of \ce{^8Be} which we will primarily be working with, $J = 2$, $j_2 = 0$ and $l_2 = 2$, leaving only $j_1$ and $l_1$ as free variables that depends on the \ce{^12C} state. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
+and $n$ runs from $0$ to $\min(2l_1, 2l_2, 2J)$. $l_1$ and $l_2$ are then the angular momenta of the primary and secondary $\alpha$-particles, while $j_1$, $J$, and $j_2$ are the angular momenta of the initial \ce{^12C}, the intermediate \ce{^8Be}, and the final free $\alpha$ state, respectively. Thus for decays to the first excited state of \ce{^8Be} which we will primarily be working with, $J = 2$, $j_2 = 0$ and $l_2 = 2$, leaving only $j_1$ and $l_1$ as free variables that depends on the \ce{^12C} state. Some examples of these correlation functions can be seen in figure \ref{fig: theory: ang: ang_corr_funcs}, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). Due to its nonlinear dependency on $x$, the functions are squashed near the borders of the plot. 
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=.8\linewidth]{figures/corr_funcs.pdf}
-	\caption{The angular correlation functions for a few different nuclear states and primary angular momenta, plotted in terms of the Dalitz angle $\theta$ from (\ref{theory: dalitz: theta}). The legend is of the form ($j_1\pi_1\ l_1$), where $j_1$ and $\pi_1$ is the angular momentum and parity of the \ce{^12C} state, and $l_1$ is the angular momentum carried by the primary $\alpha$ particle.}
+	\caption{The angular correlation functions for a few different nuclear states and primary angular momenta, plotted in terms of the Dalitz angle $\alpha$ from (\ref{theory: dalitz: theta}). The legend is of the form ($j_1\pi_1\ l_1$), where $j_1$ and $\pi_1$ is the angular momentum and parity of the \ce{^12C} state, and $l_1$ is the angular momentum carried by the primary $\alpha$ particle.}
 	\label{fig: theory: ang: ang_corr_funcs}
 \end{figure} 
 
@@ -329,7 +329,7 @@ Suppose we have a set of statistically independent quantities $\bm{x}$, all dist
 \begin{align} \label{theory: statistics: likelihood}
 	\mathcal{L}(\bm{\theta}) = \prod_{n}^{i}f(x_i; \bm{\theta})
 \end{align}
-which, roughly speaking, describes the combined probability (or likelihood) of observing $\bm{x}$ given the density function $f(x, \bm{\theta})$ for some choice of parameters $\bm{\theta}$. The basic idea is then that by maximizing this probability, we obtain the best estimate of our parameters $\bm{\theta}$. Sometimes the number of events $n$ also depends on the parameters. If this is the case, the probability of observing exactly $n$ events should be included in the likelihood. Since we are dealing with Poisson-distributed data, (\ref{theory: statistics: likelihood}) is modified to 
+which, roughly speaking, describes the combined probability (or likelihood) of observing $\bm{x}$ given the density function $f(x, \bm{\theta})$ for some choice of parameters $\bm{\theta}$. The basic idea is then that by maximizing this probability, we obtain the best estimate of our parameters $\bm{\theta}$. Sometimes the number of events $n$ also depends on the parameters. If this is the case, the probability of observing exactly $n$ events should be included in the likelihood. Since we are dealing with Poisson-distributed data, (\ref{theory: statistics: likelihood}) is thus modified to 
 \begin{align} \label{theory: statistics: extended likelihood}
 	\mathcal{L}(\bm{\theta}) = \frac{\mu^n}{n!}e^{-\mu}\prod_{n}^{i}f(x_i; \bm{\theta})
 \end{align}

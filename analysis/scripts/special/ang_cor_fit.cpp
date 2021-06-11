@@ -118,12 +118,13 @@ int main(int argc, char const *argv[]) {
     // plot multiple correlation functions
     vector<string> states = {"0+", "1-", "1+", "1-", "2-", "2+", "2-", "3-", "3+", "3-"}; // parity doesn't actually matter
     vector<string> ls =     {"2" , "1" , "2" , "3" , "1" , "2" , "3" , "1" , "2" , "3"};
-    vector<int> color = {kBlack, kPink-8, kOrange+1, kYellow-7, kSpring-1, kTeal+3, kCyan+1, kAzure+1, kBlue-9, kViolet+1};
+    vector<int> color = {kBlack, kPink-8, kOrange+1, kYellow+2, kSpring-1, kTeal+3, kCyan+1, kAzure+1, kBlue-9, kViolet+1};
     function<double(Double_t*, Double_t*)> ang_corr;
 
     // double maxval = 1./h1->GetMaximum();
     h1->Scale(1./h1->GetMaximum());
     h1->SetMaximum(1.2); // make space for the legend
+    h1->SetLineWidth(5);
     auto legend = new TLegend(0.1, 0.77, 0.9, 0.9);
     legend->SetNColumns(7);
     for (int i = 0; i < states.size(); i++) {
@@ -134,6 +135,7 @@ int main(int argc, char const *argv[]) {
         corr->SetParameter(0, 1);
         corr->SetParameter(1, y);
         corr->SetLineColor(color[i]);
+        corr->SetLineWidth(4);
         corr->DrawClone("same");
 
         legend->AddEntry(label.c_str(), label.c_str(), "l");

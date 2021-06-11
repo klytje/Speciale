@@ -27,7 +27,7 @@ int main(int argc, char const *argv[]) {
     dummy->GetXaxis()->CenterTitle();
 
     dummy->GetYaxis()->SetNdivisions(2);
-    dummy->GetYaxis()->SetTitle("W(\\beta)");
+    dummy->GetYaxis()->SetTitle("W(\\alpha)");
     dummy->GetYaxis()->CenterTitle();
 
     dummy->SetMaximum(1.2);

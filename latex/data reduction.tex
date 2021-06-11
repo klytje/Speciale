@@ -51,7 +51,7 @@ No secondary detector was used in this setup, and the second approach cannot dif
 \subsubsection{EventBuilder}
 The final module of the standard \AUSAlib{} pipeline is the \EventBuilder{}. The purpose of it is to remove any dependency on the experimental setup from the data, leaving only the physical events. To do this, each reaction is reconstructed, and the user must decide on some criteria to either accept or reject a given reaction. As an example, one can require that at least two particles participated in the reaction. \\
 
-The module also allows the user to define new properties, such as the four-momenta of each particle, which can then be used for further analysis. The module is not meant for aggregate analysis of the data, but only of each individual decay event. Since this is quite a restriction, the tool is used mainly as a filter. Any further analysis can then be written as standalone \CPP{} scripts.
+The module also allows the user to define new properties, such as the four-momenta of each particle, which can then be used for further analysis. The module is not meant for aggregate analysis of the data, but only of each individual decay event. Since this is quite a restriction, the tool is used mainly as a filter. Any further analysis can then be written as standalone \CPP{} scripts, which can be found in appendix \ref{sec: appendix: code}. 
 
 \subsubsection{simX}
 When comparing the measured data with a theoretical model, two distinct steps must be simulated: the actual physical process, and its interaction with the experimental setup. \simX{} handles both of these. It can also be configured to take the first step as input, and only simulate their interaction with the detection system, which allows users to generate their Monte Carlo data in any way they like. \\
@@ -104,7 +104,7 @@ The output of this program is a \ROOT{} file which can simply be passed to \simX
 Besides the tools contained in these public libraries, a few custom tools were developed specifically for this thesis. These will all be introduced here. 
 
 \subsubsection{Dalitz fitter}
-Although we are working primarily with the $0^+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting tool which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
+Although we are working primarily with the $0^+$ resonance which should allow only $l=2$ transitions, we will eventually need a fitting tool which can fit the $k$ and $\delta$ from the \simta{} output. Besides this, we will also need to perform fits with $3$, and sometimes even $4$, different combinations of $J$ and $l$, all of which will be handled by this Dalitz fitting script. \\
 
 The name of the program, \textit{Dalitz fitter}, signifies that it fits the Dalitz plots themselves, and not any of its projections. This choice is made due to a discussion of the pitfalls of fitting to projections presented in \cite{Kuhlwein}. The basic idea of the program is to calculate the weights (\ref{datared: tools: k delta eq}) for every iteration, and then use the modified maximum likelihood estimator introduced in section \ref{section: theory: statistics} to determine the optimal parameter values. \\
 
@@ -144,7 +144,7 @@ The tool is implemented in Python due to its extensive library support. Thus the
 \subsubsection{Correlation functions}
 This final tool simply calculates the correlation function $W(\beta)$ for any given input $\{j_1, j_2, j, l_1, l_2\}$ based on the theory from section \ref{sec: theory: angular correlations}. It was also used to generate the functions shown on the figures in that section. \\
 
-For the same reasons as the width converter tool, this was also implemented in Python. Thus the Clebsch-Gordan and Racah symbols could easily be calculated with the SymPy library \cite{Sympy}, which also defines the Legendre polynomials. 
+For the same reasons as the width converter tool, this was also implemented in Python. Thus the Clebsch-Gordan and Racah symbols could easily be calculated with the SymPy library \cite{Sympy}, which also provides the Legendre polynomials. 
 
 \subsection{Data reduction}
 Here we will briefly discuss how these tools were used practically. The first step of the data reduction is to convert it to a format \ROOT{} recognizes. This is done with the \Unpacker{} tool, which converts the raw input to a \ROOT{} \texttt{TTree}. After this step, the calibration files can be fed to the \Calibrator{}, while the other files are passed to the \Sorter{}. \\
