@@ -1,5 +1,6 @@
 // ROOT stuff
 #include <TCanvas.h>
+#include <TGaxis.h>
 
 // other stuff
 #include <boost/format.hpp>
@@ -18,8 +19,14 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    setup_style();
+    TGaxis::SetMaxDigits(3);
+    gStyle->SetPadLeftMargin(0.13);
     int bins = 200;
+    labelsize = 0.04;
+    titlesize = 0.05;
+    xlabeloffset = 0.8;
+    ylabeloffset = 1.1;
+    setup_style();
 
     ROOT::RDF::RNode dsim = RDataFrame("tree", argv[2]);
     ROOT::RDF::RNode ddat = RDataFrame("tree", argv[3]);
@@ -99,15 +106,16 @@ int main(int argc, char *argv[]) {
     c1->SetRightMargin(0.15);
     c1->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
-
-
+    
 //*** RADIAL COMPARISON ***//
     x_axis = {100, 0, 1};
     TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
 
     TH1D sim_rho = dsim.Define("tmp", "sqrt(pow(x, 2)+pow(y, 2))").Histo1D({"sim_rho", "sim_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
     TH1D dat_rho = ddat.Define("tmp", "sqrt(pow(x, 2)+pow(y, 2))").Histo1D({"dat_rho", "dat_rho", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    sim_rho.Scale(1/sim_rho.GetMaximum());
+    dat_rho.Scale(1/dat_rho.GetEntries());
+    sim_rho.Scale(1/sim_rho.GetEntries());
+    sim_rho.Scale(1/dat_rho.GetMaximum());
     dat_rho.Scale(1/dat_rho.GetMaximum());
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
@@ -123,7 +131,9 @@ int main(int argc, char *argv[]) {
     TCanvas* c3 = new TCanvas("c3", "c3", 600, 600);
     TH1D sim_ang = dsim.Define("tmp", "atan2(x, y)").Histo1D({"sim_ang", "sim_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp", "w").GetValue();
     TH1D dat_ang = ddat.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "dat_ang", int(x_axis[0]), x_axis[1], x_axis[2]}, "tmp").GetValue();
-    sim_ang.Scale(1/sim_ang.GetMaximum());
+    sim_ang.Scale(1/sim_ang.GetEntries());
+    dat_ang.Scale(1/dat_ang.GetEntries());
+    sim_ang.Scale(1/dat_ang.GetMaximum());
     dat_ang.Scale(1/dat_ang.GetMaximum());
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
@@ -145,7 +155,9 @@ int main(int argc, char *argv[]) {
         sim_E->Add(&sim_temp);
         dat_E->Add(&dat_temp);
     }
-    sim_E->Scale(1/sim_E->GetMaximum());
+    dat_E->Scale(1/dat_E->GetEntries());
+    sim_E->Scale(1/sim_E->GetEntries());
+    sim_E->Scale(1/dat_E->GetMaximum());
     dat_E->Scale(1/dat_E->GetMaximum());
     setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 

@@ -66,13 +66,17 @@ clean/%:
 	mkdir -p ../scripts/special/build
 	cd ../scripts/special/build; cmake ../
 
+../scripts/article/build/Makefile: ../scripts/article/CMakeLists.txt
+	mkdir -p ../scripts/article/build
+	cd ../scripts/article/build; cmake ../
+
 analysis/build/Makefile: analysis/CMakeLists.txt
 	mkdir -p analysis/build
 	cd analysis/build; cmake ../
 
 # this variable keeps track of changes in all CMakeLists.txt and rebuilds if necessary
 # every time a CMakeLists is modified, run this target
-build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
+build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile ../scripts/article/build/Makefile
 
 ####################
 ### DEPENDENCIES ###
@@ -90,13 +94,6 @@ balamuth_i := ../../sim3a_i/build/balamuth_i
 
 ../../sim3a_i/build/balamuth: ../../sim3a_i/balamuth/*
 	make -C ../../sim3a_i/build/
-
-# removes all executables
-clean/build: 
-	@ rm -f -r ../figure_scripts/build/*
-	@ rm -f -r ../special_figure_scripts/build/*
-	@ rm -f -r ../calibrate/build/*
-	@ rm -f -r analysis/build/*
 
 #######################
 ### tdc_calibration ###
@@ -226,7 +223,7 @@ Dalitz_3D/%: output/%.root ../scripts/special/build/Dalitz_3D
 
 # compare a simulation with the data. Generates a variety of projection plot for easy comparison
 sim_compare/%: ../scripts/special/build/sim_compare output/%.root output/true_events.root | figures/%
-	$< $(shell pwd)/figures/$*/ output/$*.root output/all_events.root
+	$< $(shell pwd)/figures/$*/ output/$*.root output/true_events.root
 
 # shows the effect of the various cuts we can impose on the data
 cuts/%: ../scripts/special/build/cuts $(addprefix merged/,$(shell ls data)) output/%.root | figures/article
@@ -288,6 +285,14 @@ ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
+
+### article figures ###
+# compiles a given "article" figure program
+../scripts/article/build/%: ../scripts/article/%.cpp ../scripts/utility.cpp
+	make -C ../scripts/article/build/ $*
+
+sim_cmp_panels: ../scripts/article/build/2-_dalitz output/true_events.root output/2-_1.root output/2-_3.root
+	$< $(shell pwd)/figures/article/ output/true_events.root output/2-_1.root output/2-_3.root output/2-_i.root
 
 ###################
 ### SIMULATIONS ###

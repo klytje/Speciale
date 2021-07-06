@@ -1,14 +1,19 @@
 #include <TStyle.h>
 #include <TROOT.h>
 
+double labelsize = 0.06;
+double titlesize = 0.07;
+double xlabeloffset = 0.7;
+double ylabeloffset = 0.65;
+
 void setup_style() {
-    gStyle->SetLabelSize(0.06, "X");
-    gStyle->SetLabelSize(0.06, "Y");
-    gStyle->SetLabelSize(0.06, "Z");
-    gStyle->SetTitleSize(0.07, "X");
-    gStyle->SetTitleSize(0.07, "Y");
-    gStyle->SetTitleOffset(0.7, "X");
-    gStyle->SetTitleOffset(0.65, "Y");
+    gStyle->SetLabelSize(labelsize, "X");
+    gStyle->SetLabelSize(labelsize, "Y");
+    gStyle->SetLabelSize(labelsize, "Z");
+    gStyle->SetTitleSize(titlesize, "X");
+    gStyle->SetTitleSize(titlesize, "Y");
+    gStyle->SetTitleOffset(xlabeloffset, "X");
+    gStyle->SetTitleOffset(ylabeloffset, "Y");
     gStyle->SetPadBottomMargin(0.13);
     // gStyle->SetTitleXSize(0.04);
     // gStyle->SetTitleYSize(0.04);

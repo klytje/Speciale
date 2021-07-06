@@ -522,7 +522,7 @@ int main(int argc, char const *argv[]) {
         I think the best option is GSLSimAn, which takes a hell of a time to run (~15k function calls), but found the correct minimum. 
     */
     if (argc < 3) {
-        cout << "Two modes are supported: " << endl;
+        cout << "Three modes are supported: " << endl;
         cout << "\t./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
         cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a data>" << endl; // fit_type = 2
         cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
@@ -540,6 +540,12 @@ int main(int argc, char const *argv[]) {
         cout << "Either delta can also be set to \"fixed\", in which case they will be fixed to 0" << endl;
         exit(1);
     }
+
+    gStyle->SetPadLeftMargin(0.13);
+    labelsize = 0.04;
+    titlesize = 0.05;
+    xlabeloffset = 0.8;
+    ylabeloffset = 1.1;
     setup_style();
 
     // parse arguments
@@ -852,11 +858,8 @@ int main(int argc, char const *argv[]) {
     const double k2 = fit_type == 3 ? res[3] : 1;
     const double delta2 = fit_type == 3 ? res[4] : 1;
 
-    auto weights = [] (vector<vector<double>> f, double wU, double k, double delta) { 
-        return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
-    };
-    auto w1 = [&k, &delta, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k, delta);};
-    auto w2 = [&k2, &delta2, &weights] (vector<vector<double>> f, double wU) {return weights(f, wU, k2, delta2);};
+    auto w1 = [&k, &delta] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k, delta);};
+    auto w2 = [&k2, &delta2] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k2, delta2);};
     sim1 = sim1.Define("w", w1, {"f", "wU"});
 
     bool sim2_weighted = false;
@@ -878,7 +881,7 @@ int main(int argc, char const *argv[]) {
     c1->cd(2);
     TH2D* dalitz_sim = dalitz(&sim1, 2*bins, true, true);
     dalitz_sim->Scale(c/dalitz_sim->GetMaximum());
-    if (fit_type == 2) { // we need to add the two simulations with their respective ratios
+    if (fit_type == 2 || fit_type == 3) { // we need to add the two simulations with their respective ratios
         TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true, sim2_weighted);
         dalitz_sim2->Scale((1-c)/dalitz_sim2->GetMaximum());
         dalitz_sim->Add(dalitz_sim2);
@@ -999,12 +1002,13 @@ int main(int argc, char const *argv[]) {
 
             if (skip_bin[my_bin]) {
                 chi2->SetBinContent(root_bin, -1);
+                binwise_chi[my_bin] = 1e6;
             } else {
                 chi2->SetBinContent(root_bin, binwise_chi[my_bin]);
             }
-            chi2->SetMinimum(0);
         }
     }
+    chi2->SetMinimum(0);
     setup_dalitz_plot(chi2); // setup axes, labels etc
     chi2->Draw("colz");
 
@@ -1012,6 +1016,13 @@ int main(int argc, char const *argv[]) {
     c6->SetRightMargin(0.15);
     c6->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+
+    // export the array to a separate file
+    ofstream arr_out(folder + "binwise_chi2.txt", ios::out);
+    for (int i = 0; i < binwise_chi.size(); i++) {
+        arr_out << binwise_chi[i] << "\n";
+    }
+    arr_out.close();
 
 //*** CHI2 VALS FOR PROJECTION PLOTS ***//
     double chi_1 = 0, chi_2 = 0, chi_3 = 0;
