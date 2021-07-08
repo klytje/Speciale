@@ -259,9 +259,25 @@ const auto Emin = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_
     }
 };  
 
-// fit and extract only the excited decay events
+// fit and remove the ground state decay events
 void cut_gs(ROOT::RDF::RNode* df) {
-    double E_exc[] = {1500, 4500};
+    double E_exc[] = {0, 200};
+        *df = df->Define("i_max", Emax, {"px", "py", "pz"})
+            .Define("i_min", Emin, {"px", "py", "pz"})
+            .Define("i_mid", "3 - i_max - i_min") // i_min + i_mid + i_max = 3
+            .Define("px2", "px[i_mid]")
+            .Define("py2", "py[i_mid]")
+            .Define("pz2", "pz[i_mid]")
+            .Define("px3", "px[i_min]")
+            .Define("py3", "py[i_min]")
+            .Define("pz3", "pz[i_min]")
+            .Define("E_23", E23, {"px2", "py2", "pz2", "px3", "py3", "pz3"});
+    *df = df->Filter("200 < E_23");
+}
+
+// fit and extract only the excited decay events
+void cut_gs_alt(ROOT::RDF::RNode* df) {
+    double E_exc[] = {1000, 4500};
         *df = df->Define("i_max", Emax, {"px", "py", "pz"})
             .Define("i_min", Emin, {"px", "py", "pz"})
             .Define("i_mid", "3 - i_max - i_min") // i_min + i_mid + i_max = 3
@@ -279,6 +295,16 @@ void cut_gs(ROOT::RDF::RNode* df) {
     double mu = tf_ex->GetParameter(1);
     double sigma = tf_ex->GetParameter(2);
     *df = df->Filter((format("%1% < E_23 && E_23 < %2%") % (mu-3*sigma) % (mu+3*sigma)).str());
+
+    // debug plot
+    // TCanvas* c1 = new TCanvas("c1", "c", 600, 600);
+    // TLine* l1 = new TLine(mu-3*sigma, 0, mu-3*sigma, hist.GetMaximum());
+    // TLine* l2 = new TLine(mu+3*sigma, 0, mu+3*sigma, hist.GetMaximum());
+    // hist.Draw();
+    // tf_ex->Draw("same");
+    // l1->Draw();
+    // l2->Draw();
+    // c1->SaveAs("tmp.pdf");
 }
 
 // makes a Dalitz plot from a dataframe. it assumes the Dalitz coordinates x and y are already defined. 

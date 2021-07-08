@@ -75,3 +75,4 @@ for i in range(evals):
 	if maxval < val:
 		maxval = val
 print(f"Normalized result:            W(θ) = {W/maxval}")
+print(f"The normalized result is found by evaluating all integer multiples of π/{evals}, and may be inaccurate for wildly varying functions.")

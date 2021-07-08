@@ -27,9 +27,18 @@ int main(int argc, char *argv[]) {
         cout << "Usage: ./2-_dalitz <output path> <data> <l = 1 sim> <l = 3 sim> <both sim>" << endl;
         exit(1);
     }
-    bool delta_is_fixed = true;
-
     string folder = string(argv[1]) + "2-_article/";
+
+    // path to fit with free delta
+    string path_fit = "figures/dalitz_fit/article_free/";
+    double k = 0.236633;
+    double delta = 0.663692*2*M_PI;
+
+    // path to fit with fixed delta
+    // string path_fit = "figures/dalitz_fit/article_fixed/";
+    // double k = 0.154447;
+    // double delta = 0;
+
     filesystem::create_directories(folder);
 
     int bins = 200;
@@ -91,6 +100,7 @@ int main(int argc, char *argv[]) {
         }
     };
 
+    double contours[10] = {0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7};
 // first panel: data
     c1->cd(1);
     TH2D* dalitz_data = dalitz(&data, bins, true);
@@ -99,8 +109,9 @@ int main(int argc, char *argv[]) {
     setup_plot_dalitz(dalitz_data, "Data");
 
     // cosmetics
-    fill_empty(dalitz_data);
+    // fill_empty(dalitz_data);
     dalitz_data->GetXaxis()->SetLabelSize(0);
+    dalitz_data->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
@@ -114,8 +125,9 @@ int main(int argc, char *argv[]) {
     setup_plot_dalitz(dalitz_sim1, "L = 1");
 
     // cosmetics
-    fill_empty(dalitz_sim1);
+    // fill_empty(dalitz_sim1);
     dalitz_sim1->GetXaxis()->SetLabelSize(0);
+    dalitz_sim1->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
@@ -129,8 +141,9 @@ int main(int argc, char *argv[]) {
     setup_plot_dalitz(dalitz_sim2, "L = 3");
 
     // cosmetics
-    fill_empty(dalitz_sim2);
+    // fill_empty(dalitz_sim2);
     dalitz_sim2->GetXaxis()->SetLabelSize(0);
+    dalitz_sim2->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
@@ -140,14 +153,6 @@ int main(int argc, char *argv[]) {
 // fourth panel: mix
     c1->cd(4);
     std::cout << "Using hardcoded values for k and delta." << endl;
-    double k = 0.197965;
-    double delta = 0.673937*2*M_PI;
-
-    if (delta_is_fixed) {
-        k = 0.139746;
-        delta = 0;
-    }
-
     auto calc_weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
         return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
     };
@@ -158,7 +163,15 @@ int main(int argc, char *argv[]) {
     setup_plot_dalitz(dalitz_mix, "Fit");
 
     // cosmetics
+    for (int bin = 1; bin < pow(bins+1, 2); bin++) {
+        if (dalitz_mix->GetBinContent(bin) < 0.01) {
+            dalitz_mix->SetBinContent(bin, -1);
+        }
+    }
+    dalitz_mix->SetMinimum(0);
+
     dalitz_mix->SetXTitle("x");
+    dalitz_mix->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
 
@@ -170,34 +183,16 @@ int main(int argc, char *argv[]) {
     c1->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
-// chi2 slice plot
+//*************************//
+//*** BINWISE CHI2 PLOT ***//
+//*************************//
+    gStyle->SetPalette(kThermometer);
     TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
 
-    //*** DIFFERENCE ***//
-    // dalitz_data->Scale(data_scale);
-    // dalitz_mix->Scale(data_scale);
-
-    // dalitz_data->Add(dalitz_mix, -1); // subtract the two plots
-    // double minval = dalitz_data->GetMinimum();
-    // for (int x = 1; x < bins+1; x++) {
-    //     for (int y = 1; y < bins+1; y++) {
-    //         if (abs(dalitz_data->GetBinContent(x, y)) < 1) {
-    //             dalitz_data->SetBinContent(x, y, -1e6);
-    //         }
-    //     }
-    // }
-    // dalitz_data->SetMinimum(minval);
-
-    //*** BINWISE CHI2 ***//
     // read binwise chi2 distribution from disk
     bins = 100;
     vector<double> binwise_chi(pow(bins, 2));
-    string load_path = "figures/dalitz_fit/true_events 2-_i/binwise_chi2.txt";
-
-    if (delta_is_fixed) {
-        load_path = "figures/dalitz_fit/true_events 2-_i fixed/binwise_chi2.txt";
-    }
-    ifstream file(load_path, ios::in);
+    ifstream file(path_fit + "binwise_chi2.txt", ios::in);
     string line; int counter = 0;
     while (std::getline(file, line)) {
         binwise_chi[counter] = atof(line.c_str());
@@ -208,6 +203,7 @@ int main(int argc, char *argv[]) {
     // perform the actual plot
     TH2D* chi2 = new TH2D("chi", "h", bins, 0, 1, bins, 0, 1);
     double minval = 0;
+    int scaler = 1;
     for (int y = 0; y < bins; y++) {
         for (int x = 0; x < bins; x++) {
             int my_bin = x + y*bins; // the logical choice of bins
@@ -217,18 +213,30 @@ int main(int argc, char *argv[]) {
                 chi2->SetBinContent(root_bin, -1e6);
             } else {
                 chi2->SetBinContent(root_bin, binwise_chi[my_bin]);
-
-                // change sign depending on if data or simulation is higher
-                // if (dalitz_data->GetBinContent(root_bin) < dalitz_mix->GetBinContent(root_bin)) {
-                //     minval = min(minval, -binwise_chi[my_bin]);
-                //     chi2->SetBinContent(root_bin, -binwise_chi[my_bin]);
-                // } else {
-                //     chi2->SetBinContent(root_bin, binwise_chi[my_bin]);
-                // }
-            } 
+            }
         }
     }
-    chi2->SetMinimum(minval);
+    chi2->SetMinimum(0);
+
+            // change sign depending on if data or simulation is higher
+            // if (binwise_chi[my_bin] >= 1e6) { 
+            //     chi2->SetBinContent(root_bin, -1e6);
+            // } else if (binwise_chi[my_bin] <= 2) { // shift low bins to a more neutral white color
+            //     chi2->SetBinContent(root_bin, -1e6);
+            // } else {
+            //     if (dalitz_data->GetBinContent(root_bin) < dalitz_mix->GetBinContent(root_bin)) {
+            //         minval = min(minval, -scaler*binwise_chi[my_bin]);
+            //         chi2->SetBinContent(root_bin, -scaler*binwise_chi[my_bin]);
+            //     } else {
+            //         chi2->SetBinContent(root_bin, scaler*binwise_chi[my_bin]);
+            //     }
+            // }
+    //     }
+    // }
+    // double maxval = chi2->GetMaximum();
+    // double lim = max(maxval, abs(minval));
+    // chi2->SetMinimum(-lim);
+    // chi2->SetMaximum(lim);
 
     // Mirror the plot to form the full Dalitz-plot
     // TH2D* chi2 = new TH2D("chi", "h", 2*bins, -1, 1, 2*bins, -1, 1);
@@ -291,16 +299,78 @@ int main(int argc, char *argv[]) {
     zlabel->SetTextSize(0.04);
     zlabel->SetTextAlign(22);
 
-    // hack solution to change palette
-    TExec *ex = new TExec("ex","gStyle->SetPalette(kThermometer);");
     chi2->Draw("colz");
-    ex->Draw();
-    chi2->Draw("colz same");
     zlabel->Draw();
     
     // save
     path = folder + "chi2.pdf";
     c2->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
+
+    chi2->SetMaximum(25);
+    path = folder + "chi2_max.pdf";
+    c2->SaveAs(path.c_str());
+    cout << "Created " << path << "." << endl;
+
+//***********************//
+//*** DIFFERENCE PLOT ***//
+//***********************//
+    TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
+    bins = 100;
+
+    TH2D* slice_data = dalitz_slice(&data, bins, true);
+    TH2D* slice_mix = dalitz_slice(&both, bins, true, true);
+    TH2D* diff = new TH2D("diff", "h", bins, 0, 1, bins, 0, 1);
+
+    data_scale = slice_data->GetMaximum();
+    slice_data->Scale(1/slice_data->GetMaximum());
+    slice_mix->Scale(1/slice_mix->GetMaximum());
+    for (int x = 1; x < bins+1; x++) {
+        for (int y = 1; y < bins+1; y++) {
+            double bdat = slice_data->GetBinContent(x, y);
+            double bfit = slice_mix->GetBinContent(x, y);
+            if (bdat > 0 && bfit > 0) {
+                diff->SetBinContent(x, y, (bdat-bfit)*data_scale);
+            } 
+        }
+    }
+
+    // cosmetics
+    c4->SetRightMargin(0.15);
+
+    double diffcont[] = {diff->GetMinimum(), -40, -20, -10, -5, 5, 10, 20, 40, diff->GetMaximum()};
+    diff->SetContour(10, diffcont);
+
+    diff->GetXaxis()->SetTitle("x");
+    diff->GetXaxis()->SetTitleSize(0.045);
+    diff->GetXaxis()->SetLabelSize(0.035);
+    diff->GetXaxis()->SetTitleOffset(1);
+    diff->GetXaxis()->CenterTitle();
+    diff->GetXaxis()->SetNdivisions(2);
+
+    diff->GetYaxis()->SetTitle("y");
+    diff->GetYaxis()->SetTitleSize(0.045);
+    diff->GetYaxis()->SetLabelSize(0.035);
+    diff->GetYaxis()->SetTitleOffset(1);
+    diff->GetYaxis()->CenterTitle();
+    diff->GetYaxis()->SetNdivisions(2);
+
+    diff->GetZaxis()->SetLabelSize(0.035);
+    diff->GetZaxis()->SetTitleOffset(1.2);
+
+    TText* zlabel2 = new TText(0.98, 0.53, "Difference");
+    zlabel2->SetNDC();
+    zlabel2->SetTextAngle(270);
+    zlabel2->SetTextSize(0.04);
+    zlabel2->SetTextAlign(22);
+    zlabel2->SetTextFont(42);
+
+    diff->Draw("colz1");
+    zlabel2->Draw();
+
+    // save
+    path = folder + "difference.pdf";
+    c4->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //**********************************************//
