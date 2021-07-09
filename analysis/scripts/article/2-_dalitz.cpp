@@ -322,7 +322,6 @@ int main(int argc, char *argv[]) {
     TH2D* slice_mix = dalitz_slice(&both, bins, true, true);
     TH2D* diff = new TH2D("diff", "h", bins, 0, 1, bins, 0, 1);
 
-    data_scale = slice_data->GetMaximum();
     slice_data->Scale(1/slice_data->GetMaximum());
     slice_mix->Scale(1/slice_mix->GetMaximum());
     for (int x = 1; x < bins+1; x++) {
@@ -330,15 +329,18 @@ int main(int argc, char *argv[]) {
             double bdat = slice_data->GetBinContent(x, y);
             double bfit = slice_mix->GetBinContent(x, y);
             if (bdat > 0 && bfit > 0) {
-                diff->SetBinContent(x, y, (bdat-bfit)*data_scale);
+                diff->SetBinContent(x, y, bdat-bfit);
             } 
         }
     }
+    diff->Scale(1/diff->GetMaximum());
 
     // cosmetics
     c4->SetRightMargin(0.15);
 
-    double diffcont[] = {diff->GetMinimum(), -40, -20, -10, -5, 5, 10, 20, 40, diff->GetMaximum()};
+    // double diffcont[] = {diff->GetMinimum(), -40, -20, -10, -5, 5, 10, 20, 40, diff->GetMaximum()}; // upscaled contours
+    // double diffcont[] = {diff->GetMinimum(), -.2, -.1, -.05, -.025, .025, .05, .1, .2, diff->GetMaximum()}; // raw difference contours
+    double diffcont[] = {-1, -.6, -.3, -.15, -.075, .075, .15, .3, .6, 1}; // normalized difference contours
     diff->SetContour(10, diffcont);
 
     diff->GetXaxis()->SetTitle("x");
