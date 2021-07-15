@@ -22,23 +22,33 @@
 using namespace std;
 using namespace ROOT;
 
+
+// weights defined by eq 42 in Morten's thesis
+double calc_weight(vector<vector<double>> f, double wU, double k, double delta) { 
+    return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 6) {
-        cout << "Usage: ./2-_dalitz <output path> <data> <l = 1 sim> <l = 3 sim> <both sim>" << endl;
+        cout << "Usage: ./0+_dalitz <output path> <data> <0+ sim> <2- sim3a_i> <3- sim3a_i>" << endl;
         exit(1);
     }
-    string folder = string(argv[1]) + "2-_article/";
+    string folder = string(argv[1]) + "0+_article/";
 
     // path to fit with free delta
-    // string path_fit = "figures/dalitz_fit/article_free/";
-    // double k = 0.236633;
-    // double delta = 0.663692*2*M_PI;
+    string path_fit = "figures/dalitz_fit/article_free/";
+    double k1 = 0.0469975;
+    double delta1 = 0.750007*2*M_PI;
+    double c = 0.822108;
+    double k2 = 0;
+    double delta2 = 0;
 
     // path to fit with fixed delta
-    string path_fit = "figures/dalitz_fit/article_fixed/";
-    double k = 0.154447;
-    double delta = 0;
+    // string path_fit = "figures/dalitz_fit/article_fixed/";
+    // double k = 0.154447;
+    // double delta = 0;
 
+    std::cout << "Using hardcoded values for k and delta." << endl;
     filesystem::create_directories(folder);
 
     int bins = 200;
@@ -50,31 +60,37 @@ int main(int argc, char *argv[]) {
 
     // prepare the data sets
     ROOT::RDF::RNode data = RDataFrame("tree", argv[2]);
-    ROOT::RDF::RNode sim1 = RDataFrame("tree", argv[3]);
+    ROOT::RDF::RNode sim0 = RDataFrame("tree", argv[3]);
     ROOT::RDF::RNode sim2 = RDataFrame("tree", argv[4]);
-    ROOT::RDF::RNode both = RDataFrame("tree", argv[5]);
+    ROOT::RDF::RNode sim3 = RDataFrame("tree", argv[5]);
     filter(&data); // energy & momentum cuts
-    filter(&sim1);
+    filter(&sim0);
     filter(&sim2);
-    filter(&both);
+    filter(&sim3);
     setup_dataframe(&data); // define Dalitz coordinates
-    setup_dataframe(&sim1);
+    setup_dataframe(&sim0);
     setup_dataframe(&sim2);
-    setup_dataframe(&both);
-    cut_circle(&data);
-    cut_circle(&sim1);
+    setup_dataframe(&sim3);
+    cut_circle(&data); // cut everything outside the unit circle
+    cut_circle(&sim0);
     cut_circle(&sim2);
-    cut_circle(&both);
-    cut_gs(&data);
-    cut_gs(&sim1);
+    cut_circle(&sim3);
+    cut_gs(&data); // remove ground state decays
+    cut_gs(&sim0);
     cut_gs(&sim2);
-    cut_gs(&both);
+    cut_gs(&sim3);
+
+    auto w2 = [&k1, &delta1] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k1, delta1);};
+    auto w3 = [&k2, &delta2] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k2, delta2);};
+    sim2 = sim2.Define("w", w2, {"f", "wU"});
+    sim3 = sim3.Define("w", w3, {"f", "wU"});
 
 //**********************************//
 // FIRST PANEL COLUMN, DALITZ PLOTS //
 //**********************************//
-    TCanvas* c1 = new TCanvas("c1", "c", 600, 1800);
-    c1->Divide(1, 4, 0, 0);
+if (true) {
+    TCanvas* c1 = new TCanvas("c1", "c", 600, 1400);
+    c1->Divide(1, 3, 0, 0);
     double rightmargin = 0.14;
     double topmargin = 0.03;
     double bottommargin = 0.03;
@@ -102,30 +118,33 @@ int main(int argc, char *argv[]) {
 
     double contours[10] = {0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7};
 
-// first panel: l = 1 
+// first panel: 0+ sim
     c1->cd(1);
-    TH2D* dalitz_sim1 = dalitz(&sim1, bins, true);
-    dalitz_sim1->Scale(1./dalitz_sim1->GetMaximum());
-    setup_plot_dalitz(dalitz_sim1, "L = 1");
+    TH2D* dalitz_sim0 = dalitz(&sim0, bins, true);
+    dalitz_sim0->Scale(1./dalitz_sim0->GetMaximum());
+    setup_plot_dalitz(dalitz_sim0, "0^{+}");
 
     // cosmetics
-    // fill_empty(dalitz_sim1);
-    dalitz_sim1->GetXaxis()->SetLabelSize(0);
-    dalitz_sim1->SetContour(7, contours);
+    // fill_empty(dalitz_sim2l1);
+    dalitz_sim0->GetXaxis()->SetLabelSize(0);
+    dalitz_sim0->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
 
-    dalitz_sim1->Draw("colz");
+    dalitz_sim0->Draw("colz");
 
-// second panel: l = 3
+// second panel: fit
     c1->cd(2);
-    TH2D* dalitz_sim2 = dalitz(&sim2, bins, true);
-    dalitz_sim2->Scale(1./dalitz_sim2->GetMaximum());
-    setup_plot_dalitz(dalitz_sim2, "L = 3");
+    TH2D* dalitz_sim2 = dalitz(&sim2, bins, true, true);
+    TH2D* dalitz_sim3 = dalitz(&sim3, bins, true, true);
+
+    dalitz_sim2->Scale(c/dalitz_sim2->GetMaximum());
+    dalitz_sim3->Scale((1-c)/dalitz_sim3->GetMaximum());
+    dalitz_sim2->Add(dalitz_sim3);
+    setup_plot_dalitz(dalitz_sim2, "Fit");
 
     // cosmetics
-    // fill_empty(dalitz_sim2);
     dalitz_sim2->GetXaxis()->SetLabelSize(0);
     dalitz_sim2->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
@@ -134,36 +153,8 @@ int main(int argc, char *argv[]) {
 
     dalitz_sim2->Draw("colz");
 
-// third panel: fit
+// third panel: data
     c1->cd(3);
-    std::cout << "Using hardcoded values for k and delta." << endl;
-    auto calc_weights = [&k, &delta] (vector<vector<double>> f, double wU) { 
-        return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
-    };
-    both = both.Define("w", calc_weights, {"f", "wU"});
-
-    TH2D* dalitz_mix = dalitz(&both, bins, true, true);
-    dalitz_mix->Scale(1./dalitz_mix->GetMaximum());
-    setup_plot_dalitz(dalitz_mix, "Fit");
-
-    // cosmetics
-    for (int bin = 1; bin < pow(bins+1, 2); bin++) {
-        if (dalitz_mix->GetBinContent(bin) < 0.01) {
-            dalitz_mix->SetBinContent(bin, -1);
-        }
-    }
-    dalitz_mix->SetMinimum(0);
-
-    dalitz_mix->SetXTitle("x");
-    dalitz_mix->SetContour(7, contours);
-    gPad->SetRightMargin(rightmargin);
-    gPad->SetTopMargin(topmargin);
-    gPad->SetBottomMargin(bottommargin);
-
-    dalitz_mix->Draw("colz");
-
-// fourth panel: data
-    c1->cd(4);
     TH2D* dalitz_data = dalitz(&data, bins, true);
     double data_scale = dalitz_data->GetMaximum();
     dalitz_data->Scale(1./data_scale);
@@ -171,11 +162,11 @@ int main(int argc, char *argv[]) {
 
     // cosmetics
     // fill_empty(dalitz_data);
-    dalitz_data->GetXaxis()->SetLabelSize(0);
+    dalitz_data->SetXTitle("x");
     dalitz_data->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
-    gPad->SetBottomMargin(bottommargin);
+    gPad->SetBottomMargin(0.05);
 
     dalitz_data->DrawCopy("colz");
 
@@ -184,10 +175,12 @@ int main(int argc, char *argv[]) {
     c1->SetLogz();
     c1->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+}
 
 //*************************//
 //*** BINWISE CHI2 PLOT ***//
 //*************************//
+if (true) {
     gStyle->SetPalette(kThermometer);
     TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
 
@@ -220,62 +213,6 @@ int main(int argc, char *argv[]) {
     }
     chi2->SetMinimum(0);
 
-            // change sign depending on if data or simulation is higher
-            // if (binwise_chi[my_bin] >= 1e6) { 
-            //     chi2->SetBinContent(root_bin, -1e6);
-            // } else if (binwise_chi[my_bin] <= 2) { // shift low bins to a more neutral white color
-            //     chi2->SetBinContent(root_bin, -1e6);
-            // } else {
-            //     if (dalitz_data->GetBinContent(root_bin) < dalitz_mix->GetBinContent(root_bin)) {
-            //         minval = min(minval, -scaler*binwise_chi[my_bin]);
-            //         chi2->SetBinContent(root_bin, -scaler*binwise_chi[my_bin]);
-            //     } else {
-            //         chi2->SetBinContent(root_bin, scaler*binwise_chi[my_bin]);
-            //     }
-            // }
-    //     }
-    // }
-    // double maxval = chi2->GetMaximum();
-    // double lim = max(maxval, abs(minval));
-    // chi2->SetMinimum(-lim);
-    // chi2->SetMaximum(lim);
-
-    // Mirror the plot to form the full Dalitz-plot
-    // TH2D* chi2 = new TH2D("chi", "h", 2*bins, -1, 1, 2*bins, -1, 1);
-    
-    // const vector<double> cost = {cos(0), cos(2./3*M_PI), cos(4./3*M_PI)};
-    // const vector<double> sint = {sin(0), sin(2./3*M_PI), sin(4./3*M_PI)};
-
-    // // in this first loop, each event is mirrored across the radial line at 60 degrees
-    // for (int xbin = 0; xbin < bins; xbin++) {
-    //     for (int ybin = 0; ybin < bins; ybin++) {
-    //         int my_bin = xbin + ybin*bins; // the logical choice of bins
-    //         int root_bin = (xbin + 1) + (ybin + 1)*(bins + 2); // index 0 is underflow bin and index bins+1 is overflow bin
-    //         double val = binwise_chi[my_bin];
-    //         if (val >= 1e6) {
-    //             continue;
-    //         }
-
-    //         double x = -1./(2*bins) + (double) xbin/bins; // cast to double to avoid integer division
-    //         double y = -1./(2*bins) + (double) ybin/bins;
-    //         double phi = atan2(y, x);
-    //         double X = x*cos(2*phi-M_PI/3) + y*sin(2*phi-M_PI/3); // mirrored x
-    //         double Y = -x*sin(2*phi-M_PI/3) + y*cos(2*phi-M_PI/3); // mirrored y
-
-    //         // in this second loop, both the original and mirrored event are duplicated and rotated by 120 degrees
-    //         // the rotation matrix is precalculated for efficiency
-    //         for (int r = 0; r < 3; r++) {
-    //             double x1 = x*cost[r] + y*sint[r];
-    //             double x2 = X*cost[r] + Y*sint[r];
-    //             double y1 = -x*sint[r] + y*cost[r];
-    //             double y2 = -X*sint[r] + Y*cost[r];
-
-    //             chi2->SetBinContent(chi2->FindBin(x1, y1), val);
-    //             chi2->SetBinContent(chi2->FindBin(x2, y2), val);
-    //         }
-    //     }
-    // }
-
     // cosmetics
     c2->SetRightMargin(0.15);
     c2->SetLeftMargin(0.13);
@@ -305,7 +242,7 @@ int main(int argc, char *argv[]) {
     zlabel->Draw();
     
     // save
-    path = folder + "chi2.pdf";
+    string path = folder + "chi2.pdf";
     c2->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
@@ -313,23 +250,31 @@ int main(int argc, char *argv[]) {
     path = folder + "chi2_max.pdf";
     c2->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+}
 
 //***********************//
 //*** DIFFERENCE PLOT ***//
 //***********************//
+if (true) {
+    gStyle->SetPalette(kThermometer);
     TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
     bins = 100;
 
     TH2D* slice_data = dalitz_slice(&data, bins, true);
-    TH2D* slice_mix = dalitz_slice(&both, bins, true, true);
-    TH2D* diff = new TH2D("diff", "h", bins, 0, 1, bins, 0, 1);
+    TH2D* slice_sim2 = dalitz_slice(&sim2, bins, true, true);
+    TH2D* slice_sim3 = dalitz_slice(&sim3, bins, true, true);
 
+    slice_sim2->Scale(c/slice_sim2->GetMaximum());
+    slice_sim3->Scale((1-c)/slice_sim3->GetMaximum());
+    slice_sim2->Add(slice_sim3);
+
+    TH2D* diff = new TH2D("diff", "h", bins, 0, 1, bins, 0, 1);
     slice_data->Scale(1/slice_data->GetMaximum());
-    slice_mix->Scale(1/slice_mix->GetMaximum());
+    slice_sim2->Scale(1/slice_sim2->GetMaximum());
     for (int x = 1; x < bins+1; x++) {
         for (int y = 1; y < bins+1; y++) {
             double bdat = slice_data->GetBinContent(x, y);
-            double bfit = slice_mix->GetBinContent(x, y);
+            double bfit = slice_sim2->GetBinContent(x, y);
             if (bdat > 0 && bfit > 0) {
                 diff->SetBinContent(x, y, bdat-bfit);
             } 
@@ -373,42 +318,29 @@ int main(int argc, char *argv[]) {
     zlabel2->Draw();
 
     // save
-    path = folder + "difference.pdf";
+    string path = folder + "difference.pdf";
     c4->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+}
 
 //**********************************************//
 // SECOND PANEL COLUMN, ENERGY PROJECTION PLOTS //
 //**********************************************//
-    TCanvas* c3 = new TCanvas("c2", "c", 600, 1400);
-    c3->Divide(1, 3, 0, 0);
+if (true) {
+    TCanvas* c3 = new TCanvas("c2", "c", 600, 1000);
+    c3->Divide(1, 2, 0, 0);
 
     bins = 100;
     vector<double> x_axis = {0, 6000};
-    TH1D* data_E = new TH1D("data_E", "h", bins, x_axis[0], x_axis[1]);
-    TH1D* sim1_E = new TH1D("sim1_E", "h", bins, x_axis[0], x_axis[1]);
-    TH1D* sim2_E = new TH1D("sim2_E", "h", bins, x_axis[0], x_axis[1]);
-    TH1D* both_E = new TH1D("both_E", "h", bins, x_axis[0], x_axis[1]);
+    TH1D* data_E = energy_projection(&data, false, "data_E", "integral");
+    TH1D* sim0_E = energy_projection(&sim0, false, "sim0_E", "integral");
+    TH1D* fit_E = energy_projection(&sim2, &sim3, c, true, true, "fit_E", "integral");
 
-    for (int i = 0; i < 3; i++) {
-        TH1D data_temp = data.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"dat_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
-        TH1D sim1_temp = sim1.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim1_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
-        TH1D sim2_temp = sim2.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim2_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue(); // offset: - (4300 - 4200)
-        TH1D both_temp = both.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"both_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
-        data_E->Add(&data_temp);
-        sim1_E->Add(&sim1_temp);
-        sim2_E->Add(&sim2_temp);
-        both_E->Add(&both_temp);
-    }
-    sim1_E->Scale(1/sim1_E->Integral());
-    sim2_E->Scale(1/sim2_E->Integral());
-    both_E->Scale(1/both_E->Integral());
-    data_E->Scale(1/data_E->Integral());
-
-    sim1_E->Scale(1/data_E->GetMaximum());
-    sim2_E->Scale(1/data_E->GetMaximum());
-    both_E->Scale(1/data_E->GetMaximum());
-    data_E->Scale(1/data_E->GetMaximum());
+    double data_scale = max({data_E->GetMaximum(), sim0_E->GetMaximum(), fit_E->GetMaximum()});
+    data_E->Scale(1/data_scale);
+    sim0_E->Scale(1/data_scale);
+    fit_E->Scale(1/data_scale);
+    data_E->SetMaximum(1);
 
     auto setup_plot_energy = [] (TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
         hdat->GetXaxis()->SetTitle(xlabel.c_str());
@@ -429,12 +361,15 @@ int main(int argc, char *argv[]) {
 
     data_E->GetXaxis()->SetLabelSize(0);
     double leftmargin = 0.15;
-    rightmargin = 0.055;
-// first panel: data + fit l = 1
+    double rightmargin = 0.055;
+    double topmargin = 0.03;
+    double bottommargin = 0.03;
+
+// first panel: data + 0+ sim
     c3->cd(1);
-    setup_plot_energy(data_E, sim1_E, "E_{cm}", "L = 1");
+    setup_plot_energy(data_E, sim0_E, "E_{cm}", "0+ simulation");
     data_E->DrawClone("hist l");
-    sim1_E->Draw("hist l same");
+    sim0_E->Draw("hist l same");
 
     // cosmetics
     gPad->SetTopMargin(topmargin);
@@ -442,32 +377,22 @@ int main(int argc, char *argv[]) {
     gPad->SetRightMargin(rightmargin);
     gPad->SetBottomMargin(bottommargin);
 
-// second panel: data + fit l = 3
+// second panel: data + fit
     c3->cd(2);
-    setup_plot_energy(data_E, sim2_E, "E_{cm}", "L = 3");
-    data_E->DrawClone("hist l");
-    sim2_E->Draw("hist l same");
-
-    // cosmetics
-    gPad->SetTopMargin(topmargin);
-    gPad->SetLeftMargin(leftmargin);
-    gPad->SetRightMargin(rightmargin);
-    gPad->SetBottomMargin(bottommargin);
-
-// third panel: data + fit both
-    c3->cd(3);
-    setup_plot_energy(data_E, both_E, "E_{cm}", "Fit");
+    setup_plot_energy(data_E, fit_E, "E_{cm}", "2- & 3- fit");
     data_E->Draw("hist l");
-    both_E->Draw("hist l same");
+    fit_E->Draw("hist l same");
 
     // cosmetics
     data_E->GetXaxis()->SetLabelSize(labelsize);
     gPad->SetTopMargin(topmargin);
     gPad->SetLeftMargin(leftmargin);
     gPad->SetRightMargin(rightmargin);
+    gPad->SetBottomMargin(0.06);
 
 // save
-    path = folder + "energy_panels.pdf";
+    string path = folder + "energy_panels.pdf";
     c3->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
+}
 }

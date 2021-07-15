@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     hist->GetXaxis()->SetNdivisions(2);
     hist->GetYaxis()->SetTitle("y");
     hist->GetYaxis()->CenterTitle();
-    hist->GetYaxis()->SetNdivisions(2);
+    hist->GetYaxis()->SetNdivisions(2); 
     hist->Draw("colz");
 
     TArc* a1 = new TArc(0, 0, 1, 0, theta);

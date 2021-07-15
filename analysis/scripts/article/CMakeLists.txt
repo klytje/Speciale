@@ -21,3 +21,4 @@ list(APPEND LIBRARIES ${ROOT_LIBRARIES} Spectrum MathMore)
 link_libraries(${LIBRARIES})
 
 add_executable(2-_dalitz 2-_dalitz.cpp)
+add_executable(0+_dalitz 0+_dalitz.cpp)

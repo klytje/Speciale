@@ -260,7 +260,7 @@ const auto Emin = [] (ROOT::VecOps::RVec<Double_t> x, ROOT::VecOps::RVec<Double_
 };  
 
 // fit and remove the ground state decay events
-void cut_gs(ROOT::RDF::RNode* df) {
+void cut_gs_alt(ROOT::RDF::RNode* df) {
     double E_exc[] = {0, 200};
         *df = df->Define("i_max", Emax, {"px", "py", "pz"})
             .Define("i_min", Emin, {"px", "py", "pz"})
@@ -276,7 +276,7 @@ void cut_gs(ROOT::RDF::RNode* df) {
 }
 
 // fit and extract only the excited decay events
-void cut_gs_alt(ROOT::RDF::RNode* df) {
+void cut_gs(ROOT::RDF::RNode* df) {
     double E_exc[] = {1000, 4500};
         *df = df->Define("i_max", Emax, {"px", "py", "pz"})
             .Define("i_min", Emin, {"px", "py", "pz"})
@@ -427,16 +427,107 @@ TH2D* dalitz_slice(ROOT::RDF::RNode* df, const int bins = 200, const bool bounde
     return hist;
 }
 
-TH2D* dalitz_slice(const char* file, const int bins = 100, bool bounded = true) {
+/**
+ *  Create a Dalitz slice for the input file.
+ * @param file The path to the target file.
+ * @param bins The number of bins used for both the x and y axes.
+ * @param cut Whether to impose cuts on the plot or not.
+ * @return A TH2D* containing the Dalitz slice
+ */
+TH2D* dalitz_slice(const char* file, const int bins = 100, bool cut = true) {
     ROOT::RDF::RNode df = ROOT::RDataFrame("tree", file);
     filter(&df);
     setup_dataframe(&df);
-    if (bounded) {
+    if (cut) {
         cut_circle(&df);
         cut_gs(&df);
     }
 
-    return dalitz_slice(&df, bins, bounded);
+    return dalitz_slice(&df, bins, cut);
+}
+
+/**
+    Energy projection for a single simulation or data file. 
+    @param df The input dataframe
+    @param weighted Determines whether each bin will be weighted by the "w" column, which must thus already be defined. 
+    @param name The name used internally in ROOT. Change this when creating multiple projections. 
+    @param scale The scaling imposed on the histogram. Options: "max", "integral", "none"
+    @return A TH1D* ROOT histogram containing the energy projection. 
+*/
+TH1D* energy_projection(ROOT::RDF::RNode* df, bool weighted = false, string name = "proj", string scale = "none") {
+    if (weighted && !df->HasColumn("w")) {
+        std::cout << "\033[1;31m" << "ERROR: weighted was specified, but no w is defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
+    vector<double> x_axis = {0, 7000};
+    int bins = 100;
+
+    TH1D* proj = new TH1D(name.c_str(), "h", bins, x_axis[0], x_axis[1]);
+    for (int i = 0; i < 3; i++) {
+        TH1D temp;
+        if (weighted) {
+            temp = df->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            temp = df->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        proj->Add(&temp);
+    }
+    if (scale == "max") {
+        proj->Scale(1/proj->GetMaximum());
+    } else if (scale == "integral") {
+        proj->Scale(1/proj->Integral());
+    }
+    return proj;
+}
+
+/**
+    Energy projection for two simulation files. 
+    @param df The two dataframes containing the simulated events.
+    @param ratio The fitted ratio between the two components. 
+    @param weighted Determines whether each bin will be weighted by the "w" column, which must thus already be defined. 
+    @param name The name used internally in ROOT. Change this when creating multiple projections. 
+    @param scale The scaling imposed on the histogram. Options: "max", "integral", "none"
+    @return A TH1D* ROOT histogram containing the energy projection. 
+*/
+TH1D* energy_projection(ROOT::RDF::RNode* df1, ROOT::RDF::RNode* df2, double ratio, bool weighted1 = false, bool weighted2 = false, string name = "proj", string scale = "none") {
+    if (weighted1 && !df1->HasColumn("w") || weighted2 && !df2->HasColumn("w")) {
+        std::cout << "\033[1;31m" << "ERROR: weighted was specified, but no w is defined in the input dataframe!" << "\033[0m" << endl;
+        exit(1);
+    } 
+    vector<double> x_axis = {0, 7000};
+    int bins = 100;
+
+    TH1D* proj = new TH1D(name.c_str(), "h", bins, x_axis[0], x_axis[1]);
+    TH1D* proj2 = new TH1D("proj2", "h", bins, x_axis[0], x_axis[1]);
+    for (int i = 0; i < 3; i++) {
+        TH1D temp1, temp2;
+        if (weighted1) {
+            temp1 = df1->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            temp1 = df1->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        if (weighted2) {
+            temp2 = df2->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            temp2 = df2->Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        proj->Add(&temp1);
+        proj2->Add(&temp2);
+    }
+
+    proj->Scale(ratio/proj->Integral());
+    proj2->Scale((1-ratio)/proj2->Integral());
+    double data_scale = proj->GetMaximum();
+    proj->Scale(1/data_scale);
+    proj2->Scale(1/data_scale);
+    proj->Add(proj2);
+
+    if (scale == "max") {
+        proj->Scale(1/proj->GetMaximum());
+    } else if (scale == "integral") {
+        proj->Scale(1/proj->Integral());
+    }
+    return proj;
 }
 
 // I ended up needing these specific plot options quite a lot, so I relocated it here as a common method. note that it also draws the histograms

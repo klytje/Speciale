@@ -57,8 +57,8 @@ class Dalitz_fitter {
 public:
     Dalitz_fitter() = default;
 
-    // general constructor supporting any number of sim3a_i simulations (untested beyond 2)
-    Dalitz_fitter(container* cdata, vector<container*> sim) {
+    // general constructor supporting any number of sim3a_i simulations
+    Dalitz_fitter(container* cdata, vector<container*> sim, int type) {
         std::tie(d, std::ignore) = hist(cdata);
         f = vector<vector<vector<vector<double>>>>(sim.size());
         wU = vector<vector<double>>(sim.size());
@@ -66,25 +66,18 @@ public:
             f[j] = *(*sim[j]).f;
             wU[j] = *(*sim[j]).wU;
         }
-        if (sim.size() == 1) {
-            type = 1;
-        } else if (sim.size() == 2) {
-            type = 3;
-        } else {
-            cout << "Critical failure: more than two simulation files passed to constructor. Implement your own evaluation function to support this." << endl;
-            exit(1);
-        }
+        this->type = type;
         setup_vectors(sim);
     }
 
     // specific constructor for 1 sim3a_i simulation, and 1 sim3a simulation
-    Dalitz_fitter(container* cdata, container* sim3ai, container* sim3a) {
+    Dalitz_fitter(container* cdata, container* sim3ai, container* sim3a, int type) {
         std::tie(d, std::ignore) = hist(cdata);
         f = vector<vector<vector<vector<double>>>>(1);
         wU = vector<vector<double>>(1);
         f[0] = *(*sim3ai).f;
         wU[0] = *(*sim3ai).wU;
-        type = 2;
+        this->type = type;
         setup_vectors({sim3ai, sim3a});
     }
 
@@ -149,9 +142,6 @@ public:
             w[0][i] = calc_weight(f[0][i], wU[0][i], k, delta);
             w_avg += w[0][i];
         }
-        // w[1] = vector<double>(entry_map[1].size(), w_avg/entry_map[0].size());
-        // cout << "w_avg: " << w_avg/entry_map[0].size() << endl;
-        // sleep(2);
         vector<vector<double>> avg_w = calc_avg_w(w);
         return modified_maximum_likelihood(&avg_w, &P);
     }
@@ -161,6 +151,29 @@ public:
         vector<vector<double>> avg_w(1, vector<double>(bins2, 1));
         vector<double> P = {1};
         return modified_maximum_likelihood(&avg_w, &P);
+    }
+
+    // evaluation method for the case of three sim3a simulations
+    double eval_type5(const double *params) {
+        double c1 = params[0];
+        double c2 = params[1];
+        vector<double> P = {c1*(1-c2), (1-c1)*(1-c2), c2};
+        cout << "c1: " << P[0] << ", c2: " << P[1] << ", c3: " << P[2] << endl;
+        
+        // some of the minimizers do not respect our limits, which results in nan values
+        for (int j = 0; j < m; j++) {
+            // I don't know why the minimizer would ever pass nan, but it sometimes does (probably when they're based on derivatives?)
+            if (P[j] > 1 || isnan(P[j])) {
+                return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
+            }
+        }
+
+        // calculate the weight
+        vector<vector<double>> w(m);
+        w[0] = vector<double>(entry_map[0].size(), 1);
+        w[1] = vector<double>(entry_map[1].size(), 1);
+        w[2] = vector<double>(entry_map[2].size(), 1);
+        return modified_maximum_likelihood(&w, &P);
     }
 
     // calculate chi^2 for a given fit result
@@ -174,6 +187,8 @@ public:
             chi = eval_type3(params);
         } else if (type == 4) {
             chi = eval_type4();
+        } else if (type == 5) {
+            chi = eval_type5(params);
         } else {
             cout << "Critical failure in evaluating chisquare: unknown evaluation type " << type << endl;
             exit(1);
@@ -286,6 +301,7 @@ public:
 
             // check for nan values
             if (isnan(chi-prev_chi)) {
+                // print debug info about the current bin
                 cout << "Critical error in bin " << i << ", change in chi is nan (old chi = -inf?)" << endl;
                 cout << format("bin %1% with L = %2%") % i % (chi-prev_chi) << endl;
                 cout << format("\tf = %1%, d = %2%, t = %3%") % fi % d[i] % t[i] << endl;
@@ -293,18 +309,29 @@ public:
                     cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][i] % A[j][i] % w[j][i] % p[j] << endl;
                 }
 
+                // print debug info about the previous bin
+                // first we find the last bin that was not skipped
+                int prevbin = i-1; 
+                for (; prevbin > 0; prevbin--) {
+                    if (!skip_bin[prevbin]) {
+                        break;
+                    }
+                }
+
+                // recalculate the variables
                 double fl = 0;
-                if (t[i-1] == 1) {
+                if (t[prevbin] == 1) {
                     for (int j = 0; j < m; j++) {
-                        fl += p[j]*w[j][i-1]*A[j][i-1];
+                        fl += p[j]*w[j][prevbin]*A[j][prevbin];
                     }
                 } else {
-                    fl = d[i-1]/(1 - t[i-1]);
+                    fl = d[prevbin]/(1 - t[prevbin]);
                 }
-                cout << format("bin %1% with L = %2%") % (i-1) % prev_chi << endl;
-                cout << format("\tf = %1%, d = %2%, t = %3%") % fl % d[i-1] % t[i-1] << endl;
+
+                cout << format("bin %1% with L = %2%") % prevbin % prev_chi << endl;
+                cout << format("\tf = %1%, d = %2%, t = %3%") % fl % d[prevbin] % t[prevbin] << endl;
                 for (int j = 0; j < m; j++) {
-                    cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][i-1] % A[j][i-1] % w[j][i-1] % p[j] << endl;
+                    cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][prevbin] % A[j][prevbin] % w[j][prevbin] % p[j] << endl;
                 }
 
                 exit(1);
@@ -354,9 +381,11 @@ public:
                 t[i] = -1./pw;
                 A[k][i] = d[i]/(1 + pw);
                 for (int j = 0; j < m; j++) {
-                    if (j != k) {
-                        A[k][i] -= p[j]*w[j][i]*a[j][i]/(p[k] - p[j]);
-                    }
+                    // if (a[j][i] == 0) { // SHOULD THIS BE HERE? NOT CLEAR BASED ON THE STATISTICS
+                        if (j != k) {
+                            A[k][i] -= p[j]*w[j][i]*a[j][i]/(p[k] - p[j]);
+                        }
+                    // }
                 }
                 eval_chi(i);
                 continue;
@@ -529,19 +558,23 @@ private:
 };
 
 // the idea is to take two simulated data sets as input and fit them to the data through their Dalitz plots
+// note: I am *really* starting to regret the design choice - it is cumbersome to extend the program to support more options. 
+// maybe I'll change the structure some day. 
 int main(int argc, char const *argv[]) {
     /* 
         Which type & algorithm do we use? Based on my own investigation, the parameter space has a multitude of local minima, so any algorithm based on 
         first derivates are useless (essentially the whole Minuit2 library). I've had some luck with the GSLMultiMin BFGS algorithm, which is reasonably
         fast and appears to find the actual minima. BFGS2 was also good, but found a wrong minima very close in value to the actual. 
         I think the best option is GSLSimAn, which takes a hell of a time to run (~15k function calls), but found the correct minimum. 
+        I've also had excellent luck using the Genetic algorithm. 
     */
     if (argc < 3) {
-        cout << "Four modes are supported: " << endl;
-        cout << "\t./dalitz_fitter <data> <sim3a_i data>" << endl; // fit_type = 1
-        cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a data>" << endl; // fit_type = 2
-        cout << "\t./dalitz_fitter <data> <sim3a_i data> <sim3a_i data>" << endl; // fit_type = 3
-        cout << "\t./dalitz_fitter <data> <sim3a data> (for calculating chi2)" << endl; // fit_type = 4
+        cout << "Five modes are supported: " << endl;
+        cout << "\t./dalitz_fitter <data> <sim3a_i>" << endl; // fit_type = 1
+        cout << "\t./dalitz_fitter <data> <sim3a_i> <sim3a>" << endl; // fit_type = 2
+        cout << "\t./dalitz_fitter <data> <sim3a_i> <sim3a_i>" << endl; // fit_type = 3
+        cout << "\t./dalitz_fitter <data> <sim3a> (for calculating chi2)" << endl; // fit_type = 4
+        cout << "\t./dalitz_fitter <data> <sim3a> <sim3a> <sim3a> (CURRENTLY BROKEN!)" << endl; // fit_type = 5
         cout << "Figures are automatically written to figures/dalitz_fit/" << endl;
         cout << "Only the name of the files should be provided, e.g. output/true_events.root --> true_events" << endl;
         cout << "The following list of parameters can be supplied like \".X Y\"" << endl;
@@ -568,7 +601,7 @@ int main(int argc, char const *argv[]) {
     string type = "GSLSimAn", algorithm = "";
     bins = 100; // THIS VALUE AFFECTS THE QUALITY OF THE FIT! this is the number of bins for each axis on a Dalitz *slice*, so the total plot has twice this number
     y_cut = 1;
-    int fit_type, guess_pars = 0;
+    int fit_type, sim_num, guess_pars = 0;
     double guess[] = {0.5, 0.5, 0.2, 0.5, 0.5};
     bool fix_delta = false;
     string args[argc-1];
@@ -577,26 +610,7 @@ int main(int argc, char const *argv[]) {
     }
     cout << "\nOptional parameters parsed: " << endl;
     for (int i = 3; i < argc; i++) {
-        if (args[i].find(".k") != string::npos || args[i].find(".k1") != string::npos) {
-            guess[0] = atof(args[i+1].c_str());
-            cout << "\tk guess: " << guess[0] << endl;
-            guess_pars += 2;
-        }
-        else if (args[i].find(".delta") != string::npos || args[i].find(".delta") != string::npos) {
-            if (args[i+1] == "fixed") {
-                fix_delta = true;
-            } else {
-                guess[1] = atof(args[i+1].c_str());
-                cout << "\tdelta guess: " << guess[1] << endl;
-            }
-            guess_pars += 2;
-        }
-        else if (args[i].find(".c") != string::npos) {
-            guess[2] = atof(args[i+1].c_str());
-            guess_pars += 2;
-            cout << "\tc guess: " << guess[2] << endl;
-        }
-        else if (args[i].find(".k2") != string::npos) {
+        if (args[i].find(".k2") != string::npos) {
             guess[3] = atof(args[i+1].c_str());
             guess_pars += 2;
             cout << "\tk2 guess: " << guess[3] << endl;
@@ -606,17 +620,38 @@ int main(int argc, char const *argv[]) {
                 fix_delta = true;
             } else {
                 guess[4] = atof(args[i+1].c_str());
-                cout << "\tdelta2 guess: " << guess[4] << endl;
+                cout << "\tdelta2 guess: " << guess[4] << "*2pi" << endl;
             }
             guess_pars += 2;
+        }
+        else if (args[i].find(".k") != string::npos || args[i].find(".k1") != string::npos) {
+            guess[0] = atof(args[i+1].c_str());
+            cout << "\tk guess: " << guess[0] << endl;
+            guess_pars += 2;
+        }
+        else if (args[i].find(".delta") != string::npos || args[i].find(".delta1") != string::npos) {
+            if (args[i+1] == "fixed") {
+                fix_delta = true;
+            } else {
+                guess[1] = atof(args[i+1].c_str());
+                cout << "\tdelta guess: " << guess[1] << "*2pi" << endl;
+            }
+            guess_pars += 2;
+        }
+        else if (args[i].find(".c") != string::npos) {
+            guess[2] = atof(args[i+1].c_str());
+            guess_pars += 2;
+            cout << "\tc guess: " << guess[2] << endl;
         }
         else if (args[i].find(".type") != string::npos) {
             type = args[i+1];
             guess_pars += 2;
+            cout << "\tusing minimizer: " << type << endl;
         }
         else if (args[i].find(".algo") != string::npos) {
             algorithm = args[i+1];
             guess_pars += 2;
+            cout << "\tusing algorithm: " << algorithm << endl;
         }
         else if (args[i].find(".bins") != string::npos) {
             bins = atof(args[i+1].c_str());
@@ -633,11 +668,14 @@ int main(int argc, char const *argv[]) {
         cout << "\tAll \u03B4 are fixed at 0, and will not be varied." << endl;
     }
     if (argc == 3 + guess_pars) {
-        fit_type = 1; // acts as a placeholder for 1 input file
+        sim_num = 1;
         cout << format("\nFitting %1% with %2% using %3%") % args[1] % args[2] % type << endl;
     } else if (argc == 4 + guess_pars) {
-        fit_type = 2; // acts as a placeholder for 2 input files
+        sim_num = 2;
         cout << format("\nFitting %1% with %2% and %3% using %4%") % args[1] % args[2] % args[3] % type << endl;
+    } else if (argc == 5 + guess_pars) {
+        sim_num = 3;
+        cout << format("\nFitting %1% with %2%, %3%, and %4% using %5%") % args[1] % args[2] % args[3] % args[4] % type << endl;
     } else {
         cout << "\033[1;31m" << "Invalid number of arguments." << "\033[0m" << endl;
         exit(1);
@@ -658,6 +696,7 @@ int main(int argc, char const *argv[]) {
     ROOT::RDF::RNode data = ROOT::RDataFrame("tree", "output/" + args[1] + ".root");
     ROOT::RDF::RNode sim1 = ROOT::RDataFrame("tree", "output/" + args[2] + ".root");
     ROOT::RDF::RNode sim2 = ROOT::RDataFrame(0); // empty dataframe
+    ROOT::RDF::RNode sim3 = ROOT::RDataFrame(0); 
     filter(&data); // perform energy and momentum cut
     filter(&sim1);
     setup_dataframe(&data); // define dalitz coordinates
@@ -671,35 +710,35 @@ int main(int argc, char const *argv[]) {
     cut_gs(&data); // cut the ground state decay events
 
     // extract the data and put it into a container
-    container *cdata, *csim1, *csim2;
-    vector<double> datax, datay, sim1x, sim1y, sim2x, sim2y; 
+    container *cdata, *csim1, *csim2, *csim3;
+    vector<double> datax, datay, sim1x, sim1y, sim2x, sim2y, sim3x, sim3y; 
     datax = data.Take<double>("x").GetValue();
     datay = data.Take<double>("y").GetValue();
     cdata = new container(&datax, &datay);
 
     // extract the data from the first simulation data set
-    vector<double> sim1wU, sim2wU;
-    vector<vector<vector<double>>> sim1f, sim2f;
+    vector<double> sim1wU, sim2wU, sim3wU;
+    vector<vector<vector<double>>> sim1f, sim2f, sim3f;
     {
         sim1x = sim1.Take<double>("x").GetValue();
         sim1y = sim1.Take<double>("y").GetValue();
         if (sim1.HasColumn("f")) {
             cout << "First simulation file appears to be from sim3a_i" << endl;
-            fit_type = 1;
             sim1f = sim1.Take<vector<vector<double>>>("f").GetValue();
             sim1wU = sim1.Take<double>("wU").GetValue();
             csim1 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
+            fit_type = 1;
         } else {
             cout << "First simulation file appears to be from sim3a without interference" << endl;
-            fit_type = 4;
-            sim1f = vector<vector<vector<double>>>(); // only used in the evaluation method, so we can just leave them empty
+            sim1f = vector<vector<vector<double>>>();
             sim1wU = vector<double>();
             csim1 = new container(&sim1x, &sim1y, &sim1f, &sim1wU);
+            fit_type = 4;
         }
     }
 
     // extract the data from the second simulation data set
-    if (fit_type == 2) {
+    if (sim_num == 2 || sim_num == 3) {
         sim2 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
         filter(&sim2);
         setup_dataframe(&sim2);
@@ -710,17 +749,43 @@ int main(int argc, char const *argv[]) {
         sim2x = sim2.Take<double>("x").GetValue();
         sim2y = sim2.Take<double>("y").GetValue();
         if (sim2.HasColumn("f")) { // check if we are dealing with sim3a_i data
-            cout << "Second simulation data set appears to be from sim3a_i." << endl;
-            fit_type = 3;
+            std::cout << "Second simulation file appears to be from sim3a_i." << endl;
             sim2f = sim2.Take<vector<vector<double>>>("f").GetValue();
             sim2wU = sim2.Take<double>("wU").GetValue();
             csim2 = new container(&sim2x, &sim2y, &sim2f, &sim2wU);
+            fit_type = 3;
         } else {
+            std::cout << "Second simulation file appears to be from sim3a without interference." << endl;
+            sim1f = vector<vector<vector<double>>>();
+            sim1wU = vector<double>();
+            csim2 = new container(&sim2x, &sim2y, &sim2f, &sim2wU);
             fit_type = 2;
-            csim2 = new container(&sim2x, &sim2y);
         }
     }
-    
+
+    // extract the data from the third simulation data set
+    if (sim_num == 3) {
+        sim3 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
+        if (sim3.HasColumn("f")) { // check if we are dealing with sim3a_i data
+            std::cout << "\033[1;31m" << "Third simulation file set appears to be from sim3a_i. This is not supported with three simulation inputs." << "\033[0m" << endl;
+            exit(1);
+        }
+        std::cout << "Third simulation file appears to be from sim3a without interference." << endl;
+
+        filter(&sim3);
+        setup_dataframe(&sim3);
+        cut_circle(&sim3);
+        if (y_cut != 1) {
+            cut_y(&sim3, y_cut);
+        }
+        sim3x = sim3.Take<double>("x").GetValue();
+        sim3y = sim3.Take<double>("y").GetValue();
+        sim1f = vector<vector<vector<double>>>();
+        sim1wU = vector<double>();
+        csim3 = new container(&sim3x, &sim3y, &sim3f, &sim3wU);
+        fit_type = 5;
+    }
+
      // create a file to store all of the fit information
     ofstream file(folder + "info.txt");
 
@@ -731,24 +796,29 @@ int main(int argc, char const *argv[]) {
     int pars = 0;
     if (fit_type == 1) {
         pars = 2; // k & delta
-        fitter = new Dalitz_fitter(cdata, {csim1});
+        fitter = new Dalitz_fitter(cdata, {csim1}, fit_type);
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type1, pars);
     } else if (fit_type == 2) {
         pars = 3; // k, delta, c
-        fitter = new Dalitz_fitter(cdata, csim1, csim2);
+        fitter = new Dalitz_fitter(cdata, csim1, csim2, fit_type);
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type2, pars);
     } else if (fit_type == 3) {
         pars = 5; // k1, delta1, c, k2, delta2
-        fitter = new Dalitz_fitter(cdata, {csim1, csim2});
+        fitter = new Dalitz_fitter(cdata, {csim1, csim2}, fit_type);
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
     } else if (fit_type == 4) {
-        fitter = new Dalitz_fitter(cdata, {csim1});
-        fitter->set_type(4); // cannot automatically be detected by the constructor
+        fitter = new Dalitz_fitter(cdata, {csim1}, fit_type);
         file << "chi2 value: " << fitter->chisquare(nullptr) << endl;
         minimize = false;
-        // cout << "The tool does not currently support generating figures for this type of operation." << endl;
-        // filesystem::remove(folder);
-        // exit(0);
+    } else if (fit_type == 5) {
+        cout << "hi" << endl;
+        pars = 2; // c1 & c2
+        fitter = new Dalitz_fitter(cdata, {csim1, csim2, csim3}, fit_type);
+        functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type5, pars);
+        cout << "hi" << endl;
+    } else {
+        std::cout << "\033[1;31m" << "Critical error encountered: unknown fit_type." << "\033[0m" << endl;
+        exit(1);
     }
 
     const double* res;
@@ -783,6 +853,10 @@ int main(int argc, char const *argv[]) {
                 else 
                     m->SetLimitedVariable(4, "delta2", guess[4], 0.01, 0, 1);
             }
+            if (fit_type == 5) {
+                m->SetLimitedVariable(0, "c1", 0.5, 0.01, 0, 1);
+                m->SetLimitedVariable(0, "c2", 0.5, 0.01, 0, 1);
+            }
         };
 
         // first minimization
@@ -807,13 +881,13 @@ int main(int argc, char const *argv[]) {
             }
             file << "    Estimating errors with MINOS: " << endl;
             file << format("        k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
-            file << format("        delta: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+            file << format("        delta (*2pi): %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
             if (fit_type == 2 || fit_type == 3) {
                 file << format("        c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
             }
             if (fit_type == 3) {
                 file << format("        k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
-                file << format("        delta2: %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
+                file << format("        delta2 (*2pi): %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
             }
             file << endl;
         };
@@ -823,13 +897,13 @@ int main(int argc, char const *argv[]) {
             file << format("        FVAL = %1%") % m->MinValue() << endl;
             file << format("        chi2 = %1%") % fitter->chisquare(res) << endl;
             file << format("        k = %1% (FREE)") % res[0] << endl;
-            file << format("        delta = %1% (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
+            file << format("        delta = %1%*2pi (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
             if (fit_type == 2 || fit_type == 3) {
                 file << format("        c = %1% (FREE)") % res[2] << endl;
             } 
             if (fit_type == 3) {
                 file << format("        k2 = %1% (FREE)") % res[3] << endl;
-                file << format("        delta2 = %1% (%2%)") % res[4] % (fix_delta ? "FIXED" : "FREE") << endl;
+                file << format("        delta2 = %1%*2pi (%2%)") % res[4] % (fix_delta ? "FIXED" : "FREE") << endl;
             } 
             file << endl;
         };
@@ -852,13 +926,13 @@ int main(int argc, char const *argv[]) {
         file << "\nROOT Minimizer report: " << endl;
         file << "    Initial guess values:" << endl;
         file << "        k = " << guess[0] << endl;
-        file << "        delta = " << guess[1] << endl;
+        file << "        delta = " << guess[1] << "*2pi" << endl;
         if (fit_type == 2 || fit_type == 3) {
             file << "        c = " << guess[2] << endl;
         }
         if (fit_type == 3) {
             file << "        k2 = " << guess[3] << endl;
-            file << "        delta2 = " << guess[4] << endl;
+            file << "        delta2 = " << guess[4] << "*2pi" << endl;
         }
         file << "\n    Results from first fit: " << endl;
         fit_report(minimizer);
@@ -887,19 +961,34 @@ int main(int argc, char const *argv[]) {
         std::cout.rdbuf(coutbuf); // remove the redirection
     }
 
+// oof - this section has grown to become really clumsy with each extension to this script. 
+// it *really* needs a refactoring
 //*** GENERATE FIGURES ***//
     cout << "\nGenerating figures (this may take a while)" << endl;
-    const double k = minimize ? res[0] : 0; 
-    const double delta = minimize ? res[1]*2*M_PI : 0;
-    const double c = (fit_type == 2 || fit_type == 3) ? res[2] : 1;
-    const double k2 = fit_type == 3 ? res[3] : 1;
-    const double delta2 = fit_type == 3 ? res[4] : 1;
+    double k, k2, delta, delta2, c = 1, c2 = 1, c3 = 1;
+    
+    if (fit_type == 1 || fit_type == 2 || fit_type == 3) {
+        k = res[0]; 
+        delta = res[1]*2*M_PI;
+    }
+    if (fit_type == 2 || fit_type == 3) {
+        c = res[2];
+    }
+    if (fit_type == 3) {
+        k2 = res[3];
+        delta2 = res[4]*2*M_PI;
+    }
+    if (fit_type == 5) {
+        c = res[0]*(1 - res[1]);
+        c2 = (1 - res[0])*(1 - res[1]);
+        c3 = res[1];
+    }
 
     auto w1 = [&k, &delta] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k, delta);};
     auto w2 = [&k2, &delta2] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k2, delta2);};
 
     bool sim1_weighted = false;
-    if (fit_type == 1) {
+    if (fit_type == 1 || fit_type == 2 || fit_type == 3) {
         sim1_weighted = true;
         sim1 = sim1.Define("w", w1, {"f", "wU"});
     }
@@ -910,36 +999,55 @@ int main(int argc, char const *argv[]) {
         sim2_weighted = true;
     }
 
+    bool sim3_weighted = false;
+
 //*** DALITZ PLOTS ***//
-    TCanvas* c1 = new TCanvas("c1", "c", 1200, 600);
-    c1->Divide(2, 1, 0); // 0 x margin
-    
-    c1->cd(1);
+    TCanvas* canvas1 = new TCanvas("c1", "c", 1200, 600);
+    canvas1->Divide(2, 1, 0); // 0 x margin
+    double dalitz_contours[7] = {0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7};
+
+    canvas1->cd(1);
     TH2D* dalitz_data = dalitz(&data, 2*bins, true);
     double data_scale = dalitz_data->GetMaximum();
     dalitz_data->Scale(1./data_scale);
+    dalitz_data->SetContour(7, dalitz_contours);
     setup_dalitz_plot(dalitz_data, "col");
 
-    c1->cd(2);
+    canvas1->cd(2);
     TH2D* dalitz_sim = dalitz(&sim1, 2*bins, true, sim1_weighted);
     dalitz_sim->Scale(c/dalitz_sim->GetMaximum());
-    if (fit_type == 2 || fit_type == 3) { // we need to add the two simulations with their respective ratios
+    dalitz_sim->SetContour(7, dalitz_contours);
+    if (sim_num == 2) { // we need to add the two simulations with their respective ratios
         TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true, sim2_weighted);
         dalitz_sim2->Scale((1-c)/dalitz_sim2->GetMaximum());
         dalitz_sim->Add(dalitz_sim2);
     }
+    if (sim_num == 3) {
+        TH2D* dalitz_sim2 = dalitz(&sim2, 2*bins, true, sim2_weighted);
+        TH2D* dalitz_sim3 = dalitz(&sim3, 2*bins, true, sim3_weighted);
+        dalitz_sim2->Scale(c2/dalitz_sim2->GetMaximum());
+        dalitz_sim3->Scale(c3/dalitz_sim2->GetMaximum());
+        dalitz_sim->Add(dalitz_sim2);
+        dalitz_sim->Add(dalitz_sim2);
+
+    }
     setup_dalitz_plot(dalitz_sim, "col");
     
     string path = folder + "dalitz.pdf";
-    c1->SetLogz();
-    c1->SaveAs(path.c_str());
+    canvas1->SetLogz();
+    canvas1->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //*** DALITZ DIFFERENCE PLOT ***//
-    TCanvas* c2 = new TCanvas("c2", "c", 600, 600);
+    TCanvas* canvas2 = new TCanvas("c2", "c", 600, 600);
     dalitz_data->Scale(data_scale); // scale both the data and simulation so the z-axis makes some kind of sense
     dalitz_sim->Scale(data_scale);
     dalitz_data->Add(dalitz_sim, -1); // subtract the two plots
+
+    // change contour levels
+    double diff_contours[] = {-1, -.6, -.3, -.15, -.075, .075, .15, .3, .6, 1}; // normalized difference contours
+    dalitz_data->Scale(1/dalitz_data->GetMaximum());
+    dalitz_data->SetContour(10, diff_contours);
 
     // hack solution to change palette
     TExec *ex = new TExec("ex","gStyle->SetPalette(kThermometer);");
@@ -948,12 +1056,13 @@ int main(int argc, char const *argv[]) {
     dalitz_data->Draw("colz1 same");
 
     path = folder + "dalitz_diff.pdf";
-    c2->SaveAs(path.c_str());
+    canvas2->SetRightMargin(0.15);
+    canvas2->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //*** RADIAL PROJECTION ***//
     vector<double> x_axis = {0, 1};
-    TCanvas* c3 = new TCanvas("c3", "c", 600, 600);
+    TCanvas* canvas3 = new TCanvas("c3", "c", 600, 600);
     TH1D dat_rho = data.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))").Histo1D({"dat_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
 
     // sim1
@@ -985,15 +1094,42 @@ int main(int argc, char const *argv[]) {
         sim2_rho.Scale(1/data_scale);
         sim_rho.Add(&sim2_rho);
     }
+
+    // sim3
+    if (fit_type == 5) {
+        TH1D sim2_rho;
+        TH1D sim3_rho;
+        if (sim2_weighted) {
+            sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                                .Histo1D({"sim2_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            sim2_rho = sim2.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                        .Histo1D({"sim2_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        if (sim3_weighted) {
+            sim3_rho = sim3.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                                .Histo1D({"sim3_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            sim3_rho = sim3.Define("tmp", "sqrt(pow(x, 2) + pow(y, 2))")
+                        .Histo1D({"sim3_rho", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        sim2_rho.Scale(c2/sim2_rho.Integral());
+        sim2_rho.Scale(1/data_scale);
+        sim_rho.Add(&sim2_rho);
+
+        sim3_rho.Scale(c3/sim3_rho.Integral());
+        sim3_rho.Scale(1/data_scale);
+        sim_rho.Add(&sim3_rho);
+    }
     setup_compare_plot(&dat_rho, &sim_rho, "\\rho", "Arbitrary units");
 
     path = folder + "rho.pdf";
-    c3->SaveAs(path.c_str());
+    canvas3->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //*** ANGULAR PROJECTION ***//
     x_axis = {0, M_PI/3};
-    TCanvas* c4 = new TCanvas("c4", "c", 600, 600);
+    TCanvas* canvas4 = new TCanvas("c4", "c", 600, 600);
     TH1D dat_ang = data.Define("tmp", "atan2(x, y)").Histo1D({"dat_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
 
     // sim1
@@ -1023,15 +1159,37 @@ int main(int argc, char const *argv[]) {
         sim2_ang.Scale(1/data_scale);
         sim_ang.Add(&sim2_ang);
     }
+
+    // sim3
+    if (fit_type == 5) {
+        TH1D sim2_ang;
+        TH1D sim3_ang;
+        if (sim2_weighted) {
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            sim2_ang = sim2.Define("tmp", "atan2(x, y)").Histo1D({"sim2_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        if (sim3_weighted) {
+            sim3_ang = sim3.Define("tmp", "atan2(x, y)").Histo1D({"sim3_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+        } else {
+            sim3_ang = sim3.Define("tmp", "atan2(x, y)").Histo1D({"sim3_ang", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+        }
+        sim2_ang.Scale(c2/sim2_ang.Integral());
+        sim2_ang.Scale(1/data_scale);
+        sim_ang.Add(&sim2_ang);
+        sim3_ang.Scale(c3/sim3_ang.Integral());
+        sim3_ang.Scale(1/data_scale);
+        sim_ang.Add(&sim3_ang);
+    }
     setup_compare_plot(&dat_ang, &sim_ang, "\\varphi", "Arbitrary units");
 
     path = folder + "phi.pdf";
-    c4->SaveAs(path.c_str());
+    canvas4->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //*** ENERGY COMPARISON ***//
     x_axis = {0, 7000};
-    TCanvas* c5 = new TCanvas("c5", "c", 600, 600);
+    TCanvas* canvas5 = new TCanvas("c5", "c", 600, 600);
     TH1D* dat_E = new TH1D("dat_E", "h", bins, x_axis[0], x_axis[1]);
     TH1D* sim_E = new TH1D("sim_E", "h", bins, x_axis[0], x_axis[1]);
     for (int i = 0; i < 3; i++) {
@@ -1069,16 +1227,44 @@ int main(int argc, char const *argv[]) {
         sim2_E->Scale(1/data_scale);
         sim_E->Add(sim2_E);
     }
+
+    // sim3
+    if(fit_type == 5) {
+        TH1D* sim2_E = new TH1D("sim2_E", "h", bins, x_axis[0], x_axis[1]);
+        TH1D* sim3_E = new TH1D("sim3_E", "h", bins, x_axis[0], x_axis[1]);
+        for (int i = 0; i < 3; i++) {
+            TH1D sim3_temp;
+            TH1D sim2_temp;
+            if (sim2_weighted) {
+                sim2_temp = sim2.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim2_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+            } else {
+                sim2_temp = sim2.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim2_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+            }
+            if (sim3_weighted) {
+                sim3_temp = sim3.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim3_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp", "w").GetValue();
+            } else {
+                sim3_temp = sim3.Define("tmp", (format("E_cm[%1%]") % i).str()).Histo1D({"sim3_temp", "h", bins, x_axis[0], x_axis[1]}, "tmp").GetValue();
+            }
+            sim2_E->Add(&sim2_temp);
+            sim3_E->Add(&sim3_temp);
+        }
+        sim2_E->Scale(c2/sim2_E->Integral());
+        sim2_E->Scale(1/data_scale);
+        sim_E->Add(sim2_E);
+        sim3_E->Scale(c3/sim3_E->Integral());
+        sim3_E->Scale(1/data_scale);
+        sim_E->Add(sim3_E);
+    }
     setup_compare_plot(dat_E, sim_E, "E_{cm}", "Arbitrary units");
 
     path = folder + "E_cm.pdf";
-    c5->SaveAs(path.c_str());
+    canvas5->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
 //*** BINWISE CHI2 DALITZ PLOT ***//
     gStyle->SetPalette(kThermometer); // change to blue/red color scheme to indicate differences
     gROOT->ForceStyle();
-    TCanvas* c6 = new TCanvas("c2", "c", 600, 600);
+    TCanvas* canvas6 = new TCanvas("c2", "c", 600, 600);
     vector<double> binwise_chi = fitter->binwise_chisquare(res);
     vector<bool> skip_bin = fitter->get_skipped_bins();
     TH2D* chi2 = new TH2D("chi", "h", bins, 0, 1, bins, 0, 1);
@@ -1100,8 +1286,8 @@ int main(int argc, char const *argv[]) {
     chi2->Draw("colz");
 
     path = folder + "binwise_chi2.pdf";
-    c6->SetRightMargin(0.15);
-    c6->SaveAs(path.c_str());
+    canvas6->SetRightMargin(0.15);
+    canvas6->SaveAs(path.c_str());
     cout << "Created " << path << "." << endl;
 
     // export the array to a separate file

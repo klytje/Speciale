@@ -305,6 +305,7 @@ int main(int argc, char const *argv[]) {
     double pleft[] = {0, 200};
     double pright[] = {1500, 4500};
     df = df.Define("E_23", E23, {"px2", "py2", "pz2", "px3", "py3", "pz3"});
+    // df = df.Filter("200 < E_23"); // insert to see effect of removing gs decays
 
     TCanvas *c2 = new TCanvas("c2", "c2", 900, 600);
     TH1D h2 = df.Histo1D({"h2", "h", 200, 0, 6000}, "E_23").GetValue();
