@@ -81,13 +81,13 @@ balamuth := ../../sim3a/build/balamuth
 balamuth_i := ../../sim3a_i/build/balamuth_i
 
 # if any of the dependent executables doesn't exist, we compile them
-../../simX_fork/build/simX_fork/build/simX:
+../../simX_fork/build/simX:
 	make -C ../../simX_fork/build/
 	
 ../../sim3a/build/balamuth: ../../sim3a/balamuth/*
 	make -C ../../sim3a/build/
 
-../../sim3a_i/build/balamuth: ../../sim3a_i/balamuth/*
+../../sim3a_i/build/balamuth_i: ../../sim3a_i/balamuth/*
 	make -C ../../sim3a_i/build/
 
 # removes all executables

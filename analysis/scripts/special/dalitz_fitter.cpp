@@ -1,6 +1,6 @@
 // ROOT stuff
 #include <TCanvas.h>
-#include <TLine.h>
+#include <TLine.h> 
 #include <TF1.h>
 #include <TLegend.h>
 #include <Math/Factory.h>
@@ -47,11 +47,6 @@ public:
     vector<double>* wU;
     vector<vector<vector<double>>>* f;
 };
-
-// weights defined by eq 42 in Morten's thesis
-double calc_weight(vector<vector<double>> f, double wU, double k, double delta) { 
-    return wU*(k*f[0][0]+(1-k)*f[0][1] + 2*sqrt(k*(1-k))*(f[0][2]*cos(delta) + f[0][3]*sin(delta)));
-}
 
 class Dalitz_fitter {
 public:

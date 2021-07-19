@@ -1,0 +1,8 @@
+beam: p
+target: B11
+-> {
+    generator: PREGEN(file="/home/krelle/projects/B11/analysis/0+/sim/raw/2-_i.root" unit="keV")
+    a
+    a
+    a
+}
