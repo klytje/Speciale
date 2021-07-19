@@ -27,6 +27,8 @@ using namespace ROOT::Math;
 int bins;
 double y_cut;
 vector<vector<double>> p_evals;
+const bool debug_print = !true;
+const int bin_info = -1;
 
 // small container class to avoid needlessly long argument lists
 class container {
@@ -153,14 +155,16 @@ public:
         double c1 = params[0];
         double c2 = params[1];
         vector<double> P = {c1*(1-c2), (1-c1)*(1-c2), c2};
-        cout << "c1: " << P[0] << ", c2: " << P[1] << ", c3: " << P[2] << endl;
         
         // some of the minimizers do not respect our limits, which results in nan values
         for (int j = 0; j < m; j++) {
             // I don't know why the minimizer would ever pass nan, but it sometimes does (probably when they're based on derivatives?)
-            if (P[j] > 1 || isnan(P[j])) {
+            if (P[j] < 0 || 1 < P[j] || isnan(P[j])) {
                 return 1e9; // I don't know how the minimizer stores its maxval, but DBL_MAX was apparently too high. I think this value is fine though
             }
+        }
+        if (1 < P[0] + P[1] + P[2]) {
+            return 1e9;
         }
 
         // calculate the weight
@@ -244,7 +248,9 @@ public:
         vector<double> p(m); // normalized fractions
         vector<double> t(bins2);
         vector<vector<double>> A(m, vector<double>(bins2));
+        vector<bool> finished;
         double chi = 0; // likelihood
+        int err_count = 0;
 
         vector<double>Nc(m);
         for (int i = 0; i < bins2; i++) {
@@ -262,7 +268,9 @@ public:
         auto solve_t = [&] (double t, int i) {
             double val = - d[i]/(1 - t);
             for (int j = 0; j < m; j++) {
-                val += p[j]*w[j][i]*a[j][i]/(1 + p[j]*w[j][i]*t);
+                if (!finished[j]) {
+                    val += p[j]*w[j][i]*a[j][i]/(1 + p[j]*w[j][i]*t);                    
+                }
             }
             return val;
         };
@@ -329,7 +337,7 @@ public:
                     cout << format("\t\ta%1% = %2%, A%1% = %3%, w%1% = %4%, p%1% = %5%") % j % a[j][prevbin] % A[j][prevbin] % w[j][prevbin] % p[j] << endl;
                 }
 
-                exit(1);
+                exit(2);
             }
 
             binwise_chi[i] = -2*(chi-prev_chi);
@@ -341,10 +349,16 @@ public:
             if (skip_bin[i]) { // skips any bin outside x^2 + y^2 = 1 and with y > y_cut
                 continue;
             }
+            finished = vector<bool>(m, false); // reset the vector
 
+            if (debug_print) {
+                cout << "Bin " << i << ":" << endl;
+            }
         //*** CASE di = 0 ***//
             if (d[i] == 0) {
-                // cout << "case di == 0" << endl;
+                if (debug_print) {
+                    cout << "case di == 0" << endl;
+                }
                 t[i] = 1;
                 for (int j = 0; j < m; j++) {
                     A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
@@ -372,82 +386,113 @@ public:
 
             // calculate A_ki
             if (k != -1) {
-                // cout << "case aji == 0" << endl;
+                if (debug_print) {
+                    cout << "case aji == 0" << endl;
+                }
                 t[i] = -1./pw;
                 A[k][i] = d[i]/(1 + pw);
                 for (int j = 0; j < m; j++) {
-                    // if (a[j][i] == 0) { // SHOULD THIS BE HERE? NOT CLEAR BASED ON THE STATISTICS
+                    if (a[j][i] == 0) {
                         if (j != k) {
                             A[k][i] -= p[j]*w[j][i]*a[j][i]/(p[k] - p[j]);
                         }
-                    // }
+                        finished[j] = true;
+                        if (debug_print) {
+                            cout << "j = " << j << " has been marked as finished." << endl;
+                        }
+                    }
                 }
-                eval_chi(i);
-                continue;
+
+                bool eval = true;
+                for (int j = 0; j < m; j++) {
+                    eval = eval && finished[j];
+                }
+                if (eval) {
+                    eval_chi(i);
+                    continue;
+                }
             }
 
         //*** NORMAL CASE ***//
-            if (d[i] != 0) {
-                // cout << "normal case" << endl;
-                for (int j = 0; j < m; j++) {
-                    // cout << "pj: " << p[j] << "wji: " << w[j][i] << "pw: " << p[j]*w[j][i] << endl;
-                    if (p[j]*w[j][i] > pw) {
-                        pw = p[j]*w[j][i];
-                    }
-                }
-                double upper_bound = 1;
-                double lower_bound = -1./pw;
-
-                // the value of ti where fi changes sign must be between upper_bound and lower_bound
-                // we use a binary search (or bisection method, if you prefer) to find the value
-                t[i] = 0;
-                int n = 0;
-                for (n = 0; n < max_evals; n++) {
-                    double val = solve_t(t[i], i);
-                    if (abs(val) < tol) { // break when |f| < tol
-                        break;
-                    }
-                    else if (val < 0) { // sign is unchanged, so we move the upper bound
-                        // cout << "f: " << val << ", ti: " << t[i] << ", moving upper bound " << upper_bound << " to ti." << endl;
-                        upper_bound = t[i];
-                    } else { // sign is changed, so we move the lower bound
-                        // cout << "f: " << val << ", ti: " << t[i] << ", moving lower bound " << lower_bound << " to ti." << endl;
-                        lower_bound = t[i];
-                    }
-                    // sleep(1);
-                    t[i] = (upper_bound + lower_bound)/2;
-                    if (isnan(val)) {
-                        cout << "Critical error in bin " << i << endl;
-                        cout << "f = " << val << ", di = " << d[i] << ", a0i = " << a[0][i] << ", ti = " << t[i] << ", w0i = " << w[0][i] << endl;
-                        exit(1);
-                    }
-                }
-                if (n == max_evals) {
-                    cout << "Evaluation of t[i] did not converge in time. Function value at final location: " << solve_t(t[i], i) << " (should be 0). If this happens often, the fit failed." << endl;
-                }
-                // cout << "bin " << i << endl;
-                // cout << "f" << i << " = " << solve_t(t[i], i) << endl;
-                // for (int j = 0; j < m; j++) {
-                //     cout << "f = " << solve_t(t[i], i) << ", di = " << d[i] << ", aji = " << a[j][i] << ", ti = " << t[i] << ", wji = " << w[j][i] << endl;
+            if (debug_print) {
+                cout << "normal case" << endl;
+            }
+            for (int j = 0; j < m; j++) {
+                // if (finished[j]) {
+                //     continue;
                 // }
-                // sleep(1);
-                bool is_inf = false;
-                for (int j = 0; j < m; j++) {
-                    A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
-                    // cout << "Calculated Aji to be " << A[j][i] << endl;
-                    if (isinf(A[j][i])) {
-                        cout << "Inf encountered, skipping bin" << endl; // we do NOT set skip_bin[i] = true, since that is a permanent action for this minimization
-                        is_inf = true;
-                        break; 
-                    }
+                if (p[j]*w[j][i] > pw) {
+                    pw = p[j]*w[j][i];
                 }
-                if (is_inf) {
+            }
+            double upper_bound = 1;
+            double lower_bound = -1./pw;
+
+            // the value of ti where fi changes sign must be between upper_bound and lower_bound
+            // we use a binary search (or bisection method, if you prefer) to find the value
+            t[i] = 0;
+            int n = 0;
+            if (i == bin_info) {
+                cout << "Starting binary search with bounds: low: " << lower_bound << ", high: " << upper_bound << endl;
+            }
+            for (n = 0; n < max_evals; n++) {
+                double val = solve_t(t[i], i);
+                if (abs(val) < tol) { // break when |f| < tol
+                    break;
+                }
+                else if (val < 0) { // sign is unchanged, so we move the upper bound
+                    if (i == bin_info) {
+                        cout << "f: " << val << ", ti: " << t[i] << ", moving upper bound " << upper_bound << " to ti." << endl;
+                    }
+                    upper_bound = t[i];
+                } else { // sign is changed, so we move the lower bound
+                    if (i == bin_info) {
+                        cout << "f: " << val << ", ti: " << t[i] << ", moving lower bound " << lower_bound << " to ti." << endl;
+                    }
+                    lower_bound = t[i];
+                }
+                // sleep(1);
+                t[i] = (upper_bound + lower_bound)/2;
+                if (isnan(val)) {
+                    cout << "Critical error in bin " << i << endl;
+                    cout << "f = " << val << ", di = " << d[i] << ", a0i = " << a[0][i] << ", ti = " << t[i] << ", w0i = " << w[0][i] << endl;
+                    exit(3);
+                }
+            }
+            if (n == max_evals) {
+                err_count++;
+                cout << "Evaluation of t[i] did not converge in time. Function value at final location: " << solve_t(t[i], i) << " (should be 0). If this happens often, the fit failed. Error count: " << err_count << endl;
+            }
+
+            if (debug_print) {
+                cout << "f = " << solve_t(t[i], i) << ", d = " << d[i] << ", t = " << t[i] << endl;
+            }
+            bool is_inf = false;
+            for (int j = 0; j < m; j++) {
+                if (finished[j]) {
+                    if (debug_print) {
+                        cout << "aji = " << a[j][i] << ", Aji = " << A[j][i] << ", wji = " << w[j][i] << endl;
+                    }
                     continue;
                 }
+                A[j][i] = a[j][i]/(1 + p[j]*w[j][i]*t[i]);
 
-                eval_chi(i);
+                if (debug_print) {
+                    cout << "aji = " << a[j][i] << ", Aji = " << A[j][i] << ", wji = " << w[j][i] << endl;
+                    // sleep(1);
+                }
+                if (isinf(A[j][i])) {
+                    cout << "Inf encountered, skipping bin" << endl; // we do NOT set skip_bin[i] = true, since that is a permanent action for this minimization
+                    is_inf = true;
+                    break; 
+                }
+            }
+            if (is_inf) {
                 continue;
             }
+
+            eval_chi(i);
+            continue;
         }
         return -2*chi;
     }
@@ -582,7 +627,7 @@ int main(int argc, char const *argv[]) {
         cout << "\tbins:   number of bins. This may affect the quality of the fit" << endl;
         cout << "\tycut:   imposes a cut on the Dalitz y-coordinate at this value" << endl;
         cout << "Either delta can also be set to \"fixed\", in which case they will be fixed to 0" << endl;
-        exit(1);
+        exit(4);
     }
 
     gStyle->SetPadLeftMargin(0.13);
@@ -673,7 +718,7 @@ int main(int argc, char const *argv[]) {
         cout << format("\nFitting %1% with %2%, %3%, and %4% using %5%") % args[1] % args[2] % args[3] % args[4] % type << endl;
     } else {
         cout << "\033[1;31m" << "Invalid number of arguments." << "\033[0m" << endl;
-        exit(1);
+        exit(5);
     }
     if (type == "GSLSimAn") {
         cout << "Warning: Using GSL simulated annealing, expect around 15k function calls." << endl;
@@ -760,10 +805,10 @@ int main(int argc, char const *argv[]) {
 
     // extract the data from the third simulation data set
     if (sim_num == 3) {
-        sim3 = ROOT::RDataFrame("tree", "output/" + args[3] + ".root");
+        sim3 = ROOT::RDataFrame("tree", "output/" + args[4] + ".root");
         if (sim3.HasColumn("f")) { // check if we are dealing with sim3a_i data
             std::cout << "\033[1;31m" << "Third simulation file set appears to be from sim3a_i. This is not supported with three simulation inputs." << "\033[0m" << endl;
-            exit(1);
+            exit(6);
         }
         std::cout << "Third simulation file appears to be from sim3a without interference." << endl;
 
@@ -806,14 +851,12 @@ int main(int argc, char const *argv[]) {
         file << "chi2 value: " << fitter->chisquare(nullptr) << endl;
         minimize = false;
     } else if (fit_type == 5) {
-        cout << "hi" << endl;
         pars = 2; // c1 & c2
         fitter = new Dalitz_fitter(cdata, {csim1, csim2, csim3}, fit_type);
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type5, pars);
-        cout << "hi" << endl;
     } else {
         std::cout << "\033[1;31m" << "Critical error encountered: unknown fit_type." << "\033[0m" << endl;
-        exit(1);
+        exit(7);
     }
 
     const double* res;
@@ -850,7 +893,7 @@ int main(int argc, char const *argv[]) {
             }
             if (fit_type == 5) {
                 m->SetLimitedVariable(0, "c1", 0.5, 0.01, 0, 1);
-                m->SetLimitedVariable(0, "c2", 0.5, 0.01, 0, 1);
+                m->SetLimitedVariable(1, "c2", 0.5, 0.01, 0, 1);
             }
         };
 
@@ -875,30 +918,41 @@ int main(int argc, char const *argv[]) {
                 m->GetMinosError(4, err_low[4], err_up[4]);
             }
             file << "    Estimating errors with MINOS: " << endl;
-            file << format("        k: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
-            file << format("        delta (*2pi): %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+            if (fit_type == 5) {
+                file << format("\tFitted amount of: \n\t\tinput 1: %1% [c1*(1-c2)]\n\t\tinput 2: %2% [(1-c1)*(1-c2)]\n\t\tinput3: %3% [c2]") % (res[0]*(1-res[1])) % ((1-res[0])*(1-res[1])) % res[1] << endl;
+                file << format("\tc1: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
+                file << format("\tc2: %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+            } else {
+                file << format("\tk: %1% | +%2% | %3%") % res[0] % err_up[0] % err_low[0] << endl;
+                file << format("\tdelta (*2pi): %1% | +%2% | %3%") % res[1] % err_up[1] % err_low[1] << endl;
+            }
             if (fit_type == 2 || fit_type == 3) {
-                file << format("        c: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
+                file << format("\tc: %1% | +%2% | %3%") % res[2] % err_up[2] % err_low[2] << endl;
             }
             if (fit_type == 3) {
-                file << format("        k2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
-                file << format("        delta2 (*2pi): %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
+                file << format("\tk2: %1% | +%2% | %3%") % res[3] % err_up[3] % err_low[3] << endl;
+                file << format("\tdelta2 (*2pi): %1% | +%2% | %3%") % res[4] % err_up[4] % err_low[4] << endl;
             }
             file << endl;
         };
 
         // print the result of a fit
         auto fit_report = [&fit_type, &res, &fix_delta, &file, &fitter] (ROOT::Math::Minimizer* m) {
-            file << format("        FVAL = %1%") % m->MinValue() << endl;
-            file << format("        chi2 = %1%") % fitter->chisquare(res) << endl;
-            file << format("        k = %1% (FREE)") % res[0] << endl;
-            file << format("        delta = %1%*2pi (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
+            file << format("\tFVAL = %1%") % m->MinValue() << endl;
+            file << format("\tchi2 = %1%") % fitter->chisquare(res) << endl;
+            if (fit_type == 5) {
+                file << format("\tc1 = %1% (FREE)") % res[0] << endl;
+                file << format("\tc2 = %1% (FREE)") % res[1] << endl;
+            } else {
+                file << format("\tk = %1% (FREE)") % res[0] << endl;
+                file << format("\tdelta = %1%*2pi (%2%)") % res[1] % (fix_delta ? "FIXED" : "FREE") << endl;
+            }
             if (fit_type == 2 || fit_type == 3) {
-                file << format("        c = %1% (FREE)") % res[2] << endl;
+                file << format("\tc = %1% (FREE)") % res[2] << endl;
             } 
             if (fit_type == 3) {
-                file << format("        k2 = %1% (FREE)") % res[3] << endl;
-                file << format("        delta2 = %1%*2pi (%2%)") % res[4] % (fix_delta ? "FIXED" : "FREE") << endl;
+                file << format("\tk2 = %1% (FREE)") % res[3] << endl;
+                file << format("\tdelta2 = %1%*2pi (%2%)") % res[4] % (fix_delta ? "FIXED" : "FREE") << endl;
             } 
             file << endl;
         };
@@ -907,12 +961,18 @@ int main(int argc, char const *argv[]) {
         file << "*** FIT REPORT ***" << endl;
         file << format("Type: %1%, algorithm: %2%") % type % algorithm << endl;
         file << format("Fitting %1% with %2%") % args[1] % args[2];
-        if (fit_type == 2 || fit_type == 3) {
+        if (fit_type == 2 || fit_type == 3 || fit_type == 5) {
             file << " and " << args[3];
         }
+        if (fit_type == 5) {
+            file << " and " << args[4];
+        }
         file << format("\nNumber of events in files: %1% | %2%") % data.Count().GetValue() % sim1.Count().GetValue();
-        if (fit_type == 2 || fit_type == 3) {
+        if (fit_type == 2 || fit_type == 3 || fit_type == 5) {
             file << " | " << to_string(sim2.Count().GetValue());
+        }
+        if (fit_type == 5) {
+            file << " | " << to_string(sim3.Count().GetValue());
         }
         file << format("\nTotal number of bins: %1%, where only %2% are used.") % pow(bins, 2) % fitter->get_bins() << endl;
         if (y_cut != 1) {
@@ -920,20 +980,24 @@ int main(int argc, char const *argv[]) {
         }
         file << "\nROOT Minimizer report: " << endl;
         file << "    Initial guess values:" << endl;
-        file << "        k = " << guess[0] << endl;
-        file << "        delta = " << guess[1] << "*2pi" << endl;
+        if (fit_type == 5) {
+            file << "\tc1 = " << guess[0] << endl;
+            file << "\tc2 = " << guess[1] << endl;
+        } else {
+            file << "\tk = " << guess[0] << endl;
+            file << "\tdelta = " << guess[1] << "*2pi" << endl;
+        }
         if (fit_type == 2 || fit_type == 3) {
-            file << "        c = " << guess[2] << endl;
+            file << "\tc = " << guess[2] << endl;
         }
         if (fit_type == 3) {
-            file << "        k2 = " << guess[3] << endl;
-            file << "        delta2 = " << guess[4] << "*2pi" << endl;
+            file << "\tk2 = " << guess[3] << endl;
+            file << "\tdelta2 = " << guess[4] << "*2pi" << endl;
         }
         file << "\n    Results from first fit: " << endl;
         fit_report(minimizer);
 
         // unless the first fit was a Migrad, we perform a quick second fit with it to estimate the errors.
-        auto *coutbuf = std::cout.rdbuf();
         if (algorithm != "Migrad") {
             // update our guess values
             for (int i = 0; i < pars; i++) guess[i] = res[i];
@@ -944,7 +1008,6 @@ int main(int argc, char const *argv[]) {
             set_params(minimize2);
             minimize2->Minimize(); 
             res = minimize2->X();
-            std::cout.rdbuf(file.rdbuf()); // redirect std::cout to fit.txt
             file << "    Results from second fit: " << endl;
             fit_report(minimize2);
             minos_errs(minimize2);
@@ -953,7 +1016,6 @@ int main(int argc, char const *argv[]) {
             fit_report(minimizer);
             minos_errs(minimizer);
         }
-        std::cout.rdbuf(coutbuf); // remove the redirection
     }
 
 // oof - this section has grown to become really clumsy with each extension to this script. 
@@ -1035,13 +1097,11 @@ int main(int argc, char const *argv[]) {
 
 //*** DALITZ DIFFERENCE PLOT ***//
     TCanvas* canvas2 = new TCanvas("c2", "c", 600, 600);
-    dalitz_data->Scale(data_scale); // scale both the data and simulation so the z-axis makes some kind of sense
-    dalitz_sim->Scale(data_scale);
     dalitz_data->Add(dalitz_sim, -1); // subtract the two plots
 
     // change contour levels
     double diff_contours[] = {-1, -.6, -.3, -.15, -.075, .075, .15, .3, .6, 1}; // normalized difference contours
-    dalitz_data->Scale(1/dalitz_data->GetMaximum());
+    dalitz_data->Scale(1/max(dalitz_data->GetMaximum(), abs(dalitz_data->GetMinimum())));
     dalitz_data->SetContour(10, diff_contours);
 
     // hack solution to change palette
