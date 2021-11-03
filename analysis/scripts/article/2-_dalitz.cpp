@@ -30,14 +30,14 @@ int main(int argc, char *argv[]) {
     string folder = string(argv[1]) + "2-_article/";
 
     // path to fit with free delta
-    // string path_fit = "figures/dalitz_fit/article_free/";
-    // double k = 0.236633;
-    // double delta = 0.663692*2*M_PI;
+    string path_fit = "figures/dalitz_fit/article_free/";
+    double k = 0.236633;
+    double delta = 0.663692*2*M_PI;
 
     // path to fit with fixed delta
-    string path_fit = "figures/dalitz_fit/article_fixed/";
-    double k = 0.154447;
-    double delta = 0;
+    // string path_fit = "figures/dalitz_fit/article_fixed/";
+    // double k = 0.154447;
+    // double delta = 0;
 
     filesystem::create_directories(folder);
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     }
     dalitz_mix->SetMinimum(0);
 
-    dalitz_mix->SetXTitle("x");
+    dalitz_mix->GetXaxis()->SetLabelSize(0);
     dalitz_mix->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
@@ -171,11 +171,11 @@ int main(int argc, char *argv[]) {
 
     // cosmetics
     // fill_empty(dalitz_data);
-    dalitz_data->GetXaxis()->SetLabelSize(0);
+    dalitz_data->SetXTitle("x");
     dalitz_data->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
-    gPad->SetBottomMargin(bottommargin);
+    gPad->SetBottomMargin(0.06);
 
     dalitz_data->DrawCopy("colz");
 

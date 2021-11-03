@@ -24,26 +24,16 @@ using namespace ROOT;
 
 int main(int argc, char *argv[]) {
     if (argc != 6) {
-        cout << "Usage: ./0+_dalitz <output path> <data> <0+ sim> <2- sim3a_i> <3- sim3a_i>" << endl;
+        cout << "Usage: ./3-_dalitz <output path> <data> <3- l = 1 sim> <3- l = 3 sim> <3- l = 5 sim>" << endl;
         exit(1);
     }
-    string folder = string(argv[1]) + "0+_article/";
+    string folder = string(argv[1]) + "3-_article/";
 
     // path to fit with free delta
-    string path_fit = "figures/dalitz_fit/article_free/";
-    double k1 = 0.220215;
-    double delta1 = 0.662319*2*M_PI;
-    double c = 0.811026;
-    double k2 = 0.363976;
-    double delta2 = 0.274956*2*M_PI;
-
-    // path to fit with fixed delta
-    // string path_fit = "figures/dalitz_fit/article_fixed/";
-    // double k1 = 0.00783883;
-    // double delta1 = 0;
-    // double c = 0.93208;
-    // double k2 = 0.020294;
-    // double delta2 = 0;
+    string path_fit = "figures/dalitz_fit/article/";
+    double k1 = 0.918074;
+    double k2 = 0.0374003;
+    double k3 = 0.445252;
 
     std::cout << "Using hardcoded values for k and delta." << endl;
     filesystem::create_directories(folder);
@@ -57,37 +47,32 @@ int main(int argc, char *argv[]) {
 
     // prepare the data sets
     ROOT::RDF::RNode data = RDataFrame("tree", argv[2]);
-    ROOT::RDF::RNode sim0 = RDataFrame("tree", argv[3]);
-    ROOT::RDF::RNode sim2 = RDataFrame("tree", argv[4]);
-    ROOT::RDF::RNode sim3 = RDataFrame("tree", argv[5]);
+    ROOT::RDF::RNode sim1 = RDataFrame("tree", argv[3]);
+    ROOT::RDF::RNode sim3 = RDataFrame("tree", argv[4]);
+    ROOT::RDF::RNode sim5 = RDataFrame("tree", argv[5]);
     filter(&data); // energy & momentum cuts
-    filter(&sim0);
-    filter(&sim2);
+    filter(&sim1);
     filter(&sim3);
+    filter(&sim5);
     setup_dataframe(&data); // define Dalitz coordinates
-    setup_dataframe(&sim0);
-    setup_dataframe(&sim2);
+    setup_dataframe(&sim1);
     setup_dataframe(&sim3);
+    setup_dataframe(&sim5);
     cut_circle(&data); // cut everything outside the unit circle
-    cut_circle(&sim0);
-    cut_circle(&sim2);
+    cut_circle(&sim1);
     cut_circle(&sim3);
+    cut_circle(&sim5);
     cut_gs(&data); // remove ground state decays
-    cut_gs(&sim0);
-    cut_gs(&sim2);
+    cut_gs(&sim1);
     cut_gs(&sim3);
-
-    auto w2 = [&k1, &delta1] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k1, delta1);};
-    auto w3 = [&k2, &delta2] (vector<vector<double>> f, double wU) {return calc_weight(f, wU, k2, delta2);};
-    sim2 = sim2.Define("w", w2, {"f", "wU"});
-    sim3 = sim3.Define("w", w3, {"f", "wU"});
+    cut_gs(&sim5);
 
 //**********************************//
 // FIRST PANEL COLUMN, DALITZ PLOTS //
 //**********************************//
 if (true) {
-    TCanvas* c1 = new TCanvas("c1", "c", 600, 1400);
-    c1->Divide(1, 3, 0, 0);
+    TCanvas* c1 = new TCanvas("c1", "c", 600, 2000);
+    c1->Divide(1, 5, 0, 0);
     double rightmargin = 0.14;
     double topmargin = 0.03;
     double bottommargin = 0.03;
@@ -101,71 +86,92 @@ if (true) {
         h->GetZaxis()->SetNdivisions(2);
     };
 
-    auto fill_empty = [&bins] (TH2D* h) {
-        for (int bin = 1; bin < pow(bins+1, 2); bin++) {
-            int xbin, ybin, zbin;
-            h->GetBinXYZ(bin, xbin, ybin, zbin);
-            double x = h->GetXaxis()->GetBinCenter(xbin), y = h->GetYaxis()->GetBinCenter(ybin);
-            // cout << "bin: " << bin << ", x: " << x << ", y: " << y << endl;
-            if (sqrt(pow(x, 2) + pow(y, 2)) <= 1 && h->GetBinContent(bin) == 0) {
-                h->SetBinContent(bin, 1e-5); // just needs to be low enough to get colored as "0"
-            }
-        }
-    };
-
     double contours[10] = {0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7};
 
-// first panel: 0+ sim
+// first panel: l = 1 sim
     c1->cd(1);
-    TH2D* dalitz_sim0 = dalitz(&sim0, bins, true);
-    dalitz_sim0->Scale(1./dalitz_sim0->GetMaximum());
-    setup_plot_dalitz(dalitz_sim0, "0+");
+
+    TH2D* dalitz_sim1 = dalitz(&sim1, bins, true);
+    dalitz_sim1->Scale(1./dalitz_sim1->GetMaximum());
+    setup_plot_dalitz(dalitz_sim1, "L = 1");
 
     // cosmetics
-    // fill_empty(dalitz_sim2l1);
-    dalitz_sim0->GetXaxis()->SetLabelSize(0);
-    dalitz_sim0->SetContour(7, contours);
+    dalitz_sim1->GetXaxis()->SetLabelSize(0);
+    dalitz_sim1->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
 
-    dalitz_sim0->Draw("colz");
+    dalitz_sim1->DrawCopy("colz");
 
-// second panel: fit
+// second panel: l = 3 sim
     c1->cd(2);
-    TH2D* dalitz_sim2 = dalitz(&sim2, bins, true, true);
-    TH2D* dalitz_sim3 = dalitz(&sim3, bins, true, true);
 
-    dalitz_sim2->Scale(c/dalitz_sim2->GetMaximum());
-    dalitz_sim3->Scale((1-c)/dalitz_sim3->GetMaximum());
-    dalitz_sim2->Add(dalitz_sim3);
-    setup_plot_dalitz(dalitz_sim2, "Fit");
+    TH2D* dalitz_sim3 = dalitz(&sim3, bins, true);
+    dalitz_sim3->Scale(1/dalitz_sim3->GetMaximum());
+    setup_plot_dalitz(dalitz_sim3, "L = 3");
 
     // cosmetics
-    dalitz_sim2->GetXaxis()->SetLabelSize(0);
-    dalitz_sim2->SetContour(7, contours);
+    dalitz_sim3->GetXaxis()->SetLabelSize(0);
+    dalitz_sim3->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(bottommargin);
 
-    dalitz_sim2->Draw("colz");
+    dalitz_sim3->DrawCopy("colz");
 
-// third panel: data
+// third panel: l = 5 sim
     c1->cd(3);
+
+    TH2D* dalitz_sim5 = dalitz(&sim5, bins, true);
+    dalitz_sim5->Scale(1/dalitz_sim5->GetMaximum());
+    setup_plot_dalitz(dalitz_sim5, "L = 5");
+
+    // cosmetics
+    dalitz_sim5->GetXaxis()->SetLabelSize(0);
+    dalitz_sim5->SetContour(7, contours);
+    gPad->SetRightMargin(rightmargin);
+    gPad->SetTopMargin(topmargin);
+    gPad->SetBottomMargin(bottommargin);
+
+    dalitz_sim5->DrawCopy("colz");
+
+// fourth panel: fit
+    c1->cd(4);
+
+    dalitz_sim1->Scale(k1);
+    dalitz_sim3->Scale(k2);
+    dalitz_sim5->Scale(k3);
+
+    dalitz_sim1->Add(dalitz_sim3);
+    dalitz_sim1->Add(dalitz_sim5);
+    dalitz_sim1->Scale(1/dalitz_sim1->GetMaximum());
+
+    setup_plot_dalitz(dalitz_sim1, "Fit");
+
+    // cosmetics
+    dalitz_sim1->GetXaxis()->SetLabelSize(0);
+    dalitz_sim1->SetContour(7, contours);
+    gPad->SetRightMargin(rightmargin);
+    gPad->SetTopMargin(topmargin);
+    gPad->SetBottomMargin(bottommargin);
+
+    dalitz_sim1->Draw("colz");
+
+// fifth panel: data
+    c1->cd(5);
     TH2D* dalitz_data = dalitz(&data, bins, true);
-    double data_scale = dalitz_data->GetMaximum();
-    dalitz_data->Scale(1./data_scale);
+    dalitz_data->Scale(1./dalitz_data->GetMaximum());
     setup_plot_dalitz(dalitz_data, "Data");
 
     // cosmetics
-    // fill_empty(dalitz_data);
     dalitz_data->SetXTitle("x");
     dalitz_data->SetContour(7, contours);
     gPad->SetRightMargin(rightmargin);
     gPad->SetTopMargin(topmargin);
     gPad->SetBottomMargin(0.05);
 
-    dalitz_data->DrawCopy("colz");
+    dalitz_data->Draw("colz");
 
 // save
     string path = folder + "dalitz_panels.pdf";
@@ -257,26 +263,30 @@ if (true) {
     bins = 100;
 
     TH2D* slice_data = dalitz_slice(&data, bins, true);
-    TH2D* slice_sim2 = dalitz_slice(&sim2, bins, true, true);
-    TH2D* slice_sim3 = dalitz_slice(&sim3, bins, true, true);
+    TH2D* slice_sim1 = dalitz_slice(&sim1, bins, true);
+    TH2D* slice_sim3 = dalitz_slice(&sim3, bins, true);
+    TH2D* slice_sim5 = dalitz_slice(&sim5, bins, true);
 
-    slice_sim2->Scale(c/slice_sim2->GetMaximum());
-    slice_sim3->Scale((1-c)/slice_sim3->GetMaximum());
-    slice_sim2->Add(slice_sim3);
+    slice_sim1->Scale(k1/slice_sim1->GetMaximum());
+    slice_sim3->Scale(k2/slice_sim3->GetMaximum());
+    slice_sim5->Scale(k3/slice_sim5->GetMaximum());
+
+    slice_sim1->Add(slice_sim3);
+    slice_sim1->Add(slice_sim5);
 
     TH2D* diff = new TH2D("diff", "h", bins, 0, 1, bins, 0, 1);
     slice_data->Scale(1/slice_data->GetMaximum());
-    slice_sim2->Scale(1/slice_sim2->GetMaximum());
+    slice_sim1->Scale(1/slice_sim1->GetMaximum());
     for (int x = 1; x < bins+1; x++) {
         for (int y = 1; y < bins+1; y++) {
             double bdat = slice_data->GetBinContent(x, y);
-            double bfit = slice_sim2->GetBinContent(x, y);
+            double bfit = slice_sim1->GetBinContent(x, y);
             if (bdat > 0 && bfit > 0) {
                 diff->SetBinContent(x, y, bdat-bfit);
             } 
         }
     }
-    diff->Scale(1/diff->GetMaximum());
+    diff->Scale(1/max(diff->GetMaximum(), abs(diff->GetMinimum())));
 
     // cosmetics
     c4->SetRightMargin(0.15);
@@ -284,6 +294,12 @@ if (true) {
     // double diffcont[] = {diff->GetMinimum(), -40, -20, -10, -5, 5, 10, 20, 40, diff->GetMaximum()}; // upscaled contours
     // double diffcont[] = {diff->GetMinimum(), -.2, -.1, -.05, -.025, .025, .05, .1, .2, diff->GetMaximum()}; // raw difference contours
     double diffcont[] = {-1, -.6, -.3, -.15, -.075, .075, .15, .3, .6, 1}; // normalized difference contours
+    if (diff->GetMaximum() < 1) {
+        double m = diff->GetMaximum();
+        for (int i = 5; i < 10; i++) {
+            diffcont[i] *= m;            
+        }
+    }
     diff->SetContour(10, diffcont);
 
     diff->GetXaxis()->SetTitle("x");
@@ -323,19 +339,27 @@ if (true) {
 // SECOND PANEL COLUMN, ENERGY PROJECTION PLOTS //
 //**********************************************//
 if (true) {
-    TCanvas* c3 = new TCanvas("c2", "c", 600, 1000);
-    c3->Divide(1, 2, 0, 0);
+    TCanvas* c3 = new TCanvas("c2", "c", 600, 600);
+    // c3->Divide(1, 3, 0, 0);
 
     bins = 100;
     vector<double> x_axis = {0, 6000};
-    TH1D* data_E = energy_projection(&data, false, "data_E", "integral");
-    TH1D* sim0_E = energy_projection(&sim0, false, "sim0_E", "integral");
-    TH1D* fit_E = energy_projection(&sim2, &sim3, c, true, true, "fit_E", "integral");
+    TH1D* data_E = energy_projection(&data, false, "data_E", "none");
+    TH1D* sim1_E = energy_projection(&sim1, false, "sim1_E", "none");
+    TH1D* sim3_E = energy_projection(&sim3, false, "sim3_E", "none");
+    TH1D* sim5_E = energy_projection(&sim5, false, "sim5_E", "none");
 
-    double data_scale = max({data_E->GetMaximum(), sim0_E->GetMaximum(), fit_E->GetMaximum()});
-    data_E->Scale(1/data_scale);
-    sim0_E->Scale(1/data_scale);
-    fit_E->Scale(1/data_scale);
+    data_E->Scale(1/data_E->Integral());
+    sim1_E->Scale(k1/sim1_E->Integral());
+    sim3_E->Scale(k2/sim3_E->Integral());
+    sim5_E->Scale(k3/sim5_E->Integral());
+    sim1_E->Add(sim3_E);
+    sim1_E->Add(sim5_E);
+    sim1_E->Scale(1/sim1_E->Integral());
+
+    double scale = max(data_E->GetMaximum(), sim1_E->GetMaximum());
+    data_E->Scale(1/scale);
+    sim1_E->Scale(1/scale);
     data_E->SetMaximum(1);
 
     auto setup_plot_energy = [] (TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
@@ -361,30 +385,18 @@ if (true) {
     double topmargin = 0.03;
     double bottommargin = 0.03;
 
-// first panel: data + 0+ sim
+// first panel: data + fit
     c3->cd(1);
-    setup_plot_energy(data_E, sim0_E, "E_{cm}", "0+ simulation");
+    setup_plot_energy(data_E, sim1_E, "E_{cm}", "Arbitrary scale");
     data_E->DrawClone("hist l");
-    sim0_E->Draw("hist l same");
-
-    // cosmetics
-    gPad->SetTopMargin(topmargin);
-    gPad->SetLeftMargin(leftmargin);
-    gPad->SetRightMargin(rightmargin);
-    gPad->SetBottomMargin(bottommargin);
-
-// second panel: data + fit
-    c3->cd(2);
-    setup_plot_energy(data_E, fit_E, "E_{cm}", "2- & 3- fit");
-    data_E->Draw("hist l");
-    fit_E->Draw("hist l same");
+    sim1_E->Draw("hist l same");
 
     // cosmetics
     data_E->GetXaxis()->SetLabelSize(labelsize);
     gPad->SetTopMargin(topmargin);
     gPad->SetLeftMargin(leftmargin);
     gPad->SetRightMargin(rightmargin);
-    gPad->SetBottomMargin(0.06);
+    gPad->SetBottomMargin(0.05);
 
 // save
     string path = folder + "energy_panels.pdf";

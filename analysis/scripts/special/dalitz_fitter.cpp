@@ -461,6 +461,7 @@ public:
             }
             if (n == max_evals) {
                 err_count++;
+                max_errs = max(max_errs, err_count);
                 cout << "Evaluation of t[i] did not converge in time. Function value at final location: " << solve_t(t[i], i) << " (should be 0). If this happens often, the fit failed. Error count: " << err_count << endl;
             }
 
@@ -501,11 +502,16 @@ public:
         this->type = type;
     }
 
+    int get_errs() {
+        return max_errs;
+    }
+
 private:
     // for calculating the weights
     vector<vector<vector<vector<double>>>> f;
     vector<vector<double>> wU;
     int type = -1;
+    int max_errs = 0;
 
     // everything related to the modified_maximum_likelihood evaluation
     int bins2 = pow(bins, 2); // bins^2
@@ -848,6 +854,8 @@ int main(int argc, char const *argv[]) {
         functor = ROOT::Math::Functor(fitter, &Dalitz_fitter::eval_type3, pars);
     } else if (fit_type == 4) {
         fitter = new Dalitz_fitter(cdata, {csim1}, fit_type);
+        file << "*** FIT REPORT ***" << endl;
+        file << format("Fitting %1% with %2%") % args[1] % args[2] << endl;
         file << "chi2 value: " << fitter->chisquare(nullptr) << endl;
         minimize = false;
     } else if (fit_type == 5) {
@@ -1016,6 +1024,7 @@ int main(int argc, char const *argv[]) {
             fit_report(minimizer);
             minos_errs(minimizer);
         }
+        file << "\n    Maximum number of errors in bins encountered: " << fitter->get_errs() << endl;
     }
 
 // oof - this section has grown to become really clumsy with each extension to this script. 

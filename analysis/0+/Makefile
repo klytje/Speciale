@@ -337,6 +337,9 @@ ang_compare: ../scripts/special/build/ang_compare sim/temp/output
 2-_panels: ../scripts/article/build/2-_dalitz output/true_events.root output/2-_1.root output/2-_3.root
 	$< $(shell pwd)/figures/article/ output/true_events.root output/2-_1.root output/2-_3.root output/2-_i.root
 
+3-_panels: ../scripts/article/build/3-_dalitz output/true_events.root output/3-_l1.root output/3-_l3.root output/3-_l5.root
+	$< $(shell pwd)/figures/article/ output/true_events.root output/3-_l1.root output/3-_l3.root output/3-_l5.root
+
 ###################
 ### SIMULATIONS ###
 ###################

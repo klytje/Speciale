@@ -284,7 +284,21 @@ ang_cor_fit/%: ../scripts/special/build/ang_cor_fit output/%.root
 # same as ang_compare_single, but for all files simulated with width_compare
 ang_compare: ../scripts/special/build/ang_compare sim/temp/output
 	$< $(shell pwd)/figures/article/ $(state) $(l) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$1}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}'))) $(addprefix output/0+_, $(addsuffix .root, $(shell awk '{print $$2}' sim/temp/converted_widths.txt | awk -vORS=" " 'NR>1 {print}')))
-	
+
+### article figures ###
+# compiles a given "article" figure program
+../scripts/article/build/%: ../scripts/article/%.cpp ../scripts/utility.cpp
+	make -C ../scripts/article/build/ $*
+
+0+_panels: ../scripts/article/build/0+_dalitz output/true_events.root output/0+.root output/2-_i.root output/3-_i.root
+	$< $(shell pwd)/figures/article/ output/true_events.root output/0+.root output/2-_i.root output/3-_i.root
+
+2-_panels: ../scripts/article/build/2-_dalitz output/true_events.root output/2-_1.root output/2-_3.root
+	$< $(shell pwd)/figures/article/ output/true_events.root output/2-_1.root output/2-_3.root output/2-_i.root
+
+3-_panels: ../scripts/article/build/3-_dalitz output/true_events.root output/3-_l1.root output/3-_l3.root output/3-_l5.root
+	$< $(shell pwd)/figures/article/ output/true_events.root output/3-_l1.root output/3-_l3.root output/3-_l5.root
+
 ###################
 ### SIMULATIONS ###
 ###################

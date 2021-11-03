@@ -22,3 +22,4 @@ link_libraries(${LIBRARIES})
 
 add_executable(2-_dalitz 2-_dalitz.cpp)
 add_executable(0+_dalitz 0+_dalitz.cpp)
+add_executable(3-_dalitz 3-_dalitz.cpp)
