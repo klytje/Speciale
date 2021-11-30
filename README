@@ -1,7 +1,6 @@
 Welcome to my Master's project!
 
 "sim3a", "sim3a_i" and "simX_fork" are auxillary simulation libraries, which are not written by me. 
-"latex" contains the latex source for my thesis. 
 "analysis" is where the main analysis takes place. 
 	Inside this folder, you will find the "scripts" folder, which contains the vast majority of the scripts used for the thesis. Everything inside it is written solely by me. There is also another readme which should describe what each script does, and how they can be run. It is far easier, however, to simply make a new project folder, and copy the "makefile" from e.g. the "0+" folder. Then every single script will be accessible through easy make commands. To see the possible commands, take a look at the makefile itself, especially the section on scripts. 
 	
