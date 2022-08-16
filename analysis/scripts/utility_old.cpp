@@ -426,7 +426,7 @@ void setup_compare_plot(TH1D* hdat, TH1D* hsim, string xlabel, string ylabel) {
     hdat->GetXaxis()->SetTitle(xlabel.c_str());
     hdat->GetYaxis()->SetTitle(ylabel.c_str());
     hdat->GetXaxis()->CenterTitle();
-    hdat->GetYaxis()->CenterTitle();
+    hdat->GetYaxis()->CenterTitle(); 
     hdat->GetXaxis()->SetNdivisions(205);
     hdat->GetYaxis()->SetNdivisions(203);
     

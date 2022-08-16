@@ -743,6 +743,7 @@ int main(int argc, char const *argv[]) {
     ROOT::RDF::RNode sim1 = ROOT::RDataFrame("tree", "output/" + args[2] + ".root");
     ROOT::RDF::RNode sim2 = ROOT::RDataFrame(0); // empty dataframe
     ROOT::RDF::RNode sim3 = ROOT::RDataFrame(0); 
+
     filter(&data); // perform energy and momentum cut
     filter(&sim1);
     setup_dataframe(&data); // define dalitz coordinates
@@ -856,7 +857,7 @@ int main(int argc, char const *argv[]) {
         fitter = new Dalitz_fitter(cdata, {csim1}, fit_type);
         file << "*** FIT REPORT ***" << endl;
         file << format("Fitting %1% with %2%") % args[1] % args[2] << endl;
-        file << "chi2 value: " << fitter->chisquare(nullptr) << endl;
+        file << "Dalitz plot chi2 value: " << fitter->chisquare(nullptr) << endl;
         minimize = false;
     } else if (fit_type == 5) {
         pars = 2; // c1 & c2

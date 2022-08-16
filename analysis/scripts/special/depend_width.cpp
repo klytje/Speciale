@@ -17,8 +17,8 @@ int main(int argc, char const *argv[]) {
     //*** DALITZ PLOT SETUP ***//
     // set the axes
     int bins = 200;
-    double x_axis[] = {bins, -1, 1};
-    double y_axis[] = {bins, -1, 1};
+    int x_axis[] = {bins, -1, 1};
+    int y_axis[] = {bins, -1, 1};
 
     //*** ACTUAL CODE ***//
     setup_style();

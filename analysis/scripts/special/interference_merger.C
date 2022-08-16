@@ -20,7 +20,7 @@
 
 	t2->SetBranchAddress("N", &N);
 	t1->SetBranchAddress("f", &factors);
-	t1->SetBranchAddress("wU", &wU);
+	t1->SetBranchAddress("wPS", &wU);
 	TBranch *b_f = t2->Branch("f", &factors);
 	TBranch *b_wU = t2->Branch("wU", &wU);
 
