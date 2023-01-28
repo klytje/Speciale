@@ -1,7 +1,7 @@
 # AUSAlib executables. If globally installed, replace with "./"
-sorter := ~/tools/sorter/build/Sorter
-calibrator := ~/tools/calibrator/build/Calibrator
-identifier := ~/tools/identifier/build/Identifier
+sorter := ~/tools/sorter/build/bin/Sorter
+calibrator := ~/tools/calibrator/build/bin/Calibrator
+identifier := ~/tools/identifier/build/bin/Identifier
 
 .DEFAULT_GOAL := help
 .SECONDARY:
@@ -76,7 +76,7 @@ build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/b
 ####################
 ### DEPENDENCIES ###
 ####################
-simX := ../../simX_fork/build/simX
+simX := ~/tools/simX/build/bin/simX
 balamuth := ../../sim3a/build/balamuth
 balamuth_i := ../../sim3a_i/build/balamuth_i
 

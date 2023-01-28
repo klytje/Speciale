@@ -30,6 +30,7 @@ if (GSL_FOUND)
   list(APPEND LIBRARIES ${GSL_LIBRARIES})
 endif (GSL_FOUND)
 
+SET(AUSALIB_LIBRARIES "/home/krelle/tools/ausalib/build/lib/libAUSA.so")
 find_package(AUSALIB REQUIRED)
 if (AUSALIB_FOUND)
   include_directories(${AUSALIB_INCLUDES})

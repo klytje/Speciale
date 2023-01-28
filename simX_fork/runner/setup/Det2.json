@@ -1,9 +1,0 @@
-{
-  "type" : "SquareDSSD",
-  "nBackStrips" : 16,
-  "nFrontStrips" : 16,
-  "thickness" : 100,
-  "stripWidth" : 3.0,
-  "stripPitch" : 3.1,
-  "deadLayer" : 0.00
-}

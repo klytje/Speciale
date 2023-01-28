@@ -1,7 +1,0 @@
-beam: He3
-target: Be9
-  -> {
-      AD: GRAPH(file="../test/_res/dwba_output.dat")
-      a
-      Be8
-  }

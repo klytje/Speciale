@@ -16,6 +16,7 @@ include_directories(${EVENT_BUILDER_INCLUDES})
 list(APPEND LIBRARIES ${EVENT_BUILDER_LIBRARIES})
 
 # Include AUSAlib. Look in cmake/FindAUSALIB.cmake for how the specify location
+set(AUSALIB_LIBRARIES "/home/krelle/tools/ausalib/build/lib/libAUSA.so")
 find_package(AUSALIB REQUIRED)
 include_directories(${AUSALIB_INCLUDES})
 list(APPEND LIBRARIES ${AUSALIB_LIBRARIES})

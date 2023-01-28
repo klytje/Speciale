@@ -3,7 +3,7 @@ project(EventAnalysis)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-SET (CMAKE_CXX_COMPILER "/usr/bin/clang++")
+SET (CMAKE_CXX_COMPILER "/usr/bin/g++")
 #----------------------------------------------------------------------------
 # Dependencies
 #
@@ -16,6 +16,7 @@ include_directories(${EVENT_BUILDER_INCLUDES})
 list(APPEND LIBRARIES ${EVENT_BUILDER_LIBRARIES})
 
 # Include AUSAlib. Look in cmake/FindAUSALIB.cmake for how the specify location
+set(AUSALIB_LIBRARIES "/home/krelle/tools/ausalib/build/lib/libAUSA.so")
 find_package(AUSALIB REQUIRED)
 include_directories(${AUSALIB_INCLUDES})
 list(APPEND LIBRARIES ${AUSALIB_LIBRARIES})

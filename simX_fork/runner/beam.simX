@@ -1,6 +1,0 @@
-  energy : 2000keV
-  center : (0mm, 0mm, -100mm)
-  theta : 0deg
-  dist_energy : POINT
-  dist_theta : POINT
-  dist_xy : POINT

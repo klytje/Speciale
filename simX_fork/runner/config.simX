@@ -1,6 +1,0 @@
-{
-"target": "target.json",
-"detection_system": "detection_system.simX",
-"reaction": "reaction.simX",
-"beam": "beam.simX"
-}
