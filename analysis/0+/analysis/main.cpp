@@ -87,9 +87,7 @@ int main(int argc, char* argv[]) {
     // Add sorted and identified files
     vector<string> files;
     for (int i = 2; i < argc; ++i) findFilesMatchingWildcard(argv[i], files);
-    std::cout << "CHECKPOINT" << std::endl;
     runner.addFiles(files);
-    std::cout << "CHECKPOINT" << std::endl;
 
     // Run analysis
     runner.run();

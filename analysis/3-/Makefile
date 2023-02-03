@@ -1,7 +1,11 @@
 # AUSAlib executables. If globally installed, replace with "./"
-sorter := ~/tools/sorter/build/Sorter
-calibrator := ~/tools/calibrator/build/Calibrator
-identifier := ~/tools/identifier/build/Identifier
+sorter := ~/tools/sorter/build/bin/Sorter
+calibrator := ~/tools/calibrator/build/bin/Calibrator
+identifier := ~/tools/identifier/build/bin/Identifier
+hadd := ~/tools/root/build/bin/hadd
+simX := ~/tools/simx/build/bin/simX
+balamuth := ~/projects/sim3a/build/bin/balamuth
+balamuth_i := ~/projects/sim3a/build/bin/balamuth
 
 .DEFAULT_GOAL := help
 .SECONDARY:
@@ -45,18 +49,6 @@ clean/%:
 #############
 ### CMAKE ###
 #############
-../../simX_fork/build/Makefile: ../../simX_fork/CMakeLists.txt
-	mkdir -p ../../simX_fork/build
-	cd ../../simX_fork/build; cmake ../
-	
-../../sim3a/build/Makefile: ../../sim3a/CMakeLists.txt
-	mkdir -p ../../sim3a/build
-	cd ../../sim3a/build; cmake ../
-
-../../sim3a_i/build/Makefile: ../../sim3a_i/CMakeLists.txt
-	mkdir -p ../../sim3a_i/build
-	cd ../../sim3a_i/build; cmake ../
-
 ../scripts/basic/build/Makefile: ../scripts/basic/CMakeLists.txt
 	mkdir -p ../scripts/basic/build
 	cd ../scripts/basic/build; cmake ../
@@ -73,23 +65,6 @@ analysis/build/Makefile: analysis/CMakeLists.txt
 # every time a CMakeLists is modified, run this target
 build: ../../simX_fork/build/Makefile ../../sim3a/build/Makefile ../../sim3a_i/build/Makefile ../scripts/basic/build/Makefile ../scripts/special/build/Makefile analysis/build/Makefile
 
-####################
-### DEPENDENCIES ###
-####################
-simX := ../../simX_fork/build/simX
-balamuth := ../../sim3a/build/balamuth
-balamuth_i := ../../sim3a_i/build/balamuth_i
-
-# if any of the dependent executables doesn't exist, we compile them
-../../simX_fork/build/simX_fork/build/simX:
-	make -C ../../simX_fork/build/
-	
-../../sim3a/build/balamuth: ../../sim3a/balamuth/*
-	make -C ../../sim3a/build/
-
-../../sim3a_i/build/balamuth: ../../sim3a_i/balamuth/*
-	make -C ../../sim3a_i/build/
-
 # removes all executables
 clean/build: 
 	@ rm -f -r ../figure_scripts/build/*
@@ -104,10 +79,11 @@ calibrate_rec := analysis/build/tdc_calibration_reconstructed
 calibrate_true := analysis/build/tdc_calibration_true
 
 tdc_calibration: $(calibrate_rec) $(calibrate_true) $(addprefix output/,$(shell ls data))
+	@ mkdir -p merged
 	$(calibrate_true) $(addprefix output/,$(shell ls data))	
 	$(calibrate_rec) $(addprefix output/,$(shell ls data))
 	@ echo "Creating output/all_events.root ..."
-	@ hadd -f output/all_events.root output/true_events.root output/reconstructed_events.root
+	@ $(hadd) -f output/all_events.root output/true_events.root output/reconstructed_events.root
 
 ### compile the calibration programs if necessary ###
 analysis/build/tdc_calibration_reconstructed: $(build) analysis/tdc_calibration_reconstructed.cpp ../scripts/calibrate/*
@@ -171,10 +147,12 @@ analysis/build/EventAnalysis: analysis/StandardAnalyzer.cpp analysis/main.cpp
 
 # if the output is based on a simulation with sim3a_i, we need to perform a special merge operation on it as well
 output/%.root : id/%mi.root sim/configs/%.balamuth_i $(event_analysis)
+	mkdir -p output
 	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 	echo sim/raw/$*.root output/$*.root | root -l ../scripts/special/interference_merger.C
 
 output/%.root : match/%m.root id/%mi.root $(event_analysis)
+	mkdir -p output
 	$(event_analysis) output/$*.root id/$*mi.root match/$*m.root
 
 ###############
@@ -330,19 +308,23 @@ sim/%.simX: sim/raw/%.root
 
 # generate the raw event data from sim3a
 sim/raw/%.dat: sim/configs/%.balamuth $(balamuth)
+	mkdir -p sim/raw
 	$(balamuth) $(shell cat $<) -N $(N) -o $(shell pwd)/sim/raw/$(*F).dat	
 
 # simulate using balamuth with interference
 sim/raw/%.root: sim/configs/%.balamuth_i $(balamuth_i)
+	mkdir -p sim/raw
 	$(balamuth_i) $(shell cat $<) -N $(N) -o $(shell pwd)/$@
 	
 # simulate the detector setup with simX, using the generated events from sim3a
 sim/data/%.root: sim/$$*.simX $(simX)
+	mkdir -p sim/data
 	$(simX) -c sim/config.json -r sim/$*.simX -o sim/data/$*.root -N $(N)
 	@ rm $<
 
 # simulate everything solely with simX
 sim/data/%.root : sim/configs/%.simX $(simX)
+	mkdir -p sim/data
 	$(simX) -c sim/config.json -r $< -o sim/data/$(*F).root -N $(N)
 	
 ###################################

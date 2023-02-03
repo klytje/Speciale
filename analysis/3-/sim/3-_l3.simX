@@ -1,0 +1,8 @@
+beam: p
+target: B11
+-> {
+    generator: PREGEN(file="/home/au561871/projects/Speciale/analysis/3-/sim/raw/3-_l3.dat" unit="keV")
+    a
+    a
+    a
+}

@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
     // save(&data, "reconstructed_aligned_peaks.root");
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 14060, 14120};
-    vector<double> bt_peak = {200, 13950, 14050};
+    vector<int> ft_peak = {100, 14060, 14120};
+    vector<int> bt_peak = {200, 13950, 14050};
     gauss_filter_custom(&data, 3, ft_peak, bt_peak);
 
     auto[deltaF, deltaB, offset] = load_calibration();

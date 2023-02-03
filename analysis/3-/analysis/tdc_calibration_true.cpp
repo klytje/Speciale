@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
     align_peaks(&data, ft_peaks, bt_peaks);
 
     // imposes a Gaussian filter on FT and BT, to remove outliers. 
-    vector<double> ft_peak = {100, 14050, 14150};
-    vector<double> bt_peak = {160, 13950, 14010};
+    vector<int> ft_peak = {100, 14050, 14150};
+    vector<int> bt_peak = {160, 13950, 14010};
     gauss_filter(&data, 3, ft_peak, bt_peak);
 
     // perform a tdc calibration on the data
